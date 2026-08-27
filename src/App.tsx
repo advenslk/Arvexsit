@@ -27,7 +27,7 @@ import { GameDetailPage } from './components/pages/GameDetailPage';
 import { DomainsPage } from './components/pages/DomainsPage';
 import { PricingPage } from './components/pages/PricingPage';
 import { CheckoutPage } from './components/pages/CheckoutPage';
-import { PaymentPage } from './components/pages/PaymentPage';
+import { PayHerePaymentPage } from './components/pages/PayHerePaymentPage';
 import { SupportPage } from './components/pages/SupportPage';
 import { StatusPage } from './components/pages/StatusPage';
 import { PartnersPage } from './components/pages/PartnersPage';
@@ -58,8 +58,6 @@ function MainWebsite() {
       })
       .catch(() => undefined)
       .finally(() => { serverUserLoaded.current = true; authBootstrapped.current = true; });
-  // One-time server session bootstrap; login is intentionally excluded from dependencies.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -84,7 +82,7 @@ function MainWebsite() {
       case 'games': return <GamesPage />;
       case 'domains': return <DomainsPage />;
       case 'checkout': return <CheckoutPage />;
-      case 'payment': return <PaymentPage />;
+      case 'payment': return <PayHerePaymentPage />;
       case 'support':
       case 'tickets': return <SupportPage />;
       case 'status': return <StatusPage />;
