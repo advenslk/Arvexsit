@@ -30,19 +30,14 @@ export const PayHerePaymentPage: React.FC = () => {
     if (!plan?.id || !['monthly', 'quarterly', 'yearly'].includes(cycle)) return;
     let active = true;
     fetch(`/api/payments/payhere/quote?planId=${encodeURIComponent(plan.id)}&cycle=${encodeURIComponent(cycle)}`)
-      .then(async (response) => {
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Unable to load the current price.');
-        if (active) { setAmountUsd(Number(data.amountUsd)); setAmountLkr(Number(data.amountLkr)); }
-      })
+      .then(async (response) => { const data = await response.json(); if (!response.ok) throw new Error(data.error || 'Unable to load the current price.'); if (active) { setAmountUsd(Number(data.amountUsd)); setAmountLkr(Number(data.amountLkr)); } })
       .catch((err) => { if (active) setError(err instanceof Error ? err.message : 'Unable to load the current price.'); });
     return () => { active = false; };
   }, [plan?.id, cycle]);
 
   useEffect(() => {
     if (status !== 'waiting' || !paymentOrderId) return;
-    let active = true;
-    let attempts = 0;
+    let active = true; let attempts = 0;
     const poll = async () => {
       attempts += 1;
       try {
@@ -65,11 +60,11 @@ export const PayHerePaymentPage: React.FC = () => {
     if (!/^\+?[0-9 ()-]{7,20}$/.test(phone.trim())) { setError('Enter a valid phone number.'); return; }
     if (!address.trim() || !city.trim()) { setError('Address and city are required by PayHere.'); return; }
     setError(''); setStatus('creating');
-    const id = paymentOrderId || makeOrderId();
-    setPaymentOrderId(id);
+    const id = paymentOrderId || makeOrderId(); setPaymentOrderId(id);
     try {
       const response = await fetch('/api/payments/payhere/create', {
-        method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'X-Customer-Email': customerEmail, 'X-Customer-Name': customerName },
         body: JSON.stringify({ orderId: id, planId: plan.id, cycle, phone, address, city }),
       });
       const data = await response.json();
@@ -82,7 +77,7 @@ export const PayHerePaymentPage: React.FC = () => {
   };
 
   if (!currentUser) return <div className="min-h-[70vh] flex items-center justify-center px-6"><div className="max-w-md rounded-3xl border border-white/10 bg-white/[0.035] p-8 text-center"><LockKeyhole className="mx-auto mb-4 h-12 w-12 text-cyan-400" /><h1 className="text-2xl font-black text-white">Sign in required</h1><p className="mt-2 text-sm text-slate-400">Sign in to your ArveX account before starting a secure payment.</p><button onClick={() => navigateTo('home')} className="mt-6 rounded-xl bg-cyan-500 px-5 py-3 text-sm font-bold text-black">Return to ArveX</button></div></div>;
-  if (status === 'paid') return <div className="min-h-[75vh] flex items-center justify-center px-6 py-16"><div className="w-full max-w-2xl rounded-[2rem] border border-emerald-400/20 bg-[#0d1215] p-8 text-center shadow-2xl sm:p-12"><CheckCircle2 className="mx-auto h-16 w-16 text-emerald-400" /><div className="mt-5 text-xs font-black uppercase tracking-[0.25em] text-emerald-400">Payment verified</div><h1 className="mt-3 text-3xl font-black text-white">Payment confirmed</h1><p className="mx-auto mt-4 max-w-lg text-sm leading-7 text-slate-400">PayHere has verified the transaction on the ArveX server. Service activation must only follow this verified payment record.</p><div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-left text-sm"><div className="flex justify-between gap-4"><span className="text-slate-500">Payment order</span><span className="font-mono font-bold text-white">{paymentOrderId}</span></div><div className="mt-3 flex justify-between gap-4"><span className="text-slate-500">Plan</span><span className="font-bold text-cyan-300">{plan?.name}</span></div><div className="mt-3 flex justify-between gap-4"><span className="text-slate-500">Amount</span><span className="font-bold text-white">LKR {amountLkr.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div></div><button onClick={() => navigateTo('dashboard')} className="mt-8 rounded-xl bg-cyan-500 px-6 py-3.5 text-sm font-black text-black">Open Dashboard</button></div></div>;
+  if (status === 'paid') return <div className="min-h-[75vh] flex items-center justify-center px-6 py-16"><div className="w-full max-w-2xl rounded-[2rem] border border-emerald-400/20 bg-[#0d1215] p-8 text-center shadow-2xl sm:p-12"><CheckCircle2 className="mx-auto h-16 w-16 text-emerald-400" /><div className="mt-5 text-xs font-black uppercase tracking-[0.25em] text-emerald-400">Payment verified</div><h1 className="mt-3 text-3xl font-black text-white">Payment confirmed</h1><p className="mx-auto mt-4 max-w-lg text-sm leading-7 text-slate-400">PayHere has verified the transaction on the ArveX server. A staff member can now press Payment Done in the Discord order ticket to provision the service.</p><div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-left text-sm"><div className="flex justify-between gap-4"><span className="text-slate-500">Payment order</span><span className="font-mono font-bold text-white">{paymentOrderId}</span></div><div className="mt-3 flex justify-between gap-4"><span className="text-slate-500">Plan</span><span className="font-bold text-cyan-300">{plan?.name}</span></div><div className="mt-3 flex justify-between gap-4"><span className="text-slate-500">Amount</span><span className="font-bold text-white">LKR {amountLkr.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div></div><button onClick={() => navigateTo('dashboard')} className="mt-8 rounded-xl bg-cyan-500 px-6 py-3.5 text-sm font-black text-black">Open Dashboard</button></div></div>;
   if (status === 'waiting') return <div className="min-h-[70vh] flex items-center justify-center px-6"><div className="max-w-lg rounded-3xl border border-cyan-400/20 bg-white/[0.035] p-8 text-center shadow-2xl"><Loader2 className="mx-auto h-12 w-12 animate-spin text-cyan-400" /><h1 className="mt-5 text-2xl font-black text-white">Verifying your payment</h1><p className="mt-2 text-sm leading-6 text-slate-400">PayHere is sending the final signed status to our server. Do not treat the browser return alone as proof of payment.</p><div className="mt-5 rounded-xl bg-black/20 p-3 font-mono text-xs text-slate-500">{paymentOrderId}</div></div></div>;
   if (status === 'cancelled') return <div className="min-h-[70vh] flex items-center justify-center px-6"><div className="max-w-lg rounded-3xl border border-white/10 bg-white/[0.035] p-8 text-center"><Clock3 className="mx-auto mb-4 h-12 w-12 text-amber-400" /><h1 className="text-2xl font-black text-white">Payment cancelled</h1><p className="mt-2 text-sm text-slate-400">No successful payment was recorded.</p><button onClick={() => setStatus('ready')} className="mt-6 rounded-xl bg-white/10 px-5 py-3 text-sm font-bold text-white">Try Again</button></div></div>;
 
