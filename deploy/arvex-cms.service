@@ -1,0 +1,21 @@
+[Unit]
+Description=ArveX Hosting CMS API
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/var/www/arvex
+EnvironmentFile=/var/www/arvex/.env
+ExecStart=/usr/bin/node /var/www/arvex/server.js
+Restart=always
+RestartSec=3
+User=www-data
+Group=www-data
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/www/arvex/data
+
+[Install]
+WantedBy=multi-user.target
