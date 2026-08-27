@@ -1,0 +1,6 @@
+{
+  "name": "ArveX Hosting",
+  "description": "High-performance game and cloud server hosting SaaS platform with multi-gateway payments (PayHere LKR, PayPal, Crypto, Cards), automated invoicing, live Pterodactyl console, support ticket system, and complete master admin control panel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
