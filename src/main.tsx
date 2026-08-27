@@ -4,8 +4,15 @@ import App from './App.tsx';
 import './index.css';
 
 // Prevent the repository's legacy demo account from ever being restored.
-// The authenticated server session is the only trusted source of user identity.
 try { localStorage.setItem('arvex_saas_v3_user', 'null'); } catch {}
+
+// The application uses hash routing internally, while production URLs are clean paths.
+// Convert a direct request such as /admin or /services/vps into the same internal route.
+try {
+  if (!window.location.hash && window.location.pathname !== '/') {
+    window.history.replaceState({}, '', `/#${window.location.pathname}${window.location.search}`);
+  }
+} catch {}
 
 const cmsReady = (window as Window & { ArveXCMSReady?: Promise<unknown> }).ArveXCMSReady;
 
