@@ -2,9 +2,6 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { AlertCircle, ArrowRight, CheckCircle2, Lock, Mail, Shield, User, X } from 'lucide-react';
 
-const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || '';
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || '';
-
 export const AuthModal: React.FC = () => {
   const {
     isAuthModalOpen,
@@ -21,6 +18,7 @@ export const AuthModal: React.FC = () => {
   const [name, setName] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [busy, setBusy] = useState(false);
 
   if (!isAuthModalOpen) return null;
 
@@ -30,7 +28,7 @@ export const AuthModal: React.FC = () => {
     setSuccessMsg('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
@@ -52,22 +50,30 @@ export const AuthModal: React.FC = () => {
     }
 
     if (authModalTab === 'admin') {
-      if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
-        setErrorMsg('Admin login is not configured. Set VITE_ADMIN_EMAIL and VITE_ADMIN_PASSWORD on the server before building.');
-        return;
+      setBusy(true);
+      try {
+        const response = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.token) {
+          throw new Error(result.error || 'Administrator authentication failed.');
+        }
+        localStorage.setItem('arvex_admin_token', result.token);
+        login(email.trim().toLowerCase(), 'admin');
+        await window.ArveXCMS?.syncAll?.();
+        setSuccessMsg('Administrator authentication verified.');
+        setTimeout(() => {
+          close();
+          setIsAdminOpen(true);
+        }, 500);
+      } catch (error) {
+        setErrorMsg(error instanceof Error ? error.message : 'Unable to reach the admin authentication service.');
+      } finally {
+        setBusy(false);
       }
-
-      if (email.trim().toLowerCase() !== ADMIN_EMAIL.trim().toLowerCase() || password !== ADMIN_PASSWORD) {
-        setErrorMsg('Invalid administrator credentials.');
-        return;
-      }
-
-      login(email.trim().toLowerCase(), 'admin');
-      setSuccessMsg('Administrator authentication verified.');
-      setTimeout(() => {
-        close();
-        setIsAdminOpen(true);
-      }, 600);
       return;
     }
 
@@ -156,15 +162,15 @@ export const AuthModal: React.FC = () => {
             </div>
           </label>
 
-          <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 py-3 text-xs font-bold text-white shadow-lg shadow-purple-900/20 transition hover:from-purple-500 hover:to-indigo-500 active:scale-[.99]">
-            {authModalTab === 'register' ? 'Create Account' : authModalTab === 'admin' ? 'Sign In to Admin' : 'Sign In'}
-            <ArrowRight className="h-3.5 w-3.5" />
+          <button disabled={busy} type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 py-3 text-xs font-bold text-white shadow-lg shadow-purple-900/20 transition hover:from-purple-500 hover:to-indigo-500 active:scale-[.99] disabled:cursor-not-allowed disabled:opacity-60">
+            {busy ? 'Verifying…' : authModalTab === 'register' ? 'Create Account' : authModalTab === 'admin' ? 'Sign In to Admin' : 'Sign In'}
+            {!busy && <ArrowRight className="h-3.5 w-3.5" />}
           </button>
         </form>
 
         {authModalTab === 'admin' && (
           <p className="relative mt-5 text-center text-[10px] leading-5 text-slate-600">
-            Administrator credentials are read from server build environment variables and are never stored in this repository.
+            Administrator credentials are validated by the ArveX server and are never bundled into the client build.
           </p>
         )}
       </div>
