@@ -21,7 +21,7 @@
       if (!response.ok) throw new Error(`CMS request failed: ${response.status}`);
       return response.json();
     } catch (error) {
-      console.warn('[ArveX CMS]', error.message);
+      console.warn('[ArveX CMS]', error instanceof Error ? error.message : error);
       return null;
     }
   };
@@ -68,6 +68,7 @@
       }
     }
     hydrating = false;
+    window.dispatchEvent(new Event('arvex-cms-ready'));
   };
 
   window.ArveXCMS = {
@@ -77,9 +78,7 @@
       for (const key of KEYS) {
         const raw = localStorage.getItem(PREFIX + key);
         if (!raw) continue;
-        try {
-          await saveKey(key, JSON.parse(raw));
-        } catch { /* continue with remaining keys */ }
+        try { await saveKey(key, JSON.parse(raw)); } catch { /* continue */ }
       }
       return true;
     },
@@ -88,5 +87,5 @@
     },
   };
 
-  void hydrate();
+  window.ArveXCMSReady = hydrate();
 })();
