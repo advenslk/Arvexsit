@@ -49,7 +49,7 @@ import { ClientAreaModal } from './components/ClientAreaModal';
 import { AdminPanelModal } from './components/AdminPanelModal';
 
 function MainWebsite() {
-  const { currentPage } = useApp();
+  const { currentPage, currentUser, setAuthModalOpen, setAuthModalTab } = useApp();
 
   const renderActivePage = () => {
     switch (currentPage) {
@@ -90,7 +90,25 @@ function MainWebsite() {
       case 'billing': return <BillingPage />;
       case 'blog': return <BlogPage />;
       case 'dashboard': return <DashboardPage />;
-      case 'admin': return <AdminPage />;
+      case 'admin':
+        if (currentUser?.role === 'admin') return <AdminPage />;
+        return (
+          <section className="mx-auto flex min-h-[70vh] max-w-xl items-center justify-center px-6 py-20 text-center">
+            <div className="rounded-3xl border border-white/10 bg-white/[0.035] p-8 shadow-2xl backdrop-blur-xl">
+              <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-purple-400/20 bg-purple-500/10 text-purple-300">
+                <span className="text-xl">🔐</span>
+              </div>
+              <h1 className="text-2xl font-black text-white">Admin access required</h1>
+              <p className="mt-2 text-sm leading-6 text-slate-400">Sign in with an authorized ArveX administrator account to continue.</p>
+              <button
+                onClick={() => { setAuthModalTab('admin'); setAuthModalOpen(true); }}
+                className="mt-6 rounded-2xl bg-purple-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-purple-500"
+              >
+                Open Admin Login
+              </button>
+            </div>
+          </section>
+        );
 
       case 'home':
       default: return <HomePage />;
