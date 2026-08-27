@@ -13,18 +13,6 @@
   </head>
   <body class="bg-[#090a0f] text-slate-100 font-sans selection:bg-cyan-500 selection:text-black antialiased overflow-x-hidden">
     <div id="root"></div>
-    <script>
-      const bootArveX = () => {
-        const script = document.createElement('script');
-        script.type = 'module';
-        script.src = '/src/main.tsx';
-        document.body.appendChild(script);
-      };
-      if (window.ArveXCMSReady && typeof window.ArveXCMSReady.then === 'function') {
-        window.ArveXCMSReady.then(bootArveX);
-      } else {
-        window.addEventListener('arvex-cms-ready', bootArveX, { once: true });
-      }
-    </script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
