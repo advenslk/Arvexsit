@@ -7,7 +7,6 @@ import React, { useEffect } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
-
 import { HomePage } from './components/pages/HomePage';
 import { ServicesPage } from './components/pages/ServicesPage';
 import { PlansPage } from './components/pages/PlansPage';
@@ -18,7 +17,6 @@ import { BillingPage } from './components/pages/BillingPage';
 import { BlogPage } from './components/pages/BlogPage';
 import { DashboardPage } from './components/pages/DashboardPage';
 import { AdminPage } from './components/pages/AdminPage';
-
 import { MinecraftServicePage } from './components/pages/MinecraftServicePage';
 import { GameHostingServicePage } from './components/pages/GameHostingServicePage';
 import { VpsServicePage } from './components/pages/VpsServicePage';
@@ -39,7 +37,6 @@ import { LegalPage } from './components/pages/LegalPage';
 import { ContactPage } from './components/pages/ContactPage';
 import { KnowledgebasePage } from './components/pages/KnowledgebasePage';
 import { AboutPage } from './components/pages/AboutPage';
-
 import { AuthModal } from './components/AuthModal';
 import { CheckoutModal } from './components/CheckoutModal';
 import { InvoiceModal } from './components/InvoiceModal';
@@ -49,18 +46,25 @@ import { ClientAreaModal } from './components/ClientAreaModal';
 import { AdminPanelModal } from './components/AdminPanelModal';
 
 function MainWebsite() {
-  const { currentPage, currentUser, setAuthModalOpen, setAuthModalTab } = useApp();
+  const { currentPage, currentUser, login, setAuthModalOpen, setAuthModalTab } = useApp();
 
-  // Keep the server-side CMS session aligned with the application auth state.
+  // Never trust a browser-stored demo user. The server session is the source of truth.
   useEffect(() => {
-    if (currentUser?.role !== 'admin') window.ArveXCMS?.clearSession?.();
-  }, [currentUser]);
+    try { localStorage.removeItem('arvex_saas_v3_user'); } catch {}
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then(async (response) => response.ok ? response.json() : null)
+      .then((result) => {
+        if (result?.authenticated && result.user) {
+          login(result.user.email, result.user.role === 'admin' ? 'admin' : 'customer', result.user.name, result.user.provider || 'email');
+        }
+      })
+      .catch(() => undefined);
+  }, [login]);
 
   const renderActivePage = () => {
     switch (currentPage) {
       case 'dynamic-plan': return <PlanDetailPage />;
       case 'dynamic-game': return <GameDetailPage />;
-
       case 'services': return <ServicesPage />;
       case 'services-minecraft': return <MinecraftServicePage />;
       case 'services-game-hosting': return <GameHostingServicePage />;
@@ -68,14 +72,12 @@ function MainWebsite() {
       case 'services-vds': return <VdsServicePage />;
       case 'services-web-hosting': return <WebHostingServicePage />;
       case 'services-bot-hosting': return <BotHostingServicePage />;
-
       case 'plans':
       case 'pricing': return <PricingPage />;
       case 'games': return <GamesPage />;
       case 'domains': return <DomainsPage />;
       case 'checkout': return <CheckoutPage />;
       case 'payment': return <PaymentPage />;
-
       case 'support':
       case 'tickets': return <SupportPage />;
       case 'status': return <StatusPage />;
@@ -84,12 +86,10 @@ function MainWebsite() {
       case 'affiliates': return <AffiliatesPage />;
       case 'contact': return <ContactPage />;
       case 'about': return <AboutPage />;
-
       case 'terms':
       case 'privacy':
       case 'sla':
       case 'acceptable-use': return <LegalPage />;
-
       case 'locations': return <LocationsPage />;
       case 'hardware': return <HardwarePage />;
       case 'billing': return <BillingPage />;
@@ -100,21 +100,13 @@ function MainWebsite() {
         return (
           <section className="mx-auto flex min-h-[70vh] max-w-xl items-center justify-center px-6 py-20 text-center">
             <div className="rounded-3xl border border-white/10 bg-white/[0.035] p-8 shadow-2xl backdrop-blur-xl">
-              <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-purple-400/20 bg-purple-500/10 text-purple-300">
-                <span className="text-xl">🔐</span>
-              </div>
+              <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-purple-400/20 bg-purple-500/10"><span className="text-xl">🔐</span></div>
               <h1 className="text-2xl font-black text-white">Admin access required</h1>
               <p className="mt-2 text-sm leading-6 text-slate-400">Sign in with an authorized ArveX administrator account to continue.</p>
-              <button
-                onClick={() => { setAuthModalTab('admin'); setAuthModalOpen(true); }}
-                className="mt-6 rounded-2xl bg-purple-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-purple-500"
-              >
-                Open Admin Login
-              </button>
+              <button onClick={() => { setAuthModalTab('admin'); setAuthModalOpen(true); }} className="mt-6 rounded-2xl bg-purple-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-purple-500">Open Admin Login</button>
             </div>
           </section>
         );
-
       case 'home':
       default: return <HomePage />;
     }
@@ -136,10 +128,4 @@ function MainWebsite() {
   );
 }
 
-export default function App() {
-  return (
-    <AppProvider>
-      <MainWebsite />
-    </AppProvider>
-  );
-}
+export default function App() { return <AppProvider><MainWebsite /></AppProvider>; }
