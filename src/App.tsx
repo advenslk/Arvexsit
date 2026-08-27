@@ -3,13 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { HomePage } from './components/pages/HomePage';
 import { ServicesPage } from './components/pages/ServicesPage';
-import { PlansPage } from './components/pages/PlansPage';
 import { GamesPage } from './components/pages/GamesPage';
 import { LocationsPage } from './components/pages/LocationsPage';
 import { HardwarePage } from './components/pages/HardwarePage';
@@ -46,20 +45,27 @@ import { ClientAreaModal } from './components/ClientAreaModal';
 import { AdminPanelModal } from './components/AdminPanelModal';
 
 function MainWebsite() {
-  const { currentPage, currentUser, login, setAuthModalOpen, setAuthModalTab } = useApp();
+  const { currentPage, currentUser, login, logout, setAuthModalOpen, setAuthModalTab } = useApp();
+  const authBootstrapped = useRef(false);
+  const serverUserLoaded = useRef(false);
 
-  // Never trust a browser-stored demo user. The server session is the source of truth.
   useEffect(() => {
     try { localStorage.removeItem('arvex_saas_v3_user'); } catch {}
     fetch('/api/auth/me', { credentials: 'include' })
       .then(async (response) => response.ok ? response.json() : null)
       .then((result) => {
-        if (result?.authenticated && result.user) {
-          login(result.user.email, result.user.role === 'admin' ? 'admin' : 'customer', result.user.name, result.user.provider || 'email');
-        }
+        if (result?.authenticated && result.user) login(result.user.email, result.user.role === 'admin' ? 'admin' : 'customer', result.user.name, result.user.provider || 'email');
       })
-      .catch(() => undefined);
-  }, [login]);
+      .catch(() => undefined)
+      .finally(() => { serverUserLoaded.current = true; authBootstrapped.current = true; });
+  // login is intentionally excluded: this is a one-time server session bootstrap.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!authBootstrapped.current || !serverUserLoaded.current || currentUser) return;
+    fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => undefined);
+  }, [currentUser]);
 
   const renderActivePage = () => {
     switch (currentPage) {
