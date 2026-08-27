@@ -6,7 +6,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 dotenv.config();
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 5000);
 const ADMIN_EMAIL = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
@@ -23,18 +22,18 @@ const RESEND_API_KEY = String(process.env.RESEND_API_KEY || '').trim();
 const RESEND_FROM = String(process.env.RESEND_FROM || 'ArveX Hosting <noreply@arvex.host>').trim();
 const TOKEN_TTL_MS = 8 * 60 * 60 * 1000;
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const OTP_TTL_MS = 10 * 60 * 1000;
 
 if (!TOKEN_SECRET || TOKEN_SECRET.length < 32) console.warn('ADMIN_TOKEN_SECRET is missing or shorter than 32 characters.');
-
 const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
 app.use(express.json({ limit: '2mb' }));
-
 const CMS_KEYS = new Set(['siteSettings','siteImages','games','plans','generalServices','tlds','locations','comparisonRows','faqs','testimonials','partners','reviews','blogPosts','coupons','currenciesList','currency','paymentSettings','statusComponents','statusIncidents','serverNodes','adminUsers']);
 const PUBLIC_CMS_KEYS = new Set(['siteSettings','siteImages','games','plans','generalServices','tlds','locations','comparisonRows','faqs','testimonials','partners','reviews','blogPosts','currenciesList','currency','statusComponents','statusIncidents']);
 const loginAttempts = new Map();
 const authAttempts = new Map();
+const adminOtpChallenges = new Map();
 const oauthStates = new Map();
 const sessions = new Map();
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
@@ -42,188 +41,82 @@ const MAX_LOGIN_ATTEMPTS = 8;
 const MAX_AUTH_ATTEMPTS = 10;
 
 function getClientKey(req) { return String(req.headers['cf-connecting-ip'] || req.ip || 'unknown'); }
-function isRateLimited(map, req, max) {
-  const key = getClientKey(req); const now = Date.now(); const entry = map.get(key);
-  if (!entry || now - entry.startedAt > LOGIN_WINDOW_MS) { map.set(key, { startedAt: now, count: 0 }); return false; }
-  return entry.count >= max;
-}
-function recordAttempt(map, req) {
-  const key = getClientKey(req); const now = Date.now(); const entry = map.get(key);
-  if (!entry || now - entry.startedAt > LOGIN_WINDOW_MS) map.set(key, { startedAt: now, count: 1 }); else entry.count += 1;
-}
+function isRateLimited(map, req, max) { const key=getClientKey(req), now=Date.now(), entry=map.get(key); if(!entry||now-entry.startedAt>LOGIN_WINDOW_MS){map.set(key,{startedAt:now,count:0});return false;} return entry.count>=max; }
+function recordAttempt(map, req) { const key=getClientKey(req), now=Date.now(), entry=map.get(key); if(!entry||now-entry.startedAt>LOGIN_WINDOW_MS)map.set(key,{startedAt:now,count:1});else entry.count+=1; }
 function clearAttempts(map, req) { map.delete(getClientKey(req)); }
-function safeEqual(a, b) { const aa = Buffer.from(String(a)); const bb = Buffer.from(String(b)); return aa.length === bb.length && crypto.timingSafeEqual(aa, bb); }
+function safeEqual(a,b){const aa=Buffer.from(String(a)),bb=Buffer.from(String(b));return aa.length===bb.length&&crypto.timingSafeEqual(aa,bb);}
+async function readJson(file,fallback){try{return JSON.parse(await fs.readFile(file,'utf8'));}catch(error){if(error.code!=='ENOENT')console.error(`Read error for ${file}:`,error);return fallback;}}
+async function atomicWrite(file,value){await fs.mkdir(DATA_DIR,{recursive:true,mode:0o700});const temp=`${file}.tmp-${process.pid}-${Date.now()}`;await fs.writeFile(temp,JSON.stringify(value,null,2),{encoding:'utf8',mode:0o600});await fs.rename(temp,file);}
+const readConfig=()=>readJson(DATA_FILE,{}); const writeConfig=(config)=>atomicWrite(DATA_FILE,config); const readUsers=()=>readJson(USERS_FILE,[]); const writeUsers=(users)=>atomicWrite(USERS_FILE,users);
+function signToken(payload){const body=Buffer.from(JSON.stringify(payload)).toString('base64url');const signature=crypto.createHmac('sha256',TOKEN_SECRET).update(body).digest('base64url');return `${body}.${signature}`;}
+function verifyToken(token){try{const[body,signature]=String(token||'').split('.');if(!body||!signature||!TOKEN_SECRET)return false;const expected=crypto.createHmac('sha256',TOKEN_SECRET).update(body).digest('base64url');if(!safeEqual(signature,expected))return false;const payload=JSON.parse(Buffer.from(body,'base64url').toString('utf8'));return payload.role==='admin'&&Number(payload.exp)>Date.now();}catch{return false;}}
+function parseCookies(req){const header=String(req.headers.cookie||'');return Object.fromEntries(header.split(';').map((part)=>{const index=part.indexOf('=');if(index<0)return[part.trim(),''];return[part.slice(0,index).trim(),decodeURIComponent(part.slice(index+1).trim())];}).filter(([key])=>key));}
+function setSessionCookie(res,sessionId){res.setHeader('Set-Cookie',`arvex_session=${encodeURIComponent(sessionId)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${Math.floor(SESSION_TTL_MS/1000)}`);}
+function clearSessionCookie(res){res.setHeader('Set-Cookie','arvex_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0');}
+function createSession(user){const id=crypto.randomBytes(32).toString('base64url');sessions.set(id,{userId:user.id,role:user.role,email:user.email,expiresAt:Date.now()+SESSION_TTL_MS});return id;}
+function getSession(req){const id=parseCookies(req).arvex_session,session=id?sessions.get(id):null;if(!session||session.expiresAt<=Date.now()){if(id)sessions.delete(id);return null;}return{id,...session};}
+function requireSameOrigin(req,res,next){const origin=String(req.headers.origin||'');if(origin&&origin!==PUBLIC_ORIGIN)return res.status(403).json({error:'Cross-origin request blocked.'});next();}
+function requireAdmin(req,res,next){const bearer=req.headers.authorization?.replace(/^Bearer\s+/i,'');const session=getSession(req);if(session?.role==='admin'||verifyToken(bearer))return next();return res.status(401).json({error:'Administrator authentication required.'});}
+function publicUser(user){if(!user)return null;return{id:user.id,name:user.name,email:user.email,role:user.role,provider:user.provider,avatar:user.avatar||'',createdAt:user.createdAt,emailVerified:Boolean(user.emailVerified)};}
+function passwordHash(password,salt=crypto.randomBytes(16).toString('hex')){return new Promise((resolve,reject)=>crypto.scrypt(password,salt,64,{N:16384,r:8,p:1},(error,derived)=>error?reject(error):resolve(`${salt}:${derived.toString('hex')}`)));}
+async function verifyPassword(password,stored){const[salt,hash]=String(stored||'').split(':');if(!salt||!hash)return false;return safeEqual(await passwordHash(password,salt),`${salt}:${hash}`);}
+function validEmail(email){return/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);}
+function validPassword(password){return typeof password==='string'&&password.length>=10&&password.length<=128&&/[A-Za-z]/.test(password)&&/\d/.test(password);}
+async function sendEmail({to,subject,text,html}){if(!RESEND_API_KEY)return false;const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${RESEND_API_KEY}`,'Content-Type':'application/json','User-Agent':'ArveX-Hosting/1.0'},body:JSON.stringify({from:RESEND_FROM,to:[to],subject,text,html})});return response.ok;}
+async function sendVerificationEmail(user,token){const verifyUrl=`${PUBLIC_ORIGIN}/api/auth/verify-email?token=${encodeURIComponent(token)}`;return sendEmail({to:user.email,subject:'Verify your ArveX Hosting account',text:`Hi ${user.name}, verify your ArveX account here: ${verifyUrl}`,html:`<div style="font-family:Arial,sans-serif"><h2>Verify your ArveX account</h2><p>Hi ${user.name},</p><p>Confirm your email address to activate your account.</p><p><a href="${verifyUrl}">Verify email address</a></p><p>This link expires in 24 hours.</p></div>`});}
+async function sendAdminOtp(code){return sendEmail({to:ADMIN_EMAIL,subject:'ArveX administrator verification code',text:`Your ArveX administrator verification code is ${code}. It expires in 10 minutes. If you did not request this, secure your account immediately.`,html:`<div style="font-family:Arial,sans-serif"><h2>ArveX administrator verification</h2><p>Your one-time verification code is:</p><div style="font-size:32px;font-weight:800;letter-spacing:8px">${code}</div><p>This code expires in 10 minutes and can only be used once.</p></div>`});}
 
-async function readJson(file, fallback) {
-  try { return JSON.parse(await fs.readFile(file, 'utf8')); }
-  catch (error) { if (error.code !== 'ENOENT') console.error(`Read error for ${file}:`, error); return fallback; }
-}
-async function atomicWrite(file, value) {
-  await fs.mkdir(DATA_DIR, { recursive: true, mode: 0o700 });
-  const temp = `${file}.tmp-${process.pid}-${Date.now()}`;
-  await fs.writeFile(temp, JSON.stringify(value, null, 2), { encoding: 'utf8', mode: 0o600 });
-  await fs.rename(temp, file);
-}
-const readConfig = () => readJson(DATA_FILE, {});
-const writeConfig = (config) => atomicWrite(DATA_FILE, config);
-const readUsers = () => readJson(USERS_FILE, []);
-const writeUsers = (users) => atomicWrite(USERS_FILE, users);
+app.use((req,res,next)=>{res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('X-Frame-Options','DENY');res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=()');res.setHeader('Cross-Origin-Opener-Policy','same-origin-allow-popups');next();});
+app.get('/api/health',(_req,res)=>res.json({ok:true,service:'arvex-cms',time:new Date().toISOString()}));
 
-function signToken(payload) {
-  const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
-  const signature = crypto.createHmac('sha256', TOKEN_SECRET).update(body).digest('base64url');
-  return `${body}.${signature}`;
-}
-function verifyToken(token) {
-  try {
-    const [body, signature] = String(token || '').split('.');
-    if (!body || !signature || !TOKEN_SECRET) return false;
-    const expected = crypto.createHmac('sha256', TOKEN_SECRET).update(body).digest('base64url');
-    if (!safeEqual(signature, expected)) return false;
-    const payload = JSON.parse(Buffer.from(body, 'base64url').toString('utf8'));
-    return payload.role === 'admin' && Number(payload.exp) > Date.now();
-  } catch { return false; }
-}
-function parseCookies(req) {
-  const header = String(req.headers.cookie || '');
-  return Object.fromEntries(header.split(';').map((part) => {
-    const index = part.indexOf('=');
-    if (index < 0) return [part.trim(), ''];
-    return [part.slice(0, index).trim(), decodeURIComponent(part.slice(index + 1).trim())];
-  }).filter(([key]) => key));
-}
-function setSessionCookie(res, sessionId) { res.setHeader('Set-Cookie', `arvex_session=${encodeURIComponent(sessionId)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${Math.floor(SESSION_TTL_MS / 1000)}`); }
-function clearSessionCookie(res) { res.setHeader('Set-Cookie', 'arvex_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0'); }
-function createSession(user) {
-  const id = crypto.randomBytes(32).toString('base64url');
-  sessions.set(id, { userId: user.id, role: user.role, email: user.email, expiresAt: Date.now() + SESSION_TTL_MS });
-  return id;
-}
-function getSession(req) {
-  const id = parseCookies(req).arvex_session; const session = id ? sessions.get(id) : null;
-  if (!session || session.expiresAt <= Date.now()) { if (id) sessions.delete(id); return null; }
-  return { id, ...session };
-}
-function requireSameOrigin(req, res, next) {
-  const origin = String(req.headers.origin || '');
-  if (origin && origin !== PUBLIC_ORIGIN) return res.status(403).json({ error: 'Cross-origin request blocked.' });
-  next();
-}
-function requireAdmin(req, res, next) {
-  const bearer = req.headers.authorization?.replace(/^Bearer\s+/i, '');
-  const session = getSession(req);
-  if (session?.role === 'admin' || verifyToken(bearer)) return next();
-  return res.status(401).json({ error: 'Administrator authentication required.' });
-}
-function publicUser(user) {
-  if (!user) return null;
-  return { id:user.id, name:user.name, email:user.email, role:user.role, provider:user.provider, avatar:user.avatar || '', createdAt:user.createdAt, emailVerified:Boolean(user.emailVerified) };
-}
-function passwordHash(password, salt = crypto.randomBytes(16).toString('hex')) {
-  return new Promise((resolve, reject) => crypto.scrypt(password, salt, 64, { N:16384, r:8, p:1 }, (error, derived) => error ? reject(error) : resolve(`${salt}:${derived.toString('hex')}`)));
-}
-async function verifyPassword(password, stored) {
-  const [salt, hash] = String(stored || '').split(':'); if (!salt || !hash) return false;
-  return safeEqual(await passwordHash(password, salt), `${salt}:${hash}`);
-}
-function validEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
-function validPassword(password) { return typeof password === 'string' && password.length >= 10 && password.length <= 128 && /[A-Za-z]/.test(password) && /\d/.test(password); }
-async function sendVerificationEmail(user, token) {
-  if (!RESEND_API_KEY) return false;
-  const verifyUrl = `${PUBLIC_ORIGIN}/api/auth/verify-email?token=${encodeURIComponent(token)}`;
-  const response = await fetch('https://api.resend.com/emails', {
-    method:'POST', headers:{ Authorization:`Bearer ${RESEND_API_KEY}`, 'Content-Type':'application/json', 'User-Agent':'ArveX-Hosting/1.0' },
-    body:JSON.stringify({ from:RESEND_FROM, to:[user.email], subject:'Verify your ArveX Hosting account', text:`Hi ${user.name}, verify your ArveX account here: ${verifyUrl}`, html:`<div style="font-family:Arial,sans-serif"><h2>Verify your ArveX account</h2><p>Hi ${user.name},</p><p>Confirm your email address to activate your account.</p><p><a href="${verifyUrl}">Verify email address</a></p><p>This link expires in 24 hours.</p></div>` })
-  });
-  return response.ok;
-}
-
-app.use((req, res, next) => {
-  res.setHeader('X-Content-Type-Options','nosniff');
-  res.setHeader('X-Frame-Options','DENY');
-  res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');
-  res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=()');
-  res.setHeader('Cross-Origin-Opener-Policy','same-origin-allow-popups');
-  next();
-});
-app.get('/api/health', (_req,res)=>res.json({ok:true,service:'arvex-cms',time:new Date().toISOString()}));
-
-app.post('/api/admin/login', requireSameOrigin, async (req,res)=>{
-  if (isRateLimited(loginAttempts,req,MAX_LOGIN_ATTEMPTS)) return res.status(429).json({error:'Too many login attempts. Please try again later.'});
-  if (!ADMIN_EMAIL || !ADMIN_PASSWORD || !TOKEN_SECRET) return res.status(503).json({error:'Admin authentication is not configured on the server.'});
-  const email=String(req.body?.email||'').trim().toLowerCase(); const password=String(req.body?.password||'');
-  if (!safeEqual(email,ADMIN_EMAIL) || !safeEqual(password,ADMIN_PASSWORD)) { recordAttempt(loginAttempts,req); return res.status(401).json({error:'Invalid administrator credentials.'}); }
+app.post('/api/admin/login',requireSameOrigin,async(req,res)=>{
+  if(isRateLimited(loginAttempts,req,MAX_LOGIN_ATTEMPTS))return res.status(429).json({error:'Too many login attempts. Please try again later.'});
+  if(!ADMIN_EMAIL||!ADMIN_PASSWORD||!TOKEN_SECRET)return res.status(503).json({error:'Admin authentication is not configured on the server.'});
+  if(!RESEND_API_KEY)return res.status(503).json({error:'Administrator 2-step verification is not configured. Set RESEND_API_KEY and RESEND_FROM.'});
+  const email=String(req.body?.email||'').trim().toLowerCase(),password=String(req.body?.password||'');
+  if(!safeEqual(email,ADMIN_EMAIL)||!safeEqual(password,ADMIN_PASSWORD)){recordAttempt(loginAttempts,req);return res.status(401).json({error:'Invalid administrator credentials.'});}
   clearAttempts(loginAttempts,req);
-  const expiresAt=Date.now()+TOKEN_TTL_MS; const token=signToken({role:'admin',email,exp:expiresAt});
-  const adminUser={id:'admin-primary',name:'ArveX Administrator',email,role:'admin',provider:'email',emailVerified:true,createdAt:new Date().toISOString()};
-  setSessionCookie(res,createSession(adminUser));
-  return res.json({ok:true,token,expiresAt,user:publicUser(adminUser)});
+  const challengeId=crypto.randomBytes(32).toString('base64url');const code=String(crypto.randomInt(100000,1000000));
+  adminOtpChallenges.set(challengeId,{email,codeHash:crypto.createHash('sha256').update(code).digest('hex'),expiresAt:Date.now()+OTP_TTL_MS,attempts:0});
+  const sent=await sendAdminOtp(code);if(!sent){adminOtpChallenges.delete(challengeId);return res.status(502).json({error:'Unable to send the administrator verification code.'});}
+  res.json({ok:true,requiresTwoFactor:true,challengeId,expiresAt:Date.now()+OTP_TTL_MS});
 });
 
-app.post('/api/auth/register', requireSameOrigin, async (req,res)=>{
-  if (isRateLimited(authAttempts,req,MAX_AUTH_ATTEMPTS)) return res.status(429).json({error:'Too many authentication attempts. Please try again later.'});
-  const name=String(req.body?.name||'').trim().replace(/\s+/g,' '); const email=String(req.body?.email||'').trim().toLowerCase(); const password=String(req.body?.password||'');
-  if (name.length<2 || name.length>80 || !validEmail(email) || !validPassword(password)) { recordAttempt(authAttempts,req); return res.status(400).json({error:'Use a valid name, email and a password of at least 10 characters containing letters and numbers.'}); }
-  if (!RESEND_API_KEY) return res.status(503).json({error:'Email verification is not configured yet. Set RESEND_API_KEY and RESEND_FROM on the server.'});
-  const users=await readUsers(); if (users.some((u)=>u.email===email)) return res.status(409).json({error:'An account with that email already exists.'});
-  const passwordDigest=await passwordHash(password); const verificationToken=crypto.randomBytes(32).toString('hex');
-  const user={id:`usr-${crypto.randomUUID()}`,name,email,passwordDigest,role:'customer',provider:'email',emailVerified:false,verificationTokenHash:crypto.createHash('sha256').update(verificationToken).digest('hex'),verificationExpiresAt:Date.now()+24*60*60*1000,createdAt:new Date().toISOString()};
-  users.push(user); await writeUsers(users); const sent=await sendVerificationEmail(user,verificationToken);
-  if (!sent) { await writeUsers(users.filter((u)=>u.id!==user.id)); return res.status(502).json({error:'Unable to send the verification email. Please try again later.'}); }
-  clearAttempts(authAttempts,req); return res.status(201).json({ok:true,verificationRequired:true,message:'Account created. Check your email to verify your address before signing in.'});
+app.post('/api/admin/verify-otp',requireSameOrigin,async(req,res)=>{
+  if(isRateLimited(loginAttempts,req,MAX_LOGIN_ATTEMPTS))return res.status(429).json({error:'Too many verification attempts. Please try again later.'});
+  const challengeId=String(req.body?.challengeId||''),code=String(req.body?.code||'').replace(/\D/g,'');const challenge=adminOtpChallenges.get(challengeId);
+  if(!challenge||challenge.expiresAt<=Date.now())return res.status(401).json({error:'Verification code expired. Start administrator sign-in again.'});
+  challenge.attempts+=1;
+  const codeHash=crypto.createHash('sha256').update(code).digest('hex');
+  if(challenge.attempts>5||!safeEqual(codeHash,challenge.codeHash)){if(challenge.attempts>5)adminOtpChallenges.delete(challengeId);recordAttempt(loginAttempts,req);return res.status(401).json({error:'Invalid administrator verification code.'});}
+  adminOtpChallenges.delete(challengeId);clearAttempts(loginAttempts,req);
+  const expiresAt=Date.now()+TOKEN_TTL_MS;const token=signToken({role:'admin',email:ADMIN_EMAIL,exp:expiresAt});const adminUser={id:'admin-primary',name:'ArveX Administrator',email:ADMIN_EMAIL,role:'admin',provider:'email',emailVerified:true,createdAt:new Date().toISOString()};
+  setSessionCookie(res,createSession(adminUser));res.json({ok:true,token,expiresAt,user:publicUser(adminUser)});
 });
 
-app.get('/api/auth/verify-email',async(req,res)=>{
-  const token=String(req.query.token||''); if(!token||token.length<32)return res.status(400).send('Invalid verification link.');
-  const tokenHash=crypto.createHash('sha256').update(token).digest('hex'); const users=await readUsers(); const user=users.find((u)=>u.verificationTokenHash===tokenHash&&Number(u.verificationExpiresAt)>Date.now());
-  if(!user)return res.status(400).send('<h2>Verification link expired or invalid.</h2><p>Please request a new verification email.</p>');
-  user.emailVerified=true; delete user.verificationTokenHash; delete user.verificationExpiresAt; await writeUsers(users); res.redirect(`${PUBLIC_ORIGIN}/#/home?verified=1`);
-});
-
-app.post('/api/auth/login', requireSameOrigin, async(req,res)=>{
+app.post('/api/auth/register',requireSameOrigin,async(req,res)=>{
   if(isRateLimited(authAttempts,req,MAX_AUTH_ATTEMPTS))return res.status(429).json({error:'Too many authentication attempts. Please try again later.'});
-  const email=String(req.body?.email||'').trim().toLowerCase(); const password=String(req.body?.password||''); const users=await readUsers(); const user=users.find((u)=>u.email===email&&u.provider==='email');
-  if(!user||!await verifyPassword(password,user.passwordDigest)){recordAttempt(authAttempts,req);return res.status(401).json({error:'Invalid email or password.'});}
-  if(!user.emailVerified)return res.status(403).json({error:'Please verify your email address before signing in.'});
-  if(user.banned)return res.status(403).json({error:'This account has been disabled.'});
-  clearAttempts(authAttempts,req); setSessionCookie(res,createSession(user)); return res.json({ok:true,user:publicUser(user)});
+  const name=String(req.body?.name||'').trim().replace(/\s+/g,' '),email=String(req.body?.email||'').trim().toLowerCase(),password=String(req.body?.password||'');
+  if(name.length<2||name.length>80||!validEmail(email)||!validPassword(password)){recordAttempt(authAttempts,req);return res.status(400).json({error:'Use a valid name, email and a password of at least 10 characters containing letters and numbers.'});}
+  if(!RESEND_API_KEY)return res.status(503).json({error:'Email verification is not configured yet. Set RESEND_API_KEY and RESEND_FROM on the server.'});
+  const users=await readUsers();if(users.some((u)=>u.email===email))return res.status(409).json({error:'An account with that email already exists.'});
+  const passwordDigest=await passwordHash(password),verificationToken=crypto.randomBytes(32).toString('hex');
+  const user={id:`usr-${crypto.randomUUID()}`,name,email,passwordDigest,role:'customer',provider:'email',emailVerified:false,verificationTokenHash:crypto.createHash('sha256').update(verificationToken).digest('hex'),verificationExpiresAt:Date.now()+24*60*60*1000,createdAt:new Date().toISOString()};
+  users.push(user);await writeUsers(users);const sent=await sendVerificationEmail(user,verificationToken);if(!sent){await writeUsers(users.filter((u)=>u.id!==user.id));return res.status(502).json({error:'Unable to send the verification email. Please try again later.'});}
+  clearAttempts(authAttempts,req);return res.status(201).json({ok:true,verificationRequired:true,message:'Account created. Check your email to verify your address before signing in.'});
 });
+app.get('/api/auth/verify-email',async(req,res)=>{const token=String(req.query.token||'');if(!token||token.length<32)return res.status(400).send('Invalid verification link.');const tokenHash=crypto.createHash('sha256').update(token).digest('hex');const users=await readUsers();const user=users.find((u)=>u.verificationTokenHash===tokenHash&&Number(u.verificationExpiresAt)>Date.now());if(!user)return res.status(400).send('<h2>Verification link expired or invalid.</h2><p>Please request a new verification email.</p>');user.emailVerified=true;delete user.verificationTokenHash;delete user.verificationExpiresAt;await writeUsers(users);res.redirect(`${PUBLIC_ORIGIN}/#/home?verified=1`);});
+app.post('/api/auth/login',requireSameOrigin,async(req,res)=>{if(isRateLimited(authAttempts,req,MAX_AUTH_ATTEMPTS))return res.status(429).json({error:'Too many authentication attempts. Please try again later.'});const email=String(req.body?.email||'').trim().toLowerCase(),password=String(req.body?.password||''),users=await readUsers(),user=users.find((u)=>u.email===email&&u.provider==='email');if(!user||!await verifyPassword(password,user.passwordDigest)){recordAttempt(authAttempts,req);return res.status(401).json({error:'Invalid email or password.'});}if(!user.emailVerified)return res.status(403).json({error:'Please verify your email address before signing in.'});if(user.banned)return res.status(403).json({error:'This account has been disabled.'});clearAttempts(authAttempts,req);setSessionCookie(res,createSession(user));res.json({ok:true,user:publicUser(user)});});
 
-app.get('/api/auth/google/start',(req,res)=>{
-  if(!GOOGLE_CLIENT_ID||!GOOGLE_CLIENT_SECRET)return res.status(503).send('Google Sign-In is not configured on this server.');
-  const state=crypto.randomBytes(32).toString('base64url'); oauthStates.set(state,{expiresAt:Date.now()+10*60*1000});
-  const params=new URLSearchParams({client_id:GOOGLE_CLIENT_ID,redirect_uri:GOOGLE_REDIRECT_URI,response_type:'code',scope:'openid email profile',state,prompt:'select_account'});
-  res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);
-});
-
-app.get('/api/auth/google/callback',async(req,res)=>{
-  const state=String(req.query.state||''); const stateData=oauthStates.get(state); oauthStates.delete(state);
-  if(!stateData||stateData.expiresAt<=Date.now())return res.status(400).send('Google authentication state expired. Please try again.');
-  if(req.query.error)return res.redirect(`${PUBLIC_ORIGIN}/#/home?auth_error=google_cancelled`);
-  const code=String(req.query.code||''); if(!code||!GOOGLE_CLIENT_ID||!GOOGLE_CLIENT_SECRET)return res.status(400).send('Invalid Google authentication response.');
-  const tokenResponse=await fetch('https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({code,client_id:GOOGLE_CLIENT_ID,client_secret:GOOGLE_CLIENT_SECRET,redirect_uri:GOOGLE_REDIRECT_URI,grant_type:'authorization_code'})});
-  if(!tokenResponse.ok)return res.status(502).send('Unable to complete Google authentication.'); const tokenData=await tokenResponse.json();
-  const profileResponse=await fetch('https://openidconnect.googleapis.com/v1/userinfo',{headers:{Authorization:`Bearer ${tokenData.access_token}`}});
-  if(!profileResponse.ok)return res.status(502).send('Unable to verify the Google account.'); const profile=await profileResponse.json();
-  if(!profile.email||profile.email_verified!==true||!profile.sub)return res.status(403).send('Google did not return a verified email address.');
-  const users=await readUsers(); let user=users.find((u)=>u.googleSub===profile.sub||u.email===String(profile.email).toLowerCase());
-  if(!user){user={id:`usr-google-${crypto.randomUUID()}`,name:profile.name||profile.email.split('@')[0],email:String(profile.email).toLowerCase(),role:'customer',provider:'google',googleSub:profile.sub,avatar:profile.picture||'',emailVerified:true,createdAt:new Date().toISOString()};users.push(user);}
-  else{user.googleSub=profile.sub;user.provider='google';user.emailVerified=true;user.name=profile.name||user.name;user.avatar=profile.picture||user.avatar||'';}
-  await writeUsers(users); setSessionCookie(res,createSession(user)); res.redirect(`${PUBLIC_ORIGIN}/#/home?auth=google`);
-});
-
-app.get('/api/auth/me',async(req,res)=>{
-  const session=getSession(req); if(!session)return res.status(401).json({authenticated:false});
-  if(session.role==='admin')return res.json({authenticated:true,user:{id:'admin-primary',name:'ArveX Administrator',email:session.email,role:'admin',provider:'email',emailVerified:true}});
-  const users=await readUsers(); const user=users.find((u)=>u.id===session.userId); if(!user||user.banned)return res.status(401).json({authenticated:false});
-  return res.json({authenticated:true,user:publicUser(user)});
-});
+app.get('/api/auth/google/start',(_req,res)=>{if(!GOOGLE_CLIENT_ID||!GOOGLE_CLIENT_SECRET)return res.status(503).send('Google Sign-In is not configured on this server.');const state=crypto.randomBytes(32).toString('base64url');oauthStates.set(state,{expiresAt:Date.now()+10*60*1000});const params=new URLSearchParams({client_id:GOOGLE_CLIENT_ID,redirect_uri:GOOGLE_REDIRECT_URI,response_type:'code',scope:'openid email profile',state,prompt:'select_account'});res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);});
+app.get('/api/auth/google/callback',async(req,res)=>{const state=String(req.query.state||''),stateData=oauthStates.get(state);oauthStates.delete(state);if(!stateData||stateData.expiresAt<=Date.now())return res.status(400).send('Google authentication state expired. Please try again.');if(req.query.error)return res.redirect(`${PUBLIC_ORIGIN}/#/home?auth_error=google_cancelled`);const code=String(req.query.code||'');if(!code||!GOOGLE_CLIENT_ID||!GOOGLE_CLIENT_SECRET)return res.status(400).send('Invalid Google authentication response.');const tokenResponse=await fetch('https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({code,client_id:GOOGLE_CLIENT_ID,client_secret:GOOGLE_CLIENT_SECRET,redirect_uri:GOOGLE_REDIRECT_URI,grant_type:'authorization_code'})});if(!tokenResponse.ok)return res.status(502).send('Unable to complete Google authentication.');const tokenData=await tokenResponse.json();const profileResponse=await fetch('https://openidconnect.googleapis.com/v1/userinfo',{headers:{Authorization:`Bearer ${tokenData.access_token}`}});if(!profileResponse.ok)return res.status(502).send('Unable to verify the Google account.');const profile=await profileResponse.json();if(!profile.email||profile.email_verified!==true||!profile.sub)return res.status(403).send('Google did not return a verified email address.');const users=await readUsers();let user=users.find((u)=>u.googleSub===profile.sub||u.email===String(profile.email).toLowerCase());if(!user){user={id:`usr-google-${crypto.randomUUID()}`,name:profile.name||profile.email.split('@')[0],email:String(profile.email).toLowerCase(),role:'customer',provider:'google',googleSub:profile.sub,avatar:profile.picture||'',emailVerified:true,createdAt:new Date().toISOString()};users.push(user);}else{user.googleSub=profile.sub;user.provider='google';user.emailVerified=true;user.name=profile.name||user.name;user.avatar=profile.picture||user.avatar||'';}await writeUsers(users);setSessionCookie(res,createSession(user));res.redirect(`${PUBLIC_ORIGIN}/#/home?auth=google`);});
+app.get('/api/auth/me',async(req,res)=>{const session=getSession(req);if(!session)return res.status(401).json({authenticated:false});if(session.role==='admin')return res.json({authenticated:true,user:{id:'admin-primary',name:'ArveX Administrator',email:session.email,role:'admin',provider:'email',emailVerified:true}});const users=await readUsers(),user=users.find((u)=>u.id===session.userId);if(!user||user.banned)return res.status(401).json({authenticated:false});res.json({authenticated:true,user:publicUser(user)});});
 app.post('/api/auth/logout',requireSameOrigin,(req,res)=>{const session=getSession(req);if(session)sessions.delete(session.id);clearSessionCookie(res);res.json({ok:true});});
 
-app.get('/api/cms/config',async(_req,res)=>{res.set('Cache-Control','no-store');const config=await readConfig();const publicConfig={};for(const key of PUBLIC_CMS_KEYS)if(Object.prototype.hasOwnProperty.call(config,key))publicConfig[key]=config[key];res.json(publicConfig);});
+app.get('/api/cms/config',async(_req,res)=>{res.set('Cache-Control','no-store');const config=await readConfig(),publicConfig={};for(const key of PUBLIC_CMS_KEYS)if(Object.prototype.hasOwnProperty.call(config,key))publicConfig[key]=config[key];res.json(publicConfig);});
 app.post('/api/cms/config/:key',requireSameOrigin,requireAdmin,async(req,res)=>{const{key}=req.params;if(!CMS_KEYS.has(key))return res.status(400).json({error:'Unsupported CMS key.'});const config=await readConfig();config[key]=req.body?.value;await writeConfig(config);res.json({ok:true,key});});
 app.delete('/api/cms/config/:key',requireSameOrigin,requireAdmin,async(req,res)=>{const{key}=req.params;if(!CMS_KEYS.has(key))return res.status(400).json({error:'Unsupported CMS key.'});const config=await readConfig();delete config[key];await writeConfig(config);res.json({ok:true,key});});
 app.post('/api/cms/import',requireSameOrigin,requireAdmin,async(req,res)=>{const incoming=req.body?.config;if(!incoming||typeof incoming!=='object'||Array.isArray(incoming))return res.status(400).json({error:'Invalid CMS configuration.'});const clean={};for(const key of CMS_KEYS)if(Object.prototype.hasOwnProperty.call(incoming,key))clean[key]=incoming[key];await writeConfig(clean);res.json({ok:true,keys:Object.keys(clean)});});
 
-setInterval(()=>{const now=Date.now();for(const[id,session]of sessions)if(session.expiresAt<=now)sessions.delete(id);for(const[state,data]of oauthStates)if(data.expiresAt<=now)oauthStates.delete(state);},10*60*1000).unref();
+setInterval(()=>{const now=Date.now();for(const[id,session]of sessions)if(session.expiresAt<=now)sessions.delete(id);for(const[state,data]of oauthStates)if(data.expiresAt<=now)oauthStates.delete(state);for(const[id,challenge]of adminOtpChallenges)if(challenge.expiresAt<=now)adminOtpChallenges.delete(id);},10*60*1000).unref();
 app.listen(PORT,'127.0.0.1',()=>console.log(`ArveX CMS/Auth API listening on 127.0.0.1:${PORT}`));
