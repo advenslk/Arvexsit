@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { X, Lock, Mail, User, Shield, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
+import { AlertCircle, ArrowRight, CheckCircle2, Lock, Mail, Shield, User, X } from 'lucide-react';
+
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || '';
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || '';
 
 export const AuthModal: React.FC = () => {
   const {
@@ -21,6 +24,12 @@ export const AuthModal: React.FC = () => {
 
   if (!isAuthModalOpen) return null;
 
+  const close = () => {
+    setIsAuthModalOpen(false);
+    setErrorMsg('');
+    setSuccessMsg('');
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -31,220 +40,133 @@ export const AuthModal: React.FC = () => {
         setErrorMsg('Please fill in all required fields.');
         return;
       }
-      register(name, email);
-      setSuccessMsg('Account created successfully! Welcome to ArveX.');
-      setTimeout(() => {
-        setIsAuthModalOpen(false);
-      }, 1000);
-    } else if (authModalTab === 'admin') {
-      if (!email || !password) {
-        setErrorMsg('Please enter admin credentials.');
-        return;
-      }
-      // Validate or allow admin
-      if (email.includes('admin') || password === 'admin123456' || email === 'admin@arvex.host') {
-        login(email, 'admin');
-        setSuccessMsg('Admin authentication verified.');
-        setTimeout(() => {
-          setIsAuthModalOpen(false);
-          setIsAdminOpen(true);
-        }, 600);
-      } else {
-        login(email, 'admin');
-        setIsAuthModalOpen(false);
-        setIsAdminOpen(true);
-      }
-    } else {
-      // Regular login
-      if (!email || !password) {
-        setErrorMsg('Please enter your email and password.');
-        return;
-      }
-      login(email, 'customer');
-      setSuccessMsg('Logged in successfully!');
-      setTimeout(() => {
-        setIsAuthModalOpen(false);
-      }, 800);
+      register(name.trim(), email.trim().toLowerCase());
+      setSuccessMsg('Account created successfully.');
+      setTimeout(close, 800);
+      return;
     }
-  };
 
-  const handleQuickDemoAdmin = () => {
-    setEmail('admin@arvex.host');
-    setPassword('admin123456');
-    login('admin@arvex.host', 'admin');
-    setSuccessMsg('Quick Admin Login successful!');
-    setTimeout(() => {
-      setIsAuthModalOpen(false);
-      setIsAdminOpen(true);
-    }, 500);
+    if (!email || !password) {
+      setErrorMsg(authModalTab === 'admin' ? 'Enter your administrator credentials.' : 'Please enter your email and password.');
+      return;
+    }
+
+    if (authModalTab === 'admin') {
+      if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+        setErrorMsg('Admin login is not configured. Set VITE_ADMIN_EMAIL and VITE_ADMIN_PASSWORD on the server before building.');
+        return;
+      }
+
+      if (email.trim().toLowerCase() !== ADMIN_EMAIL.trim().toLowerCase() || password !== ADMIN_PASSWORD) {
+        setErrorMsg('Invalid administrator credentials.');
+        return;
+      }
+
+      login(email.trim().toLowerCase(), 'admin');
+      setSuccessMsg('Administrator authentication verified.');
+      setTimeout(() => {
+        close();
+        setIsAdminOpen(true);
+      }, 600);
+      return;
+    }
+
+    login(email.trim().toLowerCase(), 'customer');
+    setSuccessMsg('Logged in successfully.');
+    setTimeout(close, 700);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-      <div className="relative w-full max-w-md rounded-3xl bg-[#11141e] border border-white/10 p-6 sm:p-8 shadow-2xl">
-        {/* Close Button */}
-        <button
-          onClick={() => setIsAuthModalOpen(false)}
-          className="absolute top-5 right-5 p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
-        >
-          <X className="w-5 h-5" />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
+      <div className="relative w-full max-w-md overflow-hidden rounded-[28px] border border-white/10 bg-[#0d0f18] p-6 shadow-2xl shadow-black/60 sm:p-8">
+        <div className="pointer-events-none absolute -right-24 -top-24 h-48 w-48 rounded-full bg-purple-600/15 blur-3xl" />
+        <button onClick={close} className="absolute right-5 top-5 rounded-xl bg-white/5 p-2 text-slate-400 transition hover:bg-white/10 hover:text-white">
+          <X className="h-4 w-4" />
         </button>
 
-        {/* Brand Icon */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-black text-sm shadow-md">
-            DX
+        <div className="relative mb-6 flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-purple-400/20 bg-purple-500/10 text-purple-300">
+            {authModalTab === 'admin' ? <Shield className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
           </div>
           <div>
-            <h3 className="text-xl font-bold text-white font-display">
+            <h3 className="font-display text-xl font-black text-white">
               {authModalTab === 'admin' ? 'Admin Portal' : 'ArveX Account'}
             </h3>
-            <p className="text-xs text-slate-400">
-              {authModalTab === 'admin'
-                ? 'Sign in to customize all website settings & services'
-                : 'Sign in to manage your game servers & billing'}
+            <p className="text-xs text-slate-500">
+              {authModalTab === 'admin' ? 'Authorized access to website management' : 'Manage your hosting and account'}
             </p>
           </div>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="flex bg-[#0b0d14] p-1 rounded-xl border border-white/5 mb-6 text-xs font-semibold">
-          <button
-            type="button"
-            onClick={() => {
-              setAuthModalTab('login');
-              setErrorMsg('');
-            }}
-            className={`flex-1 py-2 rounded-lg transition-all ${
-              authModalTab === 'login'
-                ? 'bg-white text-black shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Sign In
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setAuthModalTab('register');
-              setErrorMsg('');
-            }}
-            className={`flex-1 py-2 rounded-lg transition-all ${
-              authModalTab === 'register'
-                ? 'bg-white text-black shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Create Account
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setAuthModalTab('admin');
-              setErrorMsg('');
-            }}
-            className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1 ${
-              authModalTab === 'admin'
-                ? 'bg-cyan-500 text-black shadow-sm'
-                : 'text-cyan-400 hover:text-cyan-300'
-            }`}
-          >
-            <Shield className="w-3 h-3" />
-            <span>Admin</span>
-          </button>
+        <div className="relative mb-6 flex rounded-xl border border-white/5 bg-black/20 p-1 text-xs font-bold">
+          {[
+            ['login', 'Sign In'],
+            ['register', 'Create Account'],
+            ['admin', 'Admin'],
+          ].map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => { setAuthModalTab(id as 'login' | 'register' | 'admin'); setErrorMsg(''); }}
+              className={`flex-1 rounded-lg py-2 transition ${authModalTab === id ? 'bg-white text-black' : 'text-slate-500 hover:text-white'}`}
+            >
+              {id === 'admin' && <Shield className="mr-1 inline h-3 w-3" />}
+              {label}
+            </button>
+          ))}
         </div>
 
-        {/* Error / Success Messages */}
         {errorMsg && (
-          <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="mb-4 flex items-start gap-2 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-xs text-rose-300">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
         {successMsg && (
-          <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <div className="mb-4 flex items-start gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-300">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
             <span>{successMsg}</span>
           </div>
         )}
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="relative space-y-4">
           {authModalTab === 'register' && (
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                Full Name
-              </label>
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-semibold text-slate-300">Full Name</span>
               <div className="relative">
-                <User className="absolute left-3 top-3 w-4 h-4 text-slate-500" />
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Alex Mercer"
-                  className="w-full bg-[#0b0d14] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"
-                />
+                <User className="absolute left-3 top-3 h-4 w-4 text-slate-600" />
+                <input value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black/20 py-2.5 pl-10 pr-4 text-xs text-white outline-none focus:border-purple-400/50" placeholder="Your name" />
               </div>
-            </div>
+            </label>
           )}
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Email Address
-            </label>
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-semibold text-slate-300">Email Address</span>
             <div className="relative">
-              <Mail className="absolute left-3 top-3 w-4 h-4 text-slate-500" />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={authModalTab === 'admin' ? 'admin@arvex.host' : 'user@example.com'}
-                className="w-full bg-[#0b0d14] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"
-              />
+              <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-600" />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black/20 py-2.5 pl-10 pr-4 text-xs text-white outline-none focus:border-purple-400/50" placeholder={authModalTab === 'admin' ? 'Administrator email' : 'you@example.com'} />
             </div>
-          </div>
+          </label>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Password
-            </label>
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-semibold text-slate-300">Password</span>
             <div className="relative">
-              <Lock className="absolute left-3 top-3 w-4 h-4 text-slate-500" />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••••••"
-                className="w-full bg-[#0b0d14] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"
-              />
+              <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-600" />
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black/20 py-2.5 pl-10 pr-4 text-xs text-white outline-none focus:border-purple-400/50" placeholder="••••••••••••" />
             </div>
-          </div>
+          </label>
 
-          <button
-            type="submit"
-            className="w-full mt-2 bg-white hover:bg-slate-100 text-black font-bold text-xs py-3 rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
-          >
-            <span>
-              {authModalTab === 'register'
-                ? 'Create My Account'
-                : authModalTab === 'admin'
-                ? 'Sign In to Admin Panel'
-                : 'Sign In to Portal'}
-            </span>
-            <ArrowRight className="w-3.5 h-3.5" />
+          <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 py-3 text-xs font-bold text-white shadow-lg shadow-purple-900/20 transition hover:from-purple-500 hover:to-indigo-500 active:scale-[.99]">
+            {authModalTab === 'register' ? 'Create Account' : authModalTab === 'admin' ? 'Sign In to Admin' : 'Sign In'}
+            <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </form>
 
-        {/* 1-Click Demo Shortcut */}
-        <div className="mt-6 pt-4 border-t border-white/10 text-center">
-          <button
-            type="button"
-            onClick={handleQuickDemoAdmin}
-            className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold underline underline-offset-4"
-          >
-            ⚡ 1-Click Instant Admin Login (Demo)
-          </button>
-        </div>
+        {authModalTab === 'admin' && (
+          <p className="relative mt-5 text-center text-[10px] leading-5 text-slate-600">
+            Administrator credentials are read from server build environment variables and are never stored in this repository.
+          </p>
+        )}
       </div>
     </div>
   );
