@@ -45,7 +45,7 @@ import { ClientAreaModal } from './components/ClientAreaModal';
 import { AdminPanelModal } from './components/AdminPanelModal';
 
 function MainWebsite() {
-  const { currentPage, currentUser, login, logout, setAuthModalOpen, setAuthModalTab } = useApp();
+  const { currentPage, currentUser, login, setAuthModalOpen, setAuthModalTab } = useApp();
   const authBootstrapped = useRef(false);
   const serverUserLoaded = useRef(false);
 
@@ -58,12 +58,13 @@ function MainWebsite() {
       })
       .catch(() => undefined)
       .finally(() => { serverUserLoaded.current = true; authBootstrapped.current = true; });
-  // login is intentionally excluded: this is a one-time server session bootstrap.
+  // One-time server session bootstrap; login is intentionally excluded from dependencies.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (!authBootstrapped.current || !serverUserLoaded.current || currentUser) return;
+    try { localStorage.removeItem('arvex_admin_token'); } catch {}
     fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => undefined);
   }, [currentUser]);
 
@@ -118,20 +119,7 @@ function MainWebsite() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-[#07080c] text-slate-100 font-sans selection:bg-cyan-500 selection:text-black antialiased flex flex-col justify-between">
-      <Navbar />
-      <main className="relative flex-1">{renderActivePage()}</main>
-      <Footer />
-      <AuthModal />
-      <CheckoutModal />
-      <InvoiceModal />
-      <TicketModal />
-      <BlogPostModal />
-      <ClientAreaModal />
-      <AdminPanelModal />
-    </div>
-  );
+  return <div className="min-h-screen bg-[#07080c] text-slate-100 font-sans selection:bg-cyan-500 selection:text-black antialiased flex flex-col justify-between"><Navbar /><main className="relative flex-1">{renderActivePage()}</main><Footer /><AuthModal /><CheckoutModal /><InvoiceModal /><TicketModal /><BlogPostModal /><ClientAreaModal /><AdminPanelModal /></div>;
 }
 
 export default function App() { return <AppProvider><MainWebsite /></AppProvider>; }
