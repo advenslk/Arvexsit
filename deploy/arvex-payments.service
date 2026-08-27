@@ -1,0 +1,21 @@
+[Unit]
+Description=ArveX Hosting PayHere Payment API
+After=network.target arvex-api.service
+Wants=arvex-api.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/www/arvex
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node /var/www/arvex/payment-server.js
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/www/arvex/data
+
+[Install]
+WantedBy=multi-user.target
