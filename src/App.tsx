@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
@@ -50,6 +50,11 @@ import { AdminPanelModal } from './components/AdminPanelModal';
 
 function MainWebsite() {
   const { currentPage, currentUser, setAuthModalOpen, setAuthModalTab } = useApp();
+
+  // Keep the server-side CMS session aligned with the application auth state.
+  useEffect(() => {
+    if (currentUser?.role !== 'admin') window.ArveXCMS?.clearSession?.();
+  }, [currentUser]);
 
   const renderActivePage = () => {
     switch (currentPage) {
