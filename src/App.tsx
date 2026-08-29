@@ -66,7 +66,7 @@ function MaintenanceAdminControl({ enabled, busy, onToggle }: { enabled: boolean
 }
 
 function MainWebsite() {
-  const { currentPage,currentUser,login,logout,setIsAuthModalOpen,setAuthModalTab,siteSettings,updateSiteSettings } = useApp();
+  const { currentPage,currentUser,login,setIsAuthModalOpen,setAuthModalTab,siteSettings,updateSiteSettings } = useApp();
   const [authReady,setAuthReady]=useState(false);
   const [maintenanceMode,setMaintenanceMode]=useState(false);
   const [maintenanceBusy,setMaintenanceBusy]=useState(false);
@@ -77,10 +77,15 @@ function MainWebsite() {
     let cancelled=false;
     const restoreAuth=async()=>{
       try{
-        const r=await fetch('/api/auth/me',{credentials:'include',cache:'no-store'});
+        const adminToken=localStorage.getItem('arvex_admin_token')||'';
+        const headers:Record<string,string>={};
+        if(adminToken)headers.Authorization=`Bearer ${adminToken}`;
+        const r=await fetch('/api/auth/me',{credentials:'include',cache:'no-store',headers});
         if(r.ok){
           const j=await r.json();
           if(!cancelled&&j?.authenticated&&j.user){login(j.user.email,j.user.role==='admin'?'admin':'customer',j.user.name,j.user.provider||'email');}
+        } else if(adminToken && r.status===401){
+          localStorage.removeItem('arvex_admin_token');
         }
       }catch{}
       finally{
@@ -108,7 +113,7 @@ function MainWebsite() {
     setMaintenanceBusy(true);
     try{
       const r=await fetch('/api/cms/config/siteSettings',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json',Authorization:`Bearer ${adminToken}`},body:JSON.stringify({value:{...siteSettings,maintenanceMode:next}})});
-      if(!r.ok){if(r.status===401){localStorage.removeItem('arvex_admin_token');return;}return;}
+      if(!r.ok){if(r.status===401){localStorage.removeItem('arvex_admin_token');}return;}
       setMaintenanceMode(next);updateSiteSettings({maintenanceMode:next} as any);
     }catch{}finally{setMaintenanceBusy(false)}
   };
@@ -122,4 +127,4 @@ function MainWebsite() {
   return <div className="min-h-screen bg-[#07080c] text-slate-100 font-sans selection:bg-cyan-500 selection:text-black antialiased flex flex-col justify-between">{currentUser?.role==='admin'&&<MaintenanceAdminControl enabled={maintenanceMode} busy={maintenanceBusy} onToggle={toggleMaintenance}/>}<Navbar/><main className="relative flex-1">{renderActivePage()}</main><Footer/><AuthModal/><CheckoutModal/><InvoiceModal/><TicketModal/><BlogPostModal/><ClientAreaModal/><AdminPanelModal/></div>;
 }
 
-export default function App(){return <AppProvider><MainWebsite/></AppProvider}
+export default function App(){return <AppProvider><MainWebsite/></AppProvider>}
