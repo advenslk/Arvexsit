@@ -77,15 +77,7 @@ function MaintenancePage({ openAdminLogin }: { openAdminLogin: () => void }) {
   );
 }
 
-function MaintenanceAdminControl({
-  enabled,
-  busy,
-  onToggle,
-}: {
-  enabled: boolean;
-  busy: boolean;
-  onToggle: () => void;
-}) {
+function MaintenanceAdminControl({ enabled, busy, onToggle }: { enabled: boolean; busy: boolean; onToggle: () => void }) {
   return (
     <div className="fixed right-4 top-4 z-[90] flex items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0d16]/95 px-4 py-3 shadow-2xl backdrop-blur-xl">
       <div>
@@ -130,9 +122,8 @@ function MainWebsite() {
   };
 
   useEffect(() => {
-    // IMPORTANT: do not clear the local auth state on page refresh.
-    // The server session cookie is the source of truth and /api/auth/me
-    // restores the authenticated account after a reload.
+    // Do not clear local auth state on reload. The server session cookie is
+    // restored through /api/auth/me, so refresh no longer acts like logout.
     fetch('/api/auth/me', { credentials: 'include' })
       .then(async (response) => {
         if (!response.ok) return null;
@@ -140,12 +131,7 @@ function MainWebsite() {
       })
       .then((result) => {
         if (result?.authenticated && result.user) {
-          login(
-            result.user.email,
-            result.user.role === 'admin' ? 'admin' : 'customer',
-            result.user.name,
-            result.user.provider || 'email'
-          );
+          login(result.user.email, result.user.role === 'admin' ? 'admin' : 'customer', result.user.name, result.user.provider || 'email');
         }
       })
       .catch(() => undefined)
@@ -154,24 +140,23 @@ function MainWebsite() {
         authBootstrapped.current = true;
         setAuthReady(true);
       });
-  }, [login]);
+    // login is intentionally omitted: it is recreated by AppContext on render.
+    // This bootstrap must run exactly once per page load.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
-
     const loadMaintenance = async () => {
       try {
         const response = await fetch('/api/cms/config', { cache: 'no-store' });
         if (!response.ok) return;
         const config = await response.json();
-        if (!cancelled) {
-          setMaintenanceMode(Boolean(config?.siteSettings?.maintenanceMode));
-        }
+        if (!cancelled) setMaintenanceMode(Boolean(config?.siteSettings?.maintenanceMode));
       } catch {
-        // Keep the current state if the CMS is temporarily unavailable.
+        // Keep the last known state if the CMS is temporarily unavailable.
       }
     };
-
     loadMaintenance();
     const interval = window.setInterval(loadMaintenance, 15000);
     return () => {
@@ -191,7 +176,6 @@ function MainWebsite() {
 
   const toggleMaintenance = async () => {
     if (currentUser?.role !== 'admin' || maintenanceBusy) return;
-
     const next = !maintenanceMode;
     const adminToken = localStorage.getItem('arvex_admin_token') || '';
     if (!adminToken) {
@@ -205,13 +189,9 @@ function MainWebsite() {
       const response = await fetch('/api/cms/config/siteSettings', {
         method: 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${adminToken}`,
-        },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}` },
         body: JSON.stringify({ value: { ...siteSettings, maintenanceMode: next } }),
       });
-
       if (!response.ok) {
         if (response.status === 401) {
           localStorage.removeItem('arvex_admin_token');
@@ -220,11 +200,10 @@ function MainWebsite() {
         }
         return;
       }
-
       setMaintenanceMode(next);
       updateSiteSettings({ maintenanceMode: next } as any);
     } catch {
-      // Leave the previous state untouched if the API is unavailable.
+      // Do not change the UI state if the server did not accept the update.
     } finally {
       setMaintenanceBusy(false);
     }
@@ -283,8 +262,7 @@ function MainWebsite() {
     );
   }
 
-  // Maintenance mode affects visitors only. Authenticated administrators can
-  // continue using the complete website and the admin control center.
+  // Only non-admin visitors are blocked by maintenance mode.
   if (maintenanceMode && currentUser?.role !== 'admin') {
     return (
       <>
@@ -296,13 +274,7 @@ function MainWebsite() {
 
   return (
     <div className="min-h-screen bg-[#07080c] text-slate-100 font-sans selection:bg-cyan-500 selection:text-black antialiased flex flex-col justify-between">
-      {currentUser?.role === 'admin' && (
-        <MaintenanceAdminControl
-          enabled={maintenanceMode}
-          busy={maintenanceBusy}
-          onToggle={toggleMaintenance}
-        />
-      )}
+      {currentUser?.role === 'admin' && <MaintenanceAdminControl enabled={maintenanceMode} busy={maintenanceBusy} onToggle={toggleMaintenance} />}
       <Navbar />
       <main className="relative flex-1">{renderActivePage()}</main>
       <Footer />
