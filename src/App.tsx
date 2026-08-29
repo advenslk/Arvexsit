@@ -146,10 +146,10 @@ function MainWebsite() {
   if(!authReady)return <div className="flex min-h-screen items-center justify-center bg-[#07080c] text-slate-400"><div className="text-center"><div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-purple-500/20 border-t-purple-400"/><p className="text-xs font-semibold uppercase tracking-[0.2em]">Loading ArveX</p></div></div>;
   if(maintenanceMode&&currentUser?.role!=='admin')return <><MaintenancePage openAdminLogin={openAdminLogin}/><AuthModal/></>;
   return <div className="relative min-h-screen overflow-x-hidden bg-transparent text-slate-100 font-sans selection:bg-cyan-500 selection:text-black antialiased flex flex-col justify-between">
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-20 bg-[#05060a]" />
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-20 bg-cover bg-center bg-no-repeat [background-image:url('https://images2.alphacoders.com/900/thumb-1920-900522.png')]" />
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 bg-gradient-to-b from-slate-950/30 via-purple-950/45 to-slate-950/80" />
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_50%_10%,rgba(124,58,237,.20),transparent_38%),radial-gradient(circle_at_10%_55%,rgba(14,116,144,.12),transparent_30%),radial-gradient(circle_at_90%_60%,rgba(168,85,247,.10),transparent_32%)]" />
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[-30] bg-[#05060a]" />
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[-29] bg-cover bg-center bg-no-repeat [background-image:url('https://minecraft.wiki/images/Island_Wallpaper.png')]" />
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[-28] bg-gradient-to-b from-slate-950/20 via-purple-950/40 to-slate-950/75" />
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[-27] bg-[radial-gradient(circle_at_50%_10%,rgba(124,58,237,.18),transparent_38%),radial-gradient(circle_at_10%_55%,rgba(14,116,144,.10),transparent_30%),radial-gradient(circle_at_90%_60%,rgba(168,85,247,.08),transparent_32%)]" />
     {currentUser?.role==='admin'&&<MaintenanceAdminControl enabled={maintenanceMode} busy={maintenanceBusy} onToggle={toggleMaintenance}/>}<Navbar/><main className="relative flex-1">{renderActivePage()}</main><Footer/><AuthModal/><CheckoutModal/><InvoiceModal/><TicketModal/><BlogPostModal/><ClientAreaModal/><AdminPanelModal/>
   </div>;
 }
