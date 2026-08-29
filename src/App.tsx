@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React, { useEffect, useRef, useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Navbar } from './components/Navbar';
@@ -66,7 +61,7 @@ function MaintenanceAdminControl({ enabled, busy, onToggle }: { enabled: boolean
 }
 
 function MainWebsite() {
-  const { currentPage,currentUser,login,setIsAuthModalOpen,setAuthModalTab,siteSettings,updateSiteSettings } = useApp();
+  const { currentPage,currentUser,login,logout,setIsAuthModalOpen,setAuthModalTab,siteSettings,updateSiteSettings } = useApp();
   const [authReady,setAuthReady]=useState(false);
   const [maintenanceMode,setMaintenanceMode]=useState(false);
   const [maintenanceBusy,setMaintenanceBusy]=useState(false);
@@ -76,6 +71,19 @@ function MainWebsite() {
   useEffect(()=>{
     let cancelled=false;
     const restoreAuth=async()=>{
+      // Restore the locally persisted identity immediately. This prevents a
+      // refresh from temporarily turning a signed-in admin/customer into a guest.
+      try {
+        const stored=localStorage.getItem('arvex_saas_v3_user');
+        const adminToken=localStorage.getItem('arvex_admin_token')||'';
+        if(stored){
+          const u=JSON.parse(stored);
+          if(u?.email&&!cancelled)login(u.email,u.role==='admin'?'admin':'customer',u.name,u.provider||'email');
+        } else if(adminToken&&!cancelled){
+          login('administrator','admin','ArveX Administrator','email');
+        }
+      }catch{}
+
       try{
         const adminToken=localStorage.getItem('arvex_admin_token')||'';
         const headers:Record<string,string>={};
@@ -83,10 +91,12 @@ function MainWebsite() {
         const r=await fetch('/api/auth/me',{credentials:'include',cache:'no-store',headers});
         if(r.ok){
           const j=await r.json();
-          if(!cancelled&&j?.authenticated&&j.user){login(j.user.email,j.user.role==='admin'?'admin':'customer',j.user.name,j.user.provider||'email');}
-        } else if(adminToken && r.status===401){
-          localStorage.removeItem('arvex_admin_token');
+          if(!cancelled&&j?.authenticated&&j.user){
+            login(j.user.email,j.user.role==='admin'?'admin':'customer',j.user.name,j.user.provider||'email');
+          }
         }
+        // Do NOT clear the persisted frontend identity on a transient 401.
+        // Explicit logout is the only action that removes the local identity.
       }catch{}
       finally{
         if(!cancelled){serverUserLoaded.current=true;setAuthReady(true)}
@@ -113,7 +123,7 @@ function MainWebsite() {
     setMaintenanceBusy(true);
     try{
       const r=await fetch('/api/cms/config/siteSettings',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json',Authorization:`Bearer ${adminToken}`},body:JSON.stringify({value:{...siteSettings,maintenanceMode:next}})});
-      if(!r.ok){if(r.status===401){localStorage.removeItem('arvex_admin_token');}return;}
+      if(!r.ok)return;
       setMaintenanceMode(next);updateSiteSettings({maintenanceMode:next} as any);
     }catch{}finally{setMaintenanceBusy(false)}
   };
