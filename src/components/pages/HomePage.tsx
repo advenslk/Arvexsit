@@ -12,7 +12,9 @@ import { FaqSection } from '../FaqSection';
 import { DomainSection } from '../DomainSection';
 import { FloatingSocialWidgets } from '../FloatingSocialWidgets';
 
-const MINECRAFT_BACKDROP = 'https://images.unsplash.com/photo-1627856013091-fed6e4e30025?auto=format&fit=crop&w=2600&q=92';
+// Cinematic Minecraft landscape chosen for the ArveX game-hosting hero.
+// Kept as a remote image so the repository stays lightweight.
+const MINECRAFT_BACKDROP = 'https://www.xtrafondos.com/wallpapers/resized/paisaje-minecraft-de-selva-montana-e-isla-13758.jpg?s=large';
 
 const particles = Array.from({ length: 28 }, (_, i) => ({
   left: `${(i * 37) % 100}%`,
