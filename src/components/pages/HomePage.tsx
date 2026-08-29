@@ -12,16 +12,16 @@ import { FaqSection } from '../FaqSection';
 import { DomainSection } from '../DomainSection';
 import { FloatingSocialWidgets } from '../FloatingSocialWidgets';
 
-// Cinematic Minecraft landscape chosen for the ArveX game-hosting hero.
-// Kept as a remote image so the repository stays lightweight.
-const MINECRAFT_BACKDROP = 'https://www.xtrafondos.com/wallpapers/resized/paisaje-minecraft-de-selva-montana-e-isla-13758.jpg?s=large';
+// Reliable image CDN URL. The image is used only as the opening cinematic layer;
+// the rest of the page transitions into ArveX's dark purple infrastructure theme.
+const MINECRAFT_BACKDROP = 'https://images.unsplash.com/photo-1627856013091-fed6e4e30025?auto=format&fit=crop&w=2600&q=92';
 
-const particles = Array.from({ length: 28 }, (_, i) => ({
+const particles = Array.from({ length: 42 }, (_, i) => ({
   left: `${(i * 37) % 100}%`,
-  top: `${8 + ((i * 43) % 76)}%`,
-  delay: `${(i % 9) * -0.9}s`,
-  duration: `${8 + (i % 8)}s`,
-  size: `${1.5 + (i % 3)}px`,
+  top: `${6 + ((i * 43) % 78)}%`,
+  delay: `${(i % 12) * -0.75}s`,
+  duration: `${7 + (i % 9)}s`,
+  size: `${1 + (i % 4) * .7}px`,
 }));
 
 export const HomePage: React.FC = () => {
@@ -34,20 +34,20 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="arvex-home-page relative min-h-screen overflow-x-clip bg-[#03040a] text-slate-200">
-      {/* Hero-only Minecraft artwork. It ends after the opening section instead of staying fixed behind the whole site. */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[1000px] overflow-hidden sm:h-[1080px] lg:h-[1160px]">
+      {/* Opening Minecraft artwork. It stays visually behind the hero while scrolling,
+          then dissolves into the dark/purple infrastructure background. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[1050px] overflow-hidden sm:h-[1120px] lg:h-[1180px]">
         <div
           className="arvex-mc-world absolute -inset-[4%] bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${MINECRAFT_BACKDROP})` }}
         />
-        {/* Heavy cinematic fade at the bottom creates a clean hand-off into the dark purple sections. */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(2,3,8,.18)_0%,rgba(3,4,10,.06)_22%,rgba(3,4,10,.18)_46%,rgba(3,4,10,.56)_66%,rgba(5,3,13,.90)_82%,#07030f_94%,#07030f_100%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_25%,rgba(124,58,237,.24),transparent_42%),radial-gradient(ellipse_at_15%_48%,rgba(34,197,94,.07),transparent_30%),radial-gradient(ellipse_at_85%_42%,rgba(59,130,246,.08),transparent_32%)]" />
-        <div className="arvex-grid-glow absolute inset-0 opacity-[.22]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(1,3,10,.10)_0%,rgba(3,4,10,.08)_28%,rgba(3,4,10,.30)_50%,rgba(4,3,13,.70)_68%,rgba(6,3,15,.96)_86%,#07030f_96%,#07030f_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_52%_28%,rgba(124,58,237,.28),transparent_44%),radial-gradient(ellipse_at_12%_48%,rgba(16,185,129,.08),transparent_30%),radial-gradient(ellipse_at_88%_42%,rgba(59,130,246,.10),transparent_32%)]" />
+        <div className="arvex-grid-glow absolute inset-0 opacity-[.18]" />
         {particles.map((particle, i) => (
           <span
             key={i}
-            className="arvex-particle absolute rounded-full bg-purple-100/65 shadow-[0_0_10px_rgba(168,85,247,.8)]"
+            className="arvex-particle absolute rounded-full bg-white/80 shadow-[0_0_12px_rgba(216,180,254,.95)]"
             style={{ left: particle.left, top: particle.top, width: particle.size, height: particle.size, animationDelay: particle.delay, animationDuration: particle.duration }}
           />
         ))}
