@@ -10,7 +10,6 @@ const quickServices = [
 ];
 
 const HYTALE_ART = 'https://pbs.twimg.com/media/G5-qASnWcAANXO0.jpg';
-const MINECRAFT_BG = 'https://images2.alphacoders.com/900/thumb-1920-900522.png';
 
 export const HeroSection: React.FC = () => {
   const { navigateTo, siteSettings } = useApp();
@@ -21,11 +20,7 @@ export const HeroSection: React.FC = () => {
   const secondaryCtaText = siteSettings?.heroSecondaryCtaText || 'View Prices';
 
   return (
-    <section className="relative isolate min-h-[calc(100vh-72px)] overflow-hidden pb-16 pt-5 sm:pb-24 sm:pt-7 lg:pb-28 lg:pt-8">
-      <div className="pointer-events-none absolute inset-0 -z-20 bg-slate-950" />
-      <div className="pointer-events-none absolute inset-0 -z-20 bg-cover bg-center bg-no-repeat opacity-100 [background-image:url('https://images2.alphacoders.com/900/thumb-1920-900522.png')]" />
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-slate-950/25 via-purple-950/35 to-slate-950/75" />
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_20%,rgba(124,58,237,.22),transparent_38%),radial-gradient(circle_at_15%_60%,rgba(14,116,144,.16),transparent_32%),radial-gradient(circle_at_85%_65%,rgba(168,85,247,.12),transparent_34%)]" />
+    <section className="relative min-h-[calc(100vh-72px)] overflow-hidden pb-16 pt-5 sm:pb-24 sm:pt-7 lg:pb-28 lg:pt-8">
       <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.055] [background-image:linear-gradient(rgba(255,255,255,.55)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.55)_1px,transparent_1px)] [background-size:46px_46px] [mask-image:linear-gradient(to_bottom,black,transparent_92%)]" />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
