@@ -2,32 +2,14 @@ const USER_KEY = 'arvex_saas_v3_user';
 const ADMIN_TOKEN_KEY = 'arvex_admin_token';
 const BACKUP_KEY = 'arvex_auth_session_backup';
 
-// Explicit logout is still authoritative. A failed startup auth check must not
-// erase a valid local UI session before the application has had a chance to
-// restore it; transient 401/network/proxy races are common during refreshes.
-try {
-  const originalSetItem = Storage.prototype.setItem;
-  Storage.prototype.setItem = function(key: string, value: string) {
-    originalSetItem.call(this, key, value);
-    if (this === window.localStorage && key === USER_KEY && value === 'null') {
-      void fetch('/api/auth/logout', { method: 'POST', credentials: 'include', keepalive: true }).catch(() => {});
-    }
-  };
-} catch {}
-
+// Authentication is server-authoritative, but a temporary refresh/network race
+// must never destroy the browser's current UI identity or revoke its server
+// session. Explicit logout is handled by the existing logout flow.
 function saveUser(user: unknown) {
   try {
     const value = JSON.stringify(user);
     localStorage.setItem(USER_KEY, value);
     sessionStorage.setItem(BACKUP_KEY, value);
-  } catch {}
-}
-
-function clearAuth() {
-  try {
-    localStorage.removeItem(ADMIN_TOKEN_KEY);
-    localStorage.setItem(USER_KEY, 'null');
-    sessionStorage.removeItem(BACKUP_KEY);
   } catch {}
 }
 
@@ -61,15 +43,16 @@ export const authBootstrap: Promise<void> = (async () => {
       const payload = result.payload;
       if (payload?.authenticated && payload.user) {
         saveUser(payload.user);
-      } else if (localUser === null && !backupUser) {
-        clearAuth();
+      } else if (localUser === null && backupUser) {
+        try { localStorage.setItem(USER_KEY, backupUser); } catch {}
       }
       return;
     }
 
-    // Never destroy an existing local/backup identity solely because the first
-    // refresh-time server check failed. The server remains authoritative for
-    // protected API operations, while the UI can restore and retry normally.
+    // IMPORTANT: never call logout/clearAuth here. A refresh can temporarily
+    // fail while Cloudflare, the API process, or the browser reconnects. Keep
+    // the existing local identity and let the next authenticated API request
+    // retry. This prevents the refresh -> logout loop.
     if (!localUser && backupUser) {
       try { localStorage.setItem(USER_KEY, backupUser); } catch {}
     }
