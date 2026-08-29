@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
@@ -44,8 +44,38 @@ import { BlogPostModal } from './components/BlogPostModal';
 import { ClientAreaModal } from './components/ClientAreaModal';
 import { AdminPanelModal } from './components/AdminPanelModal';
 
+function MaintenancePage({ openAdminLogin }: { openAdminLogin: () => void }) {
+  return (
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#07080c] px-6 py-20 text-center">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(124,58,237,0.16),transparent_42%)]" />
+      <div className="relative z-10 mx-auto max-w-2xl">
+        <div className="mx-auto mb-7 flex h-20 w-20 items-center justify-center rounded-3xl border border-purple-400/20 bg-purple-500/10 shadow-[0_0_70px_rgba(124,58,237,0.16)]">
+          <span className="text-4xl">🔧</span>
+        </div>
+        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-purple-400/20 bg-purple-500/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-purple-300">
+          <span className="h-1.5 w-1.5 rounded-full bg-purple-400" />
+          Maintenance Mode
+        </div>
+        <h1 className="text-4xl font-black tracking-tight text-white sm:text-6xl">We&apos;ll be back soon.</h1>
+        <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-slate-400 sm:text-base">
+          ArveX Hosting is currently undergoing maintenance and improvements. Our website will be available again soon.
+        </p>
+        <p className="mt-3 text-xs text-slate-600">Thank you for your patience.</p>
+        <button
+          type="button"
+          onClick={openAdminLogin}
+          className="mt-8 rounded-2xl border border-white/10 bg-white/[0.06] px-6 py-3 text-sm font-bold text-slate-200 transition hover:border-purple-400/30 hover:bg-purple-500/10 hover:text-white"
+        >
+          Administrator Login
+        </button>
+      </div>
+    </main>
+  );
+}
+
 function MainWebsite() {
   const { currentPage, currentUser, login, setAuthModalOpen, setAuthModalTab } = useApp();
+  const [authReady, setAuthReady] = useState(false);
   const authBootstrapped = useRef(false);
   const serverUserLoaded = useRef(false);
 
@@ -57,7 +87,11 @@ function MainWebsite() {
         if (result?.authenticated && result.user) login(result.user.email, result.user.role === 'admin' ? 'admin' : 'customer', result.user.name, result.user.provider || 'email');
       })
       .catch(() => undefined)
-      .finally(() => { serverUserLoaded.current = true; authBootstrapped.current = true; });
+      .finally(() => {
+        serverUserLoaded.current = true;
+        authBootstrapped.current = true;
+        setAuthReady(true);
+      });
   }, []);
 
   useEffect(() => {
@@ -65,6 +99,11 @@ function MainWebsite() {
     try { localStorage.removeItem('arvex_admin_token'); } catch {}
     fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => undefined);
   }, [currentUser]);
+
+  const openAdminLogin = () => {
+    setAuthModalTab('admin');
+    setAuthModalOpen(true);
+  };
 
   const renderActivePage = () => {
     switch (currentPage) {
@@ -102,20 +141,33 @@ function MainWebsite() {
       case 'dashboard': return <DashboardPage />;
       case 'admin':
         if (currentUser?.role === 'admin') return <AdminPage />;
-        return (
-          <section className="mx-auto flex min-h-[70vh] max-w-xl items-center justify-center px-6 py-20 text-center">
-            <div className="rounded-3xl border border-white/10 bg-white/[0.035] p-8 shadow-2xl backdrop-blur-xl">
-              <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-purple-400/20 bg-purple-500/10"><span className="text-xl">🔐</span></div>
-              <h1 className="text-2xl font-black text-white">Admin access required</h1>
-              <p className="mt-2 text-sm leading-6 text-slate-400">Sign in with an authorized ArveX administrator account to continue.</p>
-              <button onClick={() => { setAuthModalTab('admin'); setAuthModalOpen(true); }} className="mt-6 rounded-2xl bg-purple-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-purple-500">Open Admin Login</button>
-            </div>
-          </section>
-        );
+        return <MaintenancePage openAdminLogin={openAdminLogin} />;
       case 'home':
       default: return <HomePage />;
     }
   };
+
+  if (!authReady) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#07080c] text-slate-400">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-purple-500/20 border-t-purple-400" />
+          <p className="text-xs font-semibold uppercase tracking-[0.2em]">Loading ArveX</p>
+        </div>
+      </div>
+    );
+  }
+
+  // The public website is hidden while maintenance mode is active.
+  // Only an authenticated administrator can see the normal website.
+  if (currentUser?.role !== 'admin') {
+    return (
+      <>
+        <MaintenancePage openAdminLogin={openAdminLogin} />
+        <AuthModal />
+      </>
+    );
+  }
 
   return <div className="min-h-screen bg-[#07080c] text-slate-100 font-sans selection:bg-cyan-500 selection:text-black antialiased flex flex-col justify-between"><Navbar /><main className="relative flex-1">{renderActivePage()}</main><Footer /><AuthModal /><CheckoutModal /><InvoiceModal /><TicketModal /><BlogPostModal /><ClientAreaModal /><AdminPanelModal /></div>;
 }
