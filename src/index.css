@@ -1,6 +1,15 @@
 @import "tailwindcss";
 
 @layer base {
+  html,
+  body,
+  #root {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   }
@@ -84,6 +93,76 @@
   animation-play-state: paused;
 }
 
+/* Mobile layout protection: prevent wide children from pushing the viewport */
+section,
+main,
+nav,
+footer,
+header {
+  min-width: 0;
+  max-width: 100%;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  max-width: 100%;
+}
+
+/* Hero mobile tuning */
+@media (max-width: 639px) {
+  .relative.isolate.overflow-hidden {
+    padding-top: 2rem !important;
+    padding-bottom: 3rem !important;
+  }
+
+  .relative.isolate.overflow-hidden > .mx-auto {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .relative.isolate.overflow-hidden .grid.items-center {
+    gap: 2rem !important;
+  }
+
+  .relative.isolate.overflow-hidden h1 {
+    max-width: 100% !important;
+    font-size: clamp(2.55rem, 10.5vw, 3.5rem) !important;
+    line-height: 0.98 !important;
+    letter-spacing: -0.045em !important;
+    overflow-wrap: anywhere;
+  }
+
+  .relative.isolate.overflow-hidden h1 span {
+    margin-top: 0.45rem !important;
+  }
+
+  .relative.isolate.overflow-hidden p {
+    max-width: 100% !important;
+  }
+
+  .relative.isolate.overflow-hidden .grid.grid-cols-2 {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .relative.isolate.overflow-hidden .grid.grid-cols-2 > button {
+    min-width: 0;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .relative.isolate.overflow-hidden .grid.grid-cols-2 > button p {
+    overflow-wrap: anywhere;
+  }
+
+  .relative.isolate.overflow-hidden .max-w-xl {
+    max-width: 100% !important;
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
@@ -108,5 +187,3 @@
 .animate-pulse-subtle {
   animation: pulse-subtle 3s infinite ease-in-out;
 }
-
-
