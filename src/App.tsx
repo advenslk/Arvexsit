@@ -74,18 +74,29 @@ function MainWebsite() {
   const openAdminLogin=()=>{setAuthModalTab('admin');setIsAuthModalOpen(true)};
 
   useEffect(()=>{
-    fetch('/api/auth/me',{credentials:'include'})
-      .then(async response=>{
-        if(response.ok)return response.json();
-        if(response.status===401)return {unauthenticated:!sessionStorage.getItem('arvex_admin_token')};
-        return null;
-      })
-      .then(result=>{
-        if(result?.unauthenticated){logout();return;}
-        if(result?.authenticated&&result.user)login(result.user.email,result.user.role==='admin'?'admin':'customer',result.user.name,result.user.provider||'email');
-      })
-      .catch(()=>undefined)
-      .finally(()=>{serverUserLoaded.current=true;setAuthReady(true)});
+    let cancelled=false;
+    const restoreAuth=async()=>{
+      try{
+        const r=await fetch('/api/auth/me',{credentials:'include',cache:'no-store'});
+        if(r.ok){
+          const j=await r.json();
+          if(!cancelled&&j?.authenticated&&j.user){login(j.user.email,j.user.role==='admin'?'admin':'customer',j.user.name,j.user.provider||'email');}
+        } else if(r.status===401){
+          // Do NOT logout on a page refresh. AppContext already restores the last
+          // explicitly authenticated user from localStorage. Logout is only done
+          // by the explicit logout action.
+          const storedUser=localStorage.getItem('arvex_saas_v3_user');
+          const adminToken=localStorage.getItem('arvex_admin_token');
+          if(!storedUser&&!adminToken&&!cancelled) logout();
+        }
+      }catch{
+        // Keep the locally persisted login when the auth endpoint is temporarily unavailable.
+      }finally{
+        if(!cancelled){serverUserLoaded.current=true;setAuthReady(true)}
+      }
+    };
+    restoreAuth();
+    return()=>{cancelled=true};
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[]);
 
@@ -99,12 +110,13 @@ function MainWebsite() {
 
   const toggleMaintenance=async()=>{
     if(currentUser?.role!=='admin'||maintenanceBusy)return;
-    const next=!maintenanceMode;const adminToken=sessionStorage.getItem('arvex_admin_token')||'';
+    const next=!maintenanceMode;
+    const adminToken=localStorage.getItem('arvex_admin_token')||'';
     if(!adminToken){setAuthModalTab('admin');setIsAuthModalOpen(true);return;}
     setMaintenanceBusy(true);
     try{
       const r=await fetch('/api/cms/config/siteSettings',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json',Authorization:`Bearer ${adminToken}`},body:JSON.stringify({value:{...siteSettings,maintenanceMode:next}})});
-      if(!r.ok){if(r.status===401){sessionStorage.removeItem('arvex_admin_token');logout();openAdminLogin();}return;}
+      if(!r.ok){if(r.status===401){localStorage.removeItem('arvex_admin_token');logout();openAdminLogin();}return;}
       setMaintenanceMode(next);updateSiteSettings({maintenanceMode:next} as any);
     }catch{}finally{setMaintenanceBusy(false)}
   };
