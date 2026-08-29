@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, ChevronRight, Cloud, Gamepad2, Globe2, Server, ShieldCheck, Zap, Clock3, Database, Headphones, Sparkles } from 'lucide-react';
+import { ArrowRight, ChevronRight, Cloud, Gamepad2, Globe2, Server, ShieldCheck, Zap, Clock3, Database, Headphones, Sparkles, Star } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 const quickServices = [
@@ -18,11 +18,11 @@ const trustCards = [
 
 export const HeroSection: React.FC = () => {
   const { navigateTo, siteSettings } = useApp();
-  const title1 = siteSettings?.heroTitleLine1 || 'Host your own';
-  const title2 = siteSettings?.heroTitleLine2 || 'Minecraft Servers.';
-  const subtitle = siteSettings?.heroSubtitle || 'High-performance game hosting built for players who demand speed, stability, and total control. Low-latency infrastructure, instant setup, and support around the clock.';
+  const title1 = siteSettings?.heroTitleLine1 || 'Building your digital world,';
+  const title2 = siteSettings?.heroTitleLine2 || 'powering your future. No interruptions.';
+  const subtitle = siteSettings?.heroSubtitle || 'High-performance game hosting built for players who demand speed, stability, and total control. No lag, no limits.';
   const ctaText = siteSettings?.heroCtaText || 'Get Started';
-  const secondaryCtaText = siteSettings?.heroSecondaryCtaText || 'Learn more';
+  const secondaryCtaText = siteSettings?.heroSecondaryCtaText || 'View Prices';
 
   return (
     <section className="relative min-h-[calc(100svh-68px)] overflow-hidden pb-20 pt-10 sm:pb-28 sm:pt-14 lg:pt-20">
@@ -45,18 +45,25 @@ export const HeroSection: React.FC = () => {
             {subtitle}
           </p>
 
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-            <button onClick={() => navigateTo('pricing')} className="group inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-black/35 px-6 py-3.5 text-sm font-bold text-white shadow-2xl backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-purple-300/55 hover:bg-purple-950/55 hover:shadow-[0_14px_45px_rgba(124,58,237,.22)]">
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
+            <button onClick={() => navigateTo('pricing')} className="arvex-3d-button arvex-3d-button-dark group inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-black/45 px-6 py-3.5 text-sm font-bold text-white backdrop-blur-xl">
               {secondaryCtaText}<ChevronRight className="h-4 w-4 text-purple-200 transition-transform group-hover:translate-x-1" />
             </button>
-            <button onClick={() => navigateTo('services')} className="group inline-flex items-center gap-2 rounded-2xl bg-white px-7 py-3.5 text-sm font-black text-slate-950 shadow-[0_12px_60px_rgba(168,85,247,.42)] transition-all duration-300 hover:-translate-y-1 hover:bg-purple-50 hover:shadow-[0_16px_70px_rgba(168,85,247,.55)]">
-              {ctaText}<ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </button>
+
+            <div className="arvex-cta-orbit relative">
+              <span className="arvex-starburst" aria-hidden="true">
+                {Array.from({ length: 8 }, (_, i) => <Star key={i} className="arvex-cta-star" style={{ transform: `rotate(${i * 45}deg) translateY(-54px)` }} />)}
+              </span>
+              <button onClick={() => navigateTo('services')} className="arvex-3d-button arvex-3d-button-primary group relative inline-flex items-center gap-2 rounded-2xl bg-white px-7 py-3.5 text-sm font-black text-slate-950">
+                <span className="absolute inset-0 rounded-2xl bg-purple-400/20 blur-xl" />
+                <span className="relative">{ctaText}</span><ArrowRight className="relative h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </button>
+            </div>
           </div>
 
           <div className="mx-auto mt-12 grid max-w-5xl grid-cols-2 overflow-hidden rounded-[24px] border border-white/15 bg-black/30 shadow-[0_25px_100px_rgba(0,0,0,.55)] backdrop-blur-2xl sm:grid-cols-4">
             {trustCards.map(({ value, label, icon: Icon }, index) => (
-              <div key={label} className={`group relative px-4 py-5 transition-all duration-300 hover:bg-white/[0.055] sm:px-5 sm:py-6 ${index % 2 ? 'border-l border-white/10' : ''} ${index >= 2 ? 'border-t border-white/10 sm:border-t-0' : ''}`}>
+              <div key={label} className={`arvex-3d-card group relative px-4 py-5 transition-all duration-300 hover:bg-white/[0.055] sm:px-5 sm:py-6 ${index % 2 ? 'border-l border-white/10' : ''} ${index >= 2 ? 'border-t border-white/10 sm:border-t-0' : ''}`}>
                 <Icon className="mx-auto mb-2 h-4 w-4 text-purple-300 transition-transform duration-300 group-hover:scale-125 group-hover:text-purple-200" />
                 <p className="font-display text-xl font-black tracking-tight text-white sm:text-2xl">{value}</p>
                 <p className="mt-1 text-[8px] font-bold uppercase tracking-[0.16em] text-slate-300/60 sm:text-[9px]">{label}</p>
@@ -75,7 +82,7 @@ export const HeroSection: React.FC = () => {
 
         <div className="mt-12 grid grid-cols-2 gap-3 md:grid-cols-4 lg:mt-14">
           {quickServices.map(({ label, detail, icon: Icon, route }) => (
-            <button key={label} onClick={() => navigateTo(route)} className="group relative overflow-hidden rounded-2xl border border-white/12 bg-black/35 p-4 text-left shadow-[0_18px_60px_rgba(0,0,0,.42)] backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1.5 hover:border-purple-300/45 hover:bg-purple-950/35 hover:shadow-[0_20px_70px_rgba(124,58,237,.15)] sm:p-5">
+            <button key={label} onClick={() => navigateTo(route)} className="arvex-3d-button-dark arvex-3d-card group relative overflow-hidden rounded-2xl border border-white/12 bg-black/35 p-4 text-left backdrop-blur-2xl sm:p-5">
               <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-purple-500/10 blur-2xl transition-all duration-500 group-hover:bg-purple-400/25" />
               <div className="relative mb-3 grid h-10 w-10 place-items-center rounded-xl border border-purple-300/20 bg-purple-950/50 text-purple-200 shadow-[0_0_25px_rgba(168,85,247,.12)] transition-all duration-300 group-hover:scale-110 group-hover:border-purple-300/40">
                 <Icon className="h-5 w-5" />
