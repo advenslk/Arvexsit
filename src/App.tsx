@@ -63,8 +63,12 @@ function MaintenancePage({ openAdminLogin }: { openAdminLogin: () => void }) {
         <p className="mt-3 text-xs text-slate-600">Thank you for your patience.</p>
         <button
           type="button"
-          onClick={openAdminLogin}
-          className="mt-8 rounded-2xl border border-white/10 bg-white/[0.06] px-6 py-3 text-sm font-bold text-slate-200 transition hover:border-purple-400/30 hover:bg-purple-500/10 hover:text-white"
+          onPointerUp={(event) => {
+            event.preventDefault();
+            openAdminLogin();
+          }}
+          onClick={(event) => event.preventDefault()}
+          className="relative z-20 mt-8 cursor-pointer rounded-2xl border border-white/10 bg-white/[0.06] px-6 py-3 text-sm font-bold text-slate-200 transition hover:border-purple-400/30 hover:bg-purple-500/10 hover:text-white"
         >
           Administrator Login
         </button>
@@ -101,9 +105,10 @@ function MainWebsite() {
   }, [currentUser]);
 
   const openAdminLogin = () => {
-    setAuthModalOpen(false);
+    // Set both values in the same React update so the modal is opened directly
+    // in administrator mode. Do not close/re-open it asynchronously.
     setAuthModalTab('admin');
-    window.setTimeout(() => setAuthModalOpen(true), 0);
+    setAuthModalOpen(true);
   };
 
   const renderActivePage = () => {
