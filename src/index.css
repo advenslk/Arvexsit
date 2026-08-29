@@ -10,10 +10,25 @@
     overflow-x: hidden;
   }
 
+  html,
+  body {
+    min-height: 100%;
+    background: #05060a;
+  }
+
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-image: url('https://media.forgecdn.net/attachments/628/827/2023-03-02_21.png');
+    background-position: center top;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
   }
-  
+
+  #root {
+    background: transparent !important;
+  }
+
   .font-mono {
     font-family: 'JetBrains Mono', monospace;
   }
@@ -21,6 +36,24 @@
   .font-display {
     font-family: 'Space Grotesk', sans-serif;
   }
+}
+
+/* Global Minecraft background: fixed while the website content scrolls above it. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgba(5, 6, 10, 0.38), rgba(10, 6, 20, 0.72) 52%, rgba(5, 6, 10, 0.94)),
+    radial-gradient(circle at 50% 8%, rgba(124, 58, 237, 0.16), transparent 40%);
+  background-attachment: fixed;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
 }
 
 /* Custom Grid Background Matching Screenshots */
