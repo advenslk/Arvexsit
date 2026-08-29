@@ -1,6 +1,19 @@
 const USER_KEY = 'arvex_saas_v3_user';
 const ADMIN_TOKEN_KEY = 'arvex_admin_token';
 
+// Keep the existing AppContext logout API intact while ensuring an explicit
+// logout also revokes the server-side session. This hook is deliberately narrow:
+// it reacts only when the existing auth key is explicitly written to JSON null.
+try {
+  const originalSetItem = Storage.prototype.setItem;
+  Storage.prototype.setItem = function(key: string, value: string) {
+    originalSetItem.call(this, key, value);
+    if (this === window.localStorage && key === USER_KEY && value === 'null') {
+      void fetch('/api/auth/logout', { method: 'POST', credentials: 'include', keepalive: true }).catch(() => {});
+    }
+  };
+} catch {}
+
 function saveUser(user: unknown) {
   try { localStorage.setItem(USER_KEY, JSON.stringify(user)); } catch {}
 }
