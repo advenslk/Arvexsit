@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
@@ -39,14 +39,6 @@ import { BlogPostModal } from './components/BlogPostModal';
 import { ClientAreaModal } from './components/ClientAreaModal';
 import { AdminPanelModal } from './components/AdminPanelModal';
 
-try {
-  const primaryKey = 'arvex_saas_v3_user';
-  const backupKey = 'arvex_auth_session_backup';
-  const primary = localStorage.getItem(primaryKey);
-  const backup = sessionStorage.getItem(backupKey);
-  if (primary === null && backup) localStorage.setItem(primaryKey, backup);
-} catch {}
-
 function MaintenancePage({ openAdminLogin }: { openAdminLogin: () => void }) {
   return <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#07080c] px-6 py-20 text-center">
     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(124,58,237,0.16),transparent_42%)]" />
@@ -69,62 +61,27 @@ function MaintenanceAdminControl({ enabled, busy, onToggle }: { enabled: boolean
 }
 
 function MainWebsite() {
-  const { currentPage,currentUser,login,logout,setIsAuthModalOpen,setAuthModalTab,siteSettings,updateSiteSettings } = useApp();
-  const [authReady,setAuthReady]=useState(false);
+  const { currentPage,currentUser,setIsAuthModalOpen,setAuthModalTab,siteSettings,updateSiteSettings } = useApp();
+  const [authReady,setAuthReady]=useState(true);
   const [maintenanceMode,setMaintenanceMode]=useState(false);
   const [maintenanceBusy,setMaintenanceBusy]=useState(false);
-  const serverUserLoaded=useRef(false);
   const openAdminLogin=()=>{setAuthModalTab('admin');setIsAuthModalOpen(true)};
-
-  useEffect(()=>{
-    try {
-      const key='arvex_saas_v3_user';
-      const backupKey='arvex_auth_session_backup';
-      const raw=localStorage.getItem(key);
-      if(raw!==null) sessionStorage.setItem(backupKey,raw);
-    } catch {}
-  },[currentUser]);
-
-  useEffect(()=>{
-    let cancelled=false;
-    const restoreAuth=async()=>{
-      try {
-        const stored=localStorage.getItem('arvex_saas_v3_user');
-        const adminToken=localStorage.getItem('arvex_admin_token')||'';
-        if(stored){
-          const u=JSON.parse(stored);
-          if(u?.email&&!cancelled)login(u.email,u.role==='admin'?'admin':'customer',u.name,u.provider||'email');
-        } else if(adminToken&&!cancelled){
-          login('administrator','admin','ArveX Administrator','email');
-        }
-      }catch{}
-      try{
-        const adminToken=localStorage.getItem('arvex_admin_token')||'';
-        const headers:Record<string,string>={};
-        if(adminToken)headers.Authorization=`Bearer ${adminToken}`;
-        const r=await fetch('/api/auth/me',{credentials:'include',cache:'no-store',headers});
-        if(r.ok){
-          const j=await r.json();
-          if(!cancelled&&j?.authenticated&&j.user){
-            login(j.user.email,j.user.role==='admin'?'admin':'customer',j.user.name,j.user.provider||'email');
-          }
-        }
-      }catch{}
-      finally{
-        if(!cancelled){serverUserLoaded.current=true;setAuthReady(true)}
-      }
-    };
-    restoreAuth();
-    return()=>{cancelled=true};
-  },[]);
 
   useEffect(()=>{
     let cancelled=false;
     const loadMaintenance=async()=>{try{const r=await fetch('/api/cms/config',{cache:'no-store'});if(!r.ok)return;const config=await r.json();if(!cancelled)setMaintenanceMode(Boolean(config?.siteSettings?.maintenanceMode));}catch{}};
-    loadMaintenance();const interval=window.setInterval(loadMaintenance,15000);return()=>{cancelled=true;window.clearInterval(interval)};
+    loadMaintenance();
+    const interval=window.setInterval(loadMaintenance,15000);
+    return()=>{cancelled=true;window.clearInterval(interval)};
   },[]);
 
-  useEffect(()=>{if(!authReady||!serverUserLoaded.current)return;const params=new URLSearchParams(window.location.search);if(params.get('admin-login')!=='1')return;setAuthModalTab('admin');setIsAuthModalOpen(true);window.history.replaceState({},document.title,window.location.pathname+window.location.hash)},[authReady,setAuthModalTab,setIsAuthModalOpen]);
+  useEffect(()=>{
+    const params=new URLSearchParams(window.location.search);
+    if(params.get('admin-login')!=='1')return;
+    setAuthModalTab('admin');
+    setIsAuthModalOpen(true);
+    window.history.replaceState({},document.title,window.location.pathname+window.location.hash);
+  },[setAuthModalTab,setIsAuthModalOpen]);
 
   const toggleMaintenance=async()=>{
     if(currentUser?.role!=='admin'||maintenanceBusy)return;
@@ -146,10 +103,6 @@ function MainWebsite() {
   if(!authReady)return <div className="flex min-h-screen items-center justify-center bg-[#07080c] text-slate-400"><div className="text-center"><div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-purple-500/20 border-t-purple-400"/><p className="text-xs font-semibold uppercase tracking-[0.2em]">Loading ArveX</p></div></div>;
   if(maintenanceMode&&currentUser?.role!=='admin')return <><MaintenancePage openAdminLogin={openAdminLogin}/><AuthModal/></>;
   return <div className="relative min-h-screen overflow-x-hidden bg-transparent text-slate-100 font-sans selection:bg-cyan-500 selection:text-black antialiased flex flex-col justify-between">
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[-30] bg-[#05060a]" />
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[-29] bg-cover bg-center bg-no-repeat [background-image:url('https://minecraft.wiki/images/Island_Wallpaper.png')]" />
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[-28] bg-gradient-to-b from-slate-950/20 via-purple-950/40 to-slate-950/75" />
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[-27] bg-[radial-gradient(circle_at_50%_10%,rgba(124,58,237,.18),transparent_38%),radial-gradient(circle_at_10%_55%,rgba(14,116,144,.10),transparent_30%),radial-gradient(circle_at_90%_60%,rgba(168,85,247,.08),transparent_32%)]" />
     {currentUser?.role==='admin'&&<MaintenanceAdminControl enabled={maintenanceMode} busy={maintenanceBusy} onToggle={toggleMaintenance}/>}<Navbar/><main className="relative flex-1">{renderActivePage()}</main><Footer/><AuthModal/><CheckoutModal/><InvoiceModal/><TicketModal/><BlogPostModal/><ClientAreaModal/><AdminPanelModal/>
   </div>;
 }
