@@ -39,10 +39,6 @@ import { BlogPostModal } from './components/BlogPostModal';
 import { ClientAreaModal } from './components/ClientAreaModal';
 import { AdminPanelModal } from './components/AdminPanelModal';
 
-// Browser refreshes must never lose an authenticated identity.  sessionStorage
-// is used only as a same-tab recovery backup if localStorage is unexpectedly
-// unavailable/cleared; an explicit logout writes `null` to localStorage, so it
-// will never resurrect an old session.
 try {
   const primaryKey = 'arvex_saas_v3_user';
   const backupKey = 'arvex_auth_session_backup';
@@ -80,8 +76,6 @@ function MainWebsite() {
   const serverUserLoaded=useRef(false);
   const openAdminLogin=()=>{setAuthModalTab('admin');setIsAuthModalOpen(true)};
 
-  // Keep a second same-tab copy of the authenticated identity. This does not
-  // replace localStorage and is intentionally only a recovery mechanism.
   useEffect(()=>{
     try {
       const key='arvex_saas_v3_user';
@@ -94,9 +88,6 @@ function MainWebsite() {
   useEffect(()=>{
     let cancelled=false;
     const restoreAuth=async()=>{
-      // AppContext initializes from persistent localStorage. We also explicitly
-      // hydrate it here before waiting for the server so a refresh never logs
-      // out a user merely because the API session is unavailable.
       try {
         const stored=localStorage.getItem('arvex_saas_v3_user');
         const adminToken=localStorage.getItem('arvex_admin_token')||'';
@@ -107,9 +98,6 @@ function MainWebsite() {
           login('administrator','admin','ArveX Administrator','email');
         }
       }catch{}
-
-      // Server verification is supplementary only. A failed request must not
-      // clear the browser's authenticated identity.
       try{
         const adminToken=localStorage.getItem('arvex_admin_token')||'';
         const headers:Record<string,string>={};
@@ -128,7 +116,6 @@ function MainWebsite() {
     };
     restoreAuth();
     return()=>{cancelled=true};
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   },[]);
 
   useEffect(()=>{
@@ -158,7 +145,13 @@ function MainWebsite() {
 
   if(!authReady)return <div className="flex min-h-screen items-center justify-center bg-[#07080c] text-slate-400"><div className="text-center"><div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-purple-500/20 border-t-purple-400"/><p className="text-xs font-semibold uppercase tracking-[0.2em]">Loading ArveX</p></div></div>;
   if(maintenanceMode&&currentUser?.role!=='admin')return <><MaintenancePage openAdminLogin={openAdminLogin}/><AuthModal/></>;
-  return <div className="min-h-screen bg-[#07080c] text-slate-100 font-sans selection:bg-cyan-500 selection:text-black antialiased flex flex-col justify-between">{currentUser?.role==='admin'&&<MaintenanceAdminControl enabled={maintenanceMode} busy={maintenanceBusy} onToggle={toggleMaintenance}/>}<Navbar/><main className="relative flex-1">{renderActivePage()}</main><Footer/><AuthModal/><CheckoutModal/><InvoiceModal/><TicketModal/><BlogPostModal/><ClientAreaModal/><AdminPanelModal/></div>;
+  return <div className="relative min-h-screen overflow-x-hidden bg-transparent text-slate-100 font-sans selection:bg-cyan-500 selection:text-black antialiased flex flex-col justify-between">
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-20 bg-[#05060a]" />
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-20 bg-cover bg-center bg-no-repeat [background-image:url('https://images2.alphacoders.com/900/thumb-1920-900522.png')]" />
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 bg-gradient-to-b from-slate-950/30 via-purple-950/45 to-slate-950/80" />
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_50%_10%,rgba(124,58,237,.20),transparent_38%),radial-gradient(circle_at_10%_55%,rgba(14,116,144,.12),transparent_30%),radial-gradient(circle_at_90%_60%,rgba(168,85,247,.10),transparent_32%)]" />
+    {currentUser?.role==='admin'&&<MaintenanceAdminControl enabled={maintenanceMode} busy={maintenanceBusy} onToggle={toggleMaintenance}/>}<Navbar/><main className="relative flex-1">{renderActivePage()}</main><Footer/><AuthModal/><CheckoutModal/><InvoiceModal/><TicketModal/><BlogPostModal/><ClientAreaModal/><AdminPanelModal/>
+  </div>;
 }
 
 export default function App(){return <AppProvider><MainWebsite/></AppProvider>}
