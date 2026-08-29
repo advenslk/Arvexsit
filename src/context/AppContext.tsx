@@ -967,6 +967,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
       createdAt: new Date().toISOString(),
     };
+    setStored('user', defaultUser);
     setUser(defaultUser);
     showNotification(`Signed in as ${defaultUser.name} (${role})`);
     return true;
@@ -983,6 +984,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
       createdAt: new Date().toISOString(),
     };
+    setStored('user', googleUser);
     setUser(googleUser);
     showNotification('Successfully authenticated via Google OAuth!');
     return true;
@@ -998,6 +1000,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=200&q=80',
       createdAt: new Date().toISOString(),
     };
+    setStored('user', githubUser);
     setUser(githubUser);
     showNotification('Authenticated via GitHub!');
     return true;
@@ -1013,12 +1016,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
       createdAt: new Date().toISOString(),
     };
+    setStored('user', discordUser);
     setUser(discordUser);
     showNotification('Connected with Discord ID!');
     return true;
   };
 
   const logout = () => {
+    setStored('user', null);
+    try { localStorage.removeItem('arvex_admin_token'); } catch {}
     setUser(null);
     showNotification('Logged out successfully.', 'info');
   };
@@ -1032,6 +1038,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       provider: 'email',
       createdAt: new Date().toISOString(),
     };
+    setStored('user', newUser);
     setUser(newUser);
     showNotification(`Account created! Welcome to ArveX, ${name}`);
   };
