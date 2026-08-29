@@ -2,9 +2,9 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
+import { authBootstrap } from './auth-bootstrap';
 
 // The application uses hash routing internally, while production URLs are clean paths.
-// Convert a direct request such as /admin or /services/vps into the same internal route.
 try {
   if (!window.location.hash && window.location.pathname !== '/') {
     window.history.replaceState({}, '', `/#${window.location.pathname}${window.location.search}`);
@@ -21,5 +21,9 @@ const renderApp = () => {
   );
 };
 
-if (cmsReady && typeof cmsReady.then === 'function') cmsReady.then(renderApp).catch(renderApp);
-else renderApp();
+const renderAfterBootstrap = () => {
+  if (cmsReady && typeof cmsReady.then === 'function') cmsReady.then(renderApp).catch(renderApp);
+  else renderApp();
+};
+
+authBootstrap.then(renderAfterBootstrap).catch(renderAfterBootstrap);
