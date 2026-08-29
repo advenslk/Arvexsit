@@ -18,8 +18,8 @@
 
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    background-image: url('https://media.forgecdn.net/attachments/628/827/2023-03-02_21.png');
-    background-position: center top;
+    background-image: url('https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=2400&q=90');
+    background-position: center center;
     background-repeat: no-repeat;
     background-size: cover;
     background-attachment: fixed;
@@ -27,6 +27,8 @@
 
   #root {
     background: transparent !important;
+    position: relative;
+    z-index: 1;
   }
 
   .font-mono {
@@ -38,7 +40,7 @@
   }
 }
 
-/* Global Minecraft background: fixed while the website content scrolls above it. */
+/* Fixed Minecraft artwork: the page content scrolls over the artwork. */
 body::before {
   content: '';
   position: fixed;
@@ -46,19 +48,14 @@ body::before {
   z-index: 0;
   pointer-events: none;
   background:
-    linear-gradient(to bottom, rgba(5, 6, 10, 0.38), rgba(10, 6, 20, 0.72) 52%, rgba(5, 6, 10, 0.94)),
-    radial-gradient(circle at 50% 8%, rgba(124, 58, 237, 0.16), transparent 40%);
+    linear-gradient(to bottom, rgba(5, 6, 10, 0.30), rgba(10, 6, 20, 0.68) 52%, rgba(5, 6, 10, 0.90)),
+    radial-gradient(circle at 50% 8%, rgba(124, 58, 237, 0.18), transparent 40%);
   background-attachment: fixed;
-}
-
-#root {
-  position: relative;
-  z-index: 1;
 }
 
 /* Custom Grid Background Matching Screenshots */
 .bg-grid-pattern {
-  background-image: 
+  background-image:
     linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
   background-size: 40px 40px;
@@ -78,21 +75,13 @@ body::before {
 
 /* Continuous Infinite Marquee Animation for Partners & Reviews */
 @keyframes marquee {
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
 }
 
 @keyframes marquee-reverse {
-  0% {
-    transform: translateX(-50%);
-  }
-  100% {
-    transform: translateX(0%);
-  }
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0%); }
 }
 
 .animate-marquee {
@@ -117,106 +106,4 @@ body::before {
   display: flex;
   width: max-content;
   animation: marquee-reverse 35s linear infinite;
-}
-
-.marquee-container:hover .animate-marquee,
-.marquee-container:hover .animate-marquee-slow,
-.marquee-container:hover .animate-marquee-fast,
-.marquee-container:hover .animate-marquee-reverse {
-  animation-play-state: paused;
-}
-
-/* Mobile layout protection: prevent wide children from pushing the viewport */
-section,
-main,
-nav,
-footer,
-header {
-  min-width: 0;
-  max-width: 100%;
-}
-
-button,
-a,
-input,
-textarea,
-select {
-  max-width: 100%;
-}
-
-/* Hero mobile tuning */
-@media (max-width: 639px) {
-  .relative.isolate.overflow-hidden {
-    padding-top: 2rem !important;
-    padding-bottom: 3rem !important;
-  }
-
-  .relative.isolate.overflow-hidden > .mx-auto {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-  }
-
-  .relative.isolate.overflow-hidden .grid.items-center {
-    gap: 2rem !important;
-  }
-
-  .relative.isolate.overflow-hidden h1 {
-    max-width: 100% !important;
-    font-size: clamp(2.55rem, 10.5vw, 3.5rem) !important;
-    line-height: 0.98 !important;
-    letter-spacing: -0.045em !important;
-    overflow-wrap: anywhere;
-  }
-
-  .relative.isolate.overflow-hidden h1 span {
-    margin-top: 0.45rem !important;
-  }
-
-  .relative.isolate.overflow-hidden p {
-    max-width: 100% !important;
-  }
-
-  .relative.isolate.overflow-hidden .grid.grid-cols-2 {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .relative.isolate.overflow-hidden .grid.grid-cols-2 > button {
-    min-width: 0;
-    width: 100%;
-    overflow: hidden;
-  }
-
-  .relative.isolate.overflow-hidden .grid.grid-cols-2 > button p {
-    overflow-wrap: anywhere;
-  }
-
-  .relative.isolate.overflow-hidden .max-w-xl {
-    max-width: 100% !important;
-  }
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #090a0f;
-}
-::-webkit-scrollbar-thumb {
-  background: #232733;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #3b4252;
-}
-
-@keyframes pulse-subtle {
-  0%, 100% { opacity: 0.8; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.05); }
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 3s infinite ease-in-out;
 }
