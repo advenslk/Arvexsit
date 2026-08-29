@@ -32,15 +32,15 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="arvex-home-page relative min-h-screen overflow-x-clip bg-[#03040a] text-slate-200">
-      <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+      {/* Hero-only Minecraft artwork. It ends after the opening section instead of staying fixed behind the whole site. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[1000px] overflow-hidden sm:h-[1080px] lg:h-[1160px]">
         <div
           className="arvex-mc-world absolute -inset-[4%] bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${MINECRAFT_BACKDROP})` }}
         />
-        {/* Cinematic fade: the Minecraft artwork naturally disappears into solid black before the next sections. */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(2,3,8,.28)_0%,rgba(3,4,10,.08)_24%,rgba(3,4,10,.22)_48%,rgba(3,4,10,.72)_70%,#03040a_88%,#03040a_100%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_25%,rgba(124,58,237,.22),transparent_42%),radial-gradient(ellipse_at_15%_48%,rgba(34,197,94,.07),transparent_30%),radial-gradient(ellipse_at_85%_42%,rgba(59,130,246,.08),transparent_32%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0%,transparent_58%,rgba(3,4,10,.75)_76%,#03040a_92%)]" />
+        {/* Heavy cinematic fade at the bottom creates a clean hand-off into the dark purple sections. */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(2,3,8,.18)_0%,rgba(3,4,10,.06)_22%,rgba(3,4,10,.18)_46%,rgba(3,4,10,.56)_66%,rgba(5,3,13,.90)_82%,#07030f_94%,#07030f_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_25%,rgba(124,58,237,.24),transparent_42%),radial-gradient(ellipse_at_15%_48%,rgba(34,197,94,.07),transparent_30%),radial-gradient(ellipse_at_85%_42%,rgba(59,130,246,.08),transparent_32%)]" />
         <div className="arvex-grid-glow absolute inset-0 opacity-[.22]" />
         {particles.map((particle, i) => (
           <span
@@ -51,7 +51,7 @@ export const HomePage: React.FC = () => {
         ))}
       </div>
 
-      <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
         <div className="arvex-orb arvex-orb-one" />
         <div className="arvex-orb arvex-orb-two" />
         <div className="arvex-scanline" />
