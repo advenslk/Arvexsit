@@ -64,7 +64,10 @@ function MaintenancePage({ openAdminLogin }: { openAdminLogin: () => void }) {
         <a
           id="arvex-administrator-login"
           href="?admin-login=1"
-          onClick={() => openAdminLogin()}
+          onClick={(event) => {
+            event.preventDefault();
+            openAdminLogin();
+          }}
           className="relative z-20 mt-8 inline-flex cursor-pointer rounded-2xl border border-white/10 bg-white/[0.06] px-6 py-3 text-sm font-bold text-slate-200 transition hover:border-purple-400/30 hover:bg-purple-500/10 hover:text-white"
         >
           Administrator Login
@@ -74,9 +77,50 @@ function MaintenancePage({ openAdminLogin }: { openAdminLogin: () => void }) {
   );
 }
 
+function MaintenanceAdminControl({
+  enabled,
+  busy,
+  onToggle,
+}: {
+  enabled: boolean;
+  busy: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="fixed right-4 top-4 z-[90] flex items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0d16]/95 px-4 py-3 shadow-2xl backdrop-blur-xl">
+      <div>
+        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Maintenance Mode</p>
+        <p className={`text-xs font-bold ${enabled ? 'text-amber-300' : 'text-emerald-300'}`}>
+          {enabled ? 'ON — Visitors blocked' : 'OFF — Website online'}
+        </p>
+      </div>
+      <button
+        type="button"
+        disabled={busy}
+        onClick={onToggle}
+        className={`relative h-7 w-12 rounded-full border transition ${enabled ? 'border-amber-400/40 bg-amber-500/20' : 'border-emerald-400/40 bg-emerald-500/20'} disabled:opacity-50`}
+        aria-label="Toggle maintenance mode"
+      >
+        <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition ${enabled ? 'left-6' : 'left-1'}`} />
+      </button>
+    </div>
+  );
+}
+
 function MainWebsite() {
-  const { currentPage, currentUser, login, setIsAuthModalOpen, setAuthModalTab } = useApp();
+  const {
+    currentPage,
+    currentUser,
+    login,
+    logout,
+    setIsAuthModalOpen,
+    setAuthModalTab,
+    siteSettings,
+    updateSiteSettings,
+  } = useApp();
   const [authReady, setAuthReady] = useState(false);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [maintenanceBusy, setMaintenanceBusy] = useState(false);
   const authBootstrapped = useRef(false);
   const serverUserLoaded = useRef(false);
 
@@ -86,11 +130,23 @@ function MainWebsite() {
   };
 
   useEffect(() => {
-    try { localStorage.removeItem('arvex_saas_v3_user'); } catch {}
+    // IMPORTANT: do not clear the local auth state on page refresh.
+    // The server session cookie is the source of truth and /api/auth/me
+    // restores the authenticated account after a reload.
     fetch('/api/auth/me', { credentials: 'include' })
-      .then(async (response) => response.ok ? response.json() : null)
+      .then(async (response) => {
+        if (!response.ok) return null;
+        return response.json();
+      })
       .then((result) => {
-        if (result?.authenticated && result.user) login(result.user.email, result.user.role === 'admin' ? 'admin' : 'customer', result.user.name, result.user.provider || 'email');
+        if (result?.authenticated && result.user) {
+          login(
+            result.user.email,
+            result.user.role === 'admin' ? 'admin' : 'customer',
+            result.user.name,
+            result.user.provider || 'email'
+          );
+        }
       })
       .catch(() => undefined)
       .finally(() => {
@@ -98,10 +154,34 @@ function MainWebsite() {
         authBootstrapped.current = true;
         setAuthReady(true);
       });
+  }, [login]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadMaintenance = async () => {
+      try {
+        const response = await fetch('/api/cms/config', { cache: 'no-store' });
+        if (!response.ok) return;
+        const config = await response.json();
+        if (!cancelled) {
+          setMaintenanceMode(Boolean(config?.siteSettings?.maintenanceMode));
+        }
+      } catch {
+        // Keep the current state if the CMS is temporarily unavailable.
+      }
+    };
+
+    loadMaintenance();
+    const interval = window.setInterval(loadMaintenance, 15000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {
-    if (!authReady) return;
+    if (!authReady || !serverUserLoaded.current) return;
     const params = new URLSearchParams(window.location.search);
     if (params.get('admin-login') !== '1') return;
     setAuthModalTab('admin');
@@ -109,11 +189,46 @@ function MainWebsite() {
     window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
   }, [authReady, setAuthModalTab, setIsAuthModalOpen]);
 
-  useEffect(() => {
-    if (!authBootstrapped.current || !serverUserLoaded.current || currentUser) return;
-    try { localStorage.removeItem('arvex_admin_token'); } catch {}
-    fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => undefined);
-  }, [currentUser]);
+  const toggleMaintenance = async () => {
+    if (currentUser?.role !== 'admin' || maintenanceBusy) return;
+
+    const next = !maintenanceMode;
+    const adminToken = localStorage.getItem('arvex_admin_token') || '';
+    if (!adminToken) {
+      setAuthModalTab('admin');
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    setMaintenanceBusy(true);
+    try {
+      const response = await fetch('/api/cms/config/siteSettings', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${adminToken}`,
+        },
+        body: JSON.stringify({ value: { ...siteSettings, maintenanceMode: next } }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('arvex_admin_token');
+          logout();
+          openAdminLogin();
+        }
+        return;
+      }
+
+      setMaintenanceMode(next);
+      updateSiteSettings({ maintenanceMode: next } as any);
+    } catch {
+      // Leave the previous state untouched if the API is unavailable.
+    } finally {
+      setMaintenanceBusy(false);
+    }
+  };
 
   const renderActivePage = () => {
     switch (currentPage) {
@@ -168,7 +283,9 @@ function MainWebsite() {
     );
   }
 
-  if (currentUser?.role !== 'admin') {
+  // Maintenance mode affects visitors only. Authenticated administrators can
+  // continue using the complete website and the admin control center.
+  if (maintenanceMode && currentUser?.role !== 'admin') {
     return (
       <>
         <MaintenancePage openAdminLogin={openAdminLogin} />
@@ -177,7 +294,27 @@ function MainWebsite() {
     );
   }
 
-  return <div className="min-h-screen bg-[#07080c] text-slate-100 font-sans selection:bg-cyan-500 selection:text-black antialiased flex flex-col justify-between"><Navbar /><main className="relative flex-1">{renderActivePage()}</main><Footer /><AuthModal /><CheckoutModal /><InvoiceModal /><TicketModal /><BlogPostModal /><ClientAreaModal /><AdminPanelModal /></div>;
+  return (
+    <div className="min-h-screen bg-[#07080c] text-slate-100 font-sans selection:bg-cyan-500 selection:text-black antialiased flex flex-col justify-between">
+      {currentUser?.role === 'admin' && (
+        <MaintenanceAdminControl
+          enabled={maintenanceMode}
+          busy={maintenanceBusy}
+          onToggle={toggleMaintenance}
+        />
+      )}
+      <Navbar />
+      <main className="relative flex-1">{renderActivePage()}</main>
+      <Footer />
+      <AuthModal />
+      <CheckoutModal />
+      <InvoiceModal />
+      <TicketModal />
+      <BlogPostModal />
+      <ClientAreaModal />
+      <AdminPanelModal />
+    </div>
+  );
 }
 
 export default function App() { return <AppProvider><MainWebsite /></AppProvider>; }
