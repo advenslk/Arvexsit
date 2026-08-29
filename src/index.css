@@ -9,7 +9,6 @@
   .font-display { font-family: 'Space Grotesk', sans-serif; }
 }
 
-/* Minecraft artwork belongs only to the hero. It scrolls naturally and fades into the page below. */
 .arvex-home-page {
   background:
     radial-gradient(ellipse at 50% 20%, rgba(88, 28, 135, .20) 0%, transparent 40%),
@@ -21,7 +20,7 @@
   animation: none !important;
   transform: scale(1.035) translate3d(0, 0, 0) !important;
   will-change: auto;
-  filter: saturate(1.16) contrast(1.05);
+  filter: saturate(1.18) contrast(1.06) brightness(.86);
   background-attachment: scroll;
 }
 
@@ -31,68 +30,80 @@
   50% { opacity: 1; transform: translate3d(12px, -25px, 0) scale(1); }
   80% { opacity: .55; }
 }
-
 @keyframes arvexOrbFloatOne {
   0%, 100% { transform: translate3d(-10%, -4%, 0) scale(1); opacity: .35; }
   50% { transform: translate3d(12%, 10%, 0) scale(1.18); opacity: .62; }
 }
-
 @keyframes arvexOrbFloatTwo {
   0%, 100% { transform: translate3d(8%, 8%, 0) scale(1.05); opacity: .25; }
   50% { transform: translate3d(-10%, -8%, 0) scale(.88); opacity: .52; }
 }
-
 @keyframes arvexScan {
   0% { transform: translateY(-120%); opacity: 0; }
   12% { opacity: .18; }
   80% { opacity: .08; }
   100% { transform: translateY(120%); opacity: 0; }
 }
+@keyframes arvexSectionIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes arvexStarPulse { 0%,100% { opacity:.3; scale:.7; } 50% { opacity:1; scale:1.15; } }
+@keyframes arvexRouteFlow { to { stroke-dashoffset: -12; } }
+@keyframes arvexMapPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(168,85,247,.0), 0 0 18px rgba(168,85,247,.25); } 50% { box-shadow: 0 0 0 8px rgba(168,85,247,.0), 0 0 32px rgba(168,85,247,.55); } }
 
 .arvex-particle { animation: arvexParticleFloat 10s ease-in-out infinite; will-change: transform, opacity; }
+.arvex-orb { position: absolute; width: 42vw; height: 42vw; max-width: 720px; max-height: 720px; border-radius: 9999px; filter: blur(80px); pointer-events: none; }
+.arvex-orb-one { left: -16vw; top: 18vh; background: rgba(124,58,237,.20); animation: arvexOrbFloatOne 16s ease-in-out infinite; }
+.arvex-orb-two { right: -15vw; top: 42vh; background: rgba(79,70,229,.16); animation: arvexOrbFloatTwo 20s ease-in-out infinite; }
+.arvex-scanline { position:absolute; left:0; right:0; top:-20%; height:18%; background:linear-gradient(to bottom,transparent,rgba(168,85,247,.13),transparent); filter:blur(10px); animation:arvexScan 13s linear infinite; }
+.arvex-grid-glow { background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px); background-size:52px 52px; mask-image:linear-gradient(to bottom,black,transparent 88%); }
 
-.arvex-orb {
-  position: absolute; width: 42vw; height: 42vw; max-width: 720px; max-height: 720px;
-  border-radius: 9999px; filter: blur(80px); pointer-events: none;
+/* Premium 3D UI treatment. Kept subtle so the dashboard and checkout controls remain usable. */
+.arvex-3d-button {
+  position: relative;
+  transform: translate3d(0,0,0);
+  transform-style: preserve-3d;
+  box-shadow: 0 7px 0 rgba(18,8,34,.65), 0 18px 45px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.16);
+  transition: transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease, filter .22s ease;
 }
-.arvex-orb-one { left: -16vw; top: 18vh; background: rgba(124, 58, 237, .20); animation: arvexOrbFloatOne 16s ease-in-out infinite; }
-.arvex-orb-two { right: -15vw; top: 42vh; background: rgba(79, 70, 229, .16); animation: arvexOrbFloatTwo 20s ease-in-out infinite; }
-.arvex-scanline { position: absolute; left: 0; right: 0; top: -20%; height: 18%; background: linear-gradient(to bottom, transparent, rgba(168,85,247,.13), transparent); filter: blur(10px); animation: arvexScan 13s linear infinite; }
+.arvex-3d-button:hover { transform: translate3d(0,-4px,0) perspective(600px) rotateX(2deg); box-shadow: 0 11px 0 rgba(18,8,34,.65), 0 24px 60px rgba(124,58,237,.24), inset 0 1px 0 rgba(255,255,255,.22); filter: brightness(1.08); }
+.arvex-3d-button:active { transform: translate3d(0,2px,0); box-shadow: 0 3px 0 rgba(18,8,34,.7), 0 9px 25px rgba(0,0,0,.3); }
+.arvex-3d-button-primary { box-shadow: 0 8px 0 #7e22ce, 0 0 30px rgba(168,85,247,.48), 0 18px 60px rgba(124,58,237,.35), inset 0 1px 0 #fff; }
+.arvex-3d-button-primary:hover { box-shadow: 0 11px 0 #7e22ce, 0 0 45px rgba(168,85,247,.7), 0 24px 70px rgba(124,58,237,.48), inset 0 1px 0 #fff; }
+.arvex-3d-button-dark { box-shadow: 0 7px 0 rgba(8,6,18,.85), 0 18px 50px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.12); }
+.arvex-3d-card { transform: translateZ(0); transform-style: preserve-3d; box-shadow: 0 22px 65px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.055); transition: transform .28s ease, box-shadow .28s ease, border-color .28s ease; }
+.arvex-3d-card:hover { transform: translateY(-5px) perspective(900px) rotateX(1deg); box-shadow: 0 30px 85px rgba(0,0,0,.48), 0 0 35px rgba(124,58,237,.09), inset 0 1px 0 rgba(255,255,255,.09); }
 
-.arvex-grid-glow {
-  background-image: linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
-  background-size: 52px 52px;
-  mask-image: linear-gradient(to bottom, black, transparent 88%);
-}
+.arvex-cta-orbit { position: relative; display:inline-flex; }
+.arvex-starburst { position:absolute; inset:50% auto auto 50%; z-index:0; width:1px; height:1px; pointer-events:none; }
+.arvex-cta-star { position:absolute; left:-7px; top:-7px; width:14px; height:14px; color:#e9d5ff; fill:#c084fc; filter:drop-shadow(0 0 7px rgba(192,132,252,.95)); animation:arvexStarPulse 1.8s ease-in-out infinite; }
+.arvex-cta-star:nth-child(2n) { animation-delay:.35s; }
+.arvex-cta-star:nth-child(3n) { animation-delay:.7s; }
+
+.arvex-map-route { animation:arvexRouteFlow 3.2s linear infinite; }
+.arvex-map-node { animation:arvexMapPulse 2.4s ease-in-out infinite; }
 
 .arvex-home-page > .relative.z-10 > * { animation: arvexSectionIn .8s cubic-bezier(.2,.75,.25,1) both; }
-.arvex-home-page > .relative.z-10 > *:nth-child(2) { animation-delay: .05s; }
-.arvex-home-page > .relative.z-10 > *:nth-child(3) { animation-delay: .10s; }
-.arvex-home-page > .relative.z-10 > *:nth-child(4) { animation-delay: .15s; }
-.arvex-home-page > .relative.z-10 > *:nth-child(5) { animation-delay: .20s; }
-.arvex-home-page > .relative.z-10 > *:nth-child(6) { animation-delay: .25s; }
-.arvex-home-page > .relative.z-10 > *:nth-child(7) { animation-delay: .30s; }
-.arvex-home-page > .relative.z-10 > *:nth-child(8) { animation-delay: .35s; }
-.arvex-home-page > .relative.z-10 > *:nth-child(9) { animation-delay: .40s; }
-.arvex-home-page > .relative.z-10 > *:nth-child(10) { animation-delay: .45s; }
+.arvex-home-page > .relative.z-10 > *:nth-child(2) { animation-delay:.05s; }
+.arvex-home-page > .relative.z-10 > *:nth-child(3) { animation-delay:.10s; }
+.arvex-home-page > .relative.z-10 > *:nth-child(4) { animation-delay:.15s; }
+.arvex-home-page > .relative.z-10 > *:nth-child(5) { animation-delay:.20s; }
+.arvex-home-page > .relative.z-10 > *:nth-child(6) { animation-delay:.25s; }
+.arvex-home-page > .relative.z-10 > *:nth-child(7) { animation-delay:.30s; }
+.arvex-home-page > .relative.z-10 > *:nth-child(8) { animation-delay:.35s; }
+.arvex-home-page > .relative.z-10 > *:nth-child(9) { animation-delay:.40s; }
+.arvex-home-page > .relative.z-10 > *:nth-child(10) { animation-delay:.45s; }
 
-@keyframes arvexSectionIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+.bg-grid-pattern { background-image:linear-gradient(to right,rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.04) 1px,transparent 1px); background-size:40px 40px; }
+.bg-radial-gradient { background:radial-gradient(circle at 50% 10%,rgba(139,92,246,.12) 0%,rgba(9,10,15,0) 70%); }
+.glow-card { box-shadow:0 0 25px -5px rgba(139,92,246,.15); }
+.glow-button { box-shadow:0 0 20px 2px rgba(168,85,247,.3); }
+
+@keyframes marquee { 0% { transform:translateX(0%); } 100% { transform:translateX(-50%); } }
+@keyframes marquee-reverse { 0% { transform:translateX(-50%); } 100% { transform:translateX(0%); } }
+.animate-marquee { display:flex; width:max-content; animation:marquee 35s linear infinite; }
+.animate-marquee-slow { display:flex; width:max-content; animation:marquee 45s linear infinite; }
+.animate-marquee-fast { display:flex; width:max-content; animation:marquee 25s linear infinite; }
+.animate-marquee-reverse { display:flex; width:max-content; animation:marquee-reverse 35s linear infinite; }
 
 @media (prefers-reduced-motion: reduce) {
-  .arvex-mc-world, .arvex-particle, .arvex-orb-one, .arvex-orb-two, .arvex-scanline, .arvex-home-page > .relative.z-10 > * { animation: none !important; }
+  .arvex-mc-world,.arvex-particle,.arvex-orb-one,.arvex-orb-two,.arvex-scanline,.arvex-home-page > .relative.z-10 > *,.arvex-3d-button,.arvex-3d-card,.arvex-cta-star,.arvex-map-route,.arvex-map-node { animation:none !important; transition:none !important; }
 }
-
-.bg-grid-pattern {
-  background-image: linear-gradient(to right, rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.04) 1px, transparent 1px);
-  background-size: 40px 40px;
-}
-.bg-radial-gradient { background: radial-gradient(circle at 50% 10%, rgba(139,92,246,.12) 0%, rgba(9,10,15,0) 70%); }
-.glow-card { box-shadow: 0 0 25px -5px rgba(139,92,246,.15); }
-.glow-button { box-shadow: 0 0 20px 2px rgba(168,85,247,.3); }
-
-@keyframes marquee { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
-@keyframes marquee-reverse { 0% { transform: translateX(-50%); } 100% { transform: translateX(0%); } }
-.animate-marquee { display: flex; width: max-content; animation: marquee 35s linear infinite; }
-.animate-marquee-slow { display: flex; width: max-content; animation: marquee 45s linear infinite; }
-.animate-marquee-fast { display: flex; width: max-content; animation: marquee 25s linear infinite; }
-.animate-marquee-reverse { display: flex; width: max-content; animation: marquee-reverse 35s linear infinite; }
