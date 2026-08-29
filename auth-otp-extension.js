@@ -37,7 +37,8 @@ function normalizeOtp(v){return String(v ?? '').normalize('NFKC').replace(/\s+/g
 function codeHash(v){return crypto.createHash('sha256').update(normalizeOtp(v),'utf8').digest('hex')}
 function validCode(input,challenge){const normalized=normalizeOtp(input);if(normalized.length!==6)return false;if(challenge?.code && normalized===normalizeOtp(challenge.code))return true;const actual=Buffer.from(codeHash(normalized),'utf8');const expected=Buffer.from(String(challenge?.codeHash||''),'utf8');return actual.length===expected.length&&crypto.timingSafeEqual(actual,expected)}
 function signAdminToken(payload){const body=Buffer.from(JSON.stringify(payload)).toString('base64url');const signature=crypto.createHmac('sha256',TOKEN_SECRET).update(body).digest('base64url');return `${body}.${signature}`}
-function setCookie(res,name,id){res.setHeader('Set-Cookie',`${name}=${encodeURIComponent(id)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800`)}
+// Session cookie: survives refreshes, but is discarded when the browser session ends.
+function setCookie(res,name,id){res.setHeader('Set-Cookie',`${name}=${encodeURIComponent(id)}; Path=/; HttpOnly; Secure; SameSite=Lax`)}
 function getCookie(req,name){return String(req.headers.cookie||'').split(';').map(x=>x.trim()).find(x=>x.startsWith(`${name}=`))?.split('=').slice(1).join('=')}
 function publicUser(u){return{id:u.id,name:u.name,email:u.email,role:u.role||'customer',provider:u.provider||'email',avatar:u.avatar||'',createdAt:u.createdAt,emailVerified:Boolean(u.emailVerified)}}
 function jsonError(res,status,error){return res.status(status).json({error})}
