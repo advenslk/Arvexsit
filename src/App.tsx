@@ -61,27 +61,29 @@ function MaintenancePage({ openAdminLogin }: { openAdminLogin: () => void }) {
           ArveX Hosting is currently undergoing maintenance and improvements. Our website will be available again soon.
         </p>
         <p className="mt-3 text-xs text-slate-600">Thank you for your patience.</p>
-        <button
-          type="button"
-          onPointerUp={(event) => {
-            event.preventDefault();
-            openAdminLogin();
-          }}
-          onClick={(event) => event.preventDefault()}
-          className="relative z-20 mt-8 cursor-pointer rounded-2xl border border-white/10 bg-white/[0.06] px-6 py-3 text-sm font-bold text-slate-200 transition hover:border-purple-400/30 hover:bg-purple-500/10 hover:text-white"
+        <a
+          id="arvex-administrator-login"
+          href="?admin-login=1"
+          onClick={() => openAdminLogin()}
+          className="relative z-20 mt-8 inline-flex cursor-pointer rounded-2xl border border-white/10 bg-white/[0.06] px-6 py-3 text-sm font-bold text-slate-200 transition hover:border-purple-400/30 hover:bg-purple-500/10 hover:text-white"
         >
           Administrator Login
-        </button>
+        </a>
       </div>
     </main>
   );
 }
 
 function MainWebsite() {
-  const { currentPage, currentUser, login, setAuthModalOpen, setAuthModalTab } = useApp();
+  const { currentPage, currentUser, login, setIsAuthModalOpen, setAuthModalTab } = useApp();
   const [authReady, setAuthReady] = useState(false);
   const authBootstrapped = useRef(false);
   const serverUserLoaded = useRef(false);
+
+  const openAdminLogin = () => {
+    setAuthModalTab('admin');
+    setIsAuthModalOpen(true);
+  };
 
   useEffect(() => {
     try { localStorage.removeItem('arvex_saas_v3_user'); } catch {}
@@ -99,17 +101,19 @@ function MainWebsite() {
   }, []);
 
   useEffect(() => {
+    if (!authReady) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('admin-login') !== '1') return;
+    setAuthModalTab('admin');
+    setIsAuthModalOpen(true);
+    window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+  }, [authReady, setAuthModalTab, setIsAuthModalOpen]);
+
+  useEffect(() => {
     if (!authBootstrapped.current || !serverUserLoaded.current || currentUser) return;
     try { localStorage.removeItem('arvex_admin_token'); } catch {}
     fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => undefined);
   }, [currentUser]);
-
-  const openAdminLogin = () => {
-    // Set both values in the same React update so the modal is opened directly
-    // in administrator mode. Do not close/re-open it asynchronously.
-    setAuthModalTab('admin');
-    setAuthModalOpen(true);
-  };
 
   const renderActivePage = () => {
     switch (currentPage) {
