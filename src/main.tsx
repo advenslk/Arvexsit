@@ -3,9 +3,6 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 
-// Prevent the repository's legacy demo account from ever being restored.
-try { localStorage.setItem('arvex_saas_v3_user', 'null'); } catch {}
-
 // The application uses hash routing internally, while production URLs are clean paths.
 // Convert a direct request such as /admin or /services/vps into the same internal route.
 try {
