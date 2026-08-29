@@ -39,6 +39,18 @@ import { BlogPostModal } from './components/BlogPostModal';
 import { ClientAreaModal } from './components/ClientAreaModal';
 import { AdminPanelModal } from './components/AdminPanelModal';
 
+// Browser refreshes must never lose an authenticated identity.  sessionStorage
+// is used only as a same-tab recovery backup if localStorage is unexpectedly
+// unavailable/cleared; an explicit logout writes `null` to localStorage, so it
+// will never resurrect an old session.
+try {
+  const primaryKey = 'arvex_saas_v3_user';
+  const backupKey = 'arvex_auth_session_backup';
+  const primary = localStorage.getItem(primaryKey);
+  const backup = sessionStorage.getItem(backupKey);
+  if (primary === null && backup) localStorage.setItem(primaryKey, backup);
+} catch {}
+
 function MaintenancePage({ openAdminLogin }: { openAdminLogin: () => void }) {
   return <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#07080c] px-6 py-20 text-center">
     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(124,58,237,0.16),transparent_42%)]" />
@@ -68,11 +80,23 @@ function MainWebsite() {
   const serverUserLoaded=useRef(false);
   const openAdminLogin=()=>{setAuthModalTab('admin');setIsAuthModalOpen(true)};
 
+  // Keep a second same-tab copy of the authenticated identity. This does not
+  // replace localStorage and is intentionally only a recovery mechanism.
+  useEffect(()=>{
+    try {
+      const key='arvex_saas_v3_user';
+      const backupKey='arvex_auth_session_backup';
+      const raw=localStorage.getItem(key);
+      if(raw!==null) sessionStorage.setItem(backupKey,raw);
+    } catch {}
+  },[currentUser]);
+
   useEffect(()=>{
     let cancelled=false;
     const restoreAuth=async()=>{
-      // Restore the locally persisted identity immediately. This prevents a
-      // refresh from temporarily turning a signed-in admin/customer into a guest.
+      // AppContext initializes from persistent localStorage. We also explicitly
+      // hydrate it here before waiting for the server so a refresh never logs
+      // out a user merely because the API session is unavailable.
       try {
         const stored=localStorage.getItem('arvex_saas_v3_user');
         const adminToken=localStorage.getItem('arvex_admin_token')||'';
@@ -84,6 +108,8 @@ function MainWebsite() {
         }
       }catch{}
 
+      // Server verification is supplementary only. A failed request must not
+      // clear the browser's authenticated identity.
       try{
         const adminToken=localStorage.getItem('arvex_admin_token')||'';
         const headers:Record<string,string>={};
@@ -95,8 +121,6 @@ function MainWebsite() {
             login(j.user.email,j.user.role==='admin'?'admin':'customer',j.user.name,j.user.provider||'email');
           }
         }
-        // Do NOT clear the persisted frontend identity on a transient 401.
-        // Explicit logout is the only action that removes the local identity.
       }catch{}
       finally{
         if(!cancelled){serverUserLoaded.current=true;setAuthReady(true)}
