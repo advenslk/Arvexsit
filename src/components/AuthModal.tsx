@@ -38,6 +38,7 @@ export const AuthModal: React.FC = () => {
       return;
     }
     if(mode==='forgot'){
+      if(authModalTab==='admin'){setErrorMsg('Administrator password is managed by the server configuration.');return}
       if(!email){setErrorMsg('Enter your account email address.');return}
       setBusy(true);
       try{
@@ -78,7 +79,9 @@ export const AuthModal: React.FC = () => {
             <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border border-purple-400/20"><img src="https://www.image2url.com/r2/default/images/1787805975676-5a4d373d-c6bd-4d39-bb64-1336474f4a7a.png" alt="ArveX Hosting" className="h-full w-full object-contain p-1.5"/></div>
             <div><h3 className="font-display text-xl font-black text-white">{authModalTab==='admin'?'Admin Portal':'ArveX Account'}</h3><p className="text-xs text-slate-500">Secure authentication for ArveX Hosting</p></div>
           </div>
-          {!challengeId&&mode==='auth'&&<div className="mb-5 grid grid-cols-2 rounded-xl border border-white/5 bg-black/20 p-1 text-xs font-bold"><button type="button" onClick={()=>setTab('login')} className={`rounded-lg py-2.5 ${authModalTab==='login'?'bg-white text-black':'text-slate-500'}`}>Sign In</button><button type="button" onClick={()=>setTab('register')} className={`rounded-lg py-2.5 ${authModalTab==='register'?'bg-white text-black':'text-slate-500'}`}>Create Account</button></div>}
+
+          {/* Normal users can sign in or create an account. Admin authentication is intentionally login-only. */}
+          {!challengeId&&mode==='auth'&&authModalTab!=='admin'&&<div className="mb-5 grid grid-cols-2 rounded-xl border border-white/5 bg-black/20 p-1 text-xs font-bold"><button type="button" onClick={()=>setTab('login')} className={`rounded-lg py-2.5 ${authModalTab==='login'?'bg-white text-black':'text-slate-500'}`}>Sign In</button><button type="button" onClick={()=>setTab('register')} className={`rounded-lg py-2.5 ${authModalTab==='register'?'bg-white text-black':'text-slate-500'}`}>Create Account</button></div>}
           {errorMsg&&<div className="mb-4 flex items-start gap-2 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-xs text-rose-300"><AlertCircle className="h-4 w-4"/><span>{errorMsg}</span></div>}
           {successMsg&&<div className="mb-4 flex items-start gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-300"><CheckCircle2 className="h-4 w-4"/><span>{successMsg}</span></div>}
           {!challengeId&&mode==='auth'&&authModalTab!=='admin'&&<><button type="button" onClick={googleLogin} className="flex w-full items-center justify-center gap-3 rounded-xl bg-white py-3 text-sm font-bold text-slate-900"><b>G</b>Continue with Google</button><div className="my-5 text-center text-[10px] text-slate-600">OR</div></>}
@@ -95,7 +98,7 @@ export const AuthModal: React.FC = () => {
           </form>
           <button disabled={busy} type="button" onClick={submit} className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 py-3.5 text-sm font-bold text-white disabled:opacity-60">{busy?'Securing…':challengeId?(mode==='forgot'?'Reset Password':authModalTab==='admin'?'Verify & Enter Admin':mode==='verify-register'?'Verify Email':'Verify & Sign In'):mode==='forgot'?'Send Reset Code':authModalTab==='register'?'Create Secure Account':authModalTab==='admin'?'Continue to Verification':'Sign In'}{!busy&&<ArrowRight className="h-4 w-4"/>}</button>
           {mode==='forgot'&&!challengeId&&<button type="button" onClick={()=>{setMode('auth');setAuthModalTab('login')}} className="mx-auto mt-4 block text-xs text-slate-500">Back to sign in</button>}
-          {authModalTab==='admin'&&!challengeId&&<p className="mt-5 flex items-center justify-center gap-1.5 text-center text-[10px] text-slate-600"><Shield className="h-3 w-3"/>Administrator login requires password + email verification.</p>}
+          {authModalTab==='admin'&&!challengeId&&<p className="mt-5 flex items-center justify-center gap-1.5 text-center text-[10px] text-slate-600"><Shield className="h-3 w-3"/>Only the server-configured administrator can sign in. Password + email verification are required.</p>}
           {authModalTab!=='admin'&&!challengeId&&mode==='auth'&&<button type="button" onClick={()=>setTab('admin')} className="mx-auto mt-3 block text-[10px] font-semibold text-slate-600">Staff / administrator sign-in</button>}
         </div>
       </div>
