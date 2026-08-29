@@ -15,7 +15,7 @@ export const HeroSection: React.FC = () => {
   const badgeText = siteSettings?.heroBadgeText || 'Premium hosting. Built for performance.';
   const title1 = siteSettings?.heroTitleLine1 || 'Build it. Host it.';
   const title2 = siteSettings?.heroTitleLine2 || 'No interruptions.';
-  const subtitle = siteSettings?.heroSubtitle || 'High-performance game, VPS and bot hosting powered by modern infrastructure, reliable networking and simple control.';
+  const subtitle = siteSettings?.heroSubtitle || 'High-performance game hosting built for players who demand speed, stability, and total control — no lag, no limits.';
   const ctaText = siteSettings?.heroCtaText || 'Get Started';
   const secondaryCtaText = siteSettings?.heroSecondaryCtaText || 'View Prices';
 
@@ -38,9 +38,9 @@ export const HeroSection: React.FC = () => {
               {title1}
               <span className="mt-2 block bg-gradient-to-r from-purple-200 via-white to-indigo-300 bg-clip-text text-transparent">{title2}</span>
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-sm leading-7 text-slate-400 sm:text-base lg:mx-0 lg:text-lg">{subtitle}</p>
-            <div className="mx-auto mt-7 grid max-w-2xl gap-2.5 text-left sm:grid-cols-2 lg:mx-0">
-              {heroFeatures.map((feature) => <div key={feature} className="flex items-center gap-2.5 text-xs font-medium text-slate-300 sm:text-sm"><span className="grid h-5 w-5 shrink-0 place-items-center rounded-full border border-purple-400/25 bg-purple-500/10 text-purple-300"><Check className="h-3 w-3" /></span>{feature}</div>)}
+            <p className="mx-auto mt-6 max-w-2xl text-center text-sm leading-7 text-slate-400 sm:text-base lg:mx-0 lg:text-left lg:text-lg">{subtitle}</p>
+            <div className="mx-auto mt-7 grid max-w-2xl gap-2.5 text-center sm:grid-cols-2 lg:mx-0 lg:text-left">
+              {heroFeatures.map((feature) => <div key={feature} className="flex items-center justify-center gap-2.5 text-xs font-medium text-slate-300 sm:text-sm lg:justify-start"><span className="grid h-5 w-5 shrink-0 place-items-center rounded-full border border-purple-400/25 bg-purple-500/10 text-purple-300"><Check className="h-3 w-3" /></span>{feature}</div>)}
             </div>
             <div className="mt-9 flex flex-wrap justify-center gap-3 lg:justify-start">
               <button onClick={() => navigateTo('services')} className="group inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-xl shadow-purple-700/25 transition-all hover:-translate-y-0.5 hover:from-purple-500 hover:to-indigo-500">{ctaText}<ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></button>
