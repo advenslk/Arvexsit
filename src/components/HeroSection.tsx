@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, ChevronRight, Cloud, Gamepad2, Globe2, Server, ShieldCheck, Zap } from 'lucide-react';
+import { ArrowRight, ChevronRight, Cloud, Gamepad2, Globe2, Server, ShieldCheck, Zap, Clock3, Database, Headphones, Sparkles } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 const quickServices = [
@@ -9,58 +9,81 @@ const quickServices = [
   { label: 'Global Network', detail: 'Low-latency routes worldwide', icon: Globe2, route: 'locations' as const },
 ];
 
-const HYTALE_ART = 'https://pbs.twimg.com/media/G5-qASnWcAANXO0.jpg';
+const trustCards = [
+  { value: '99.99%', label: 'Network uptime', icon: ShieldCheck },
+  { value: 'NVMe', label: 'High-speed storage', icon: Database },
+  { value: '< 1 min', label: 'Instant deployment', icon: Zap },
+  { value: '24/7', label: 'Expert support', icon: Headphones },
+];
 
 export const HeroSection: React.FC = () => {
   const { navigateTo, siteSettings } = useApp();
-  const title1 = siteSettings?.heroTitleLine1 || 'Build it. Host it.';
-  const title2 = siteSettings?.heroTitleLine2 || 'No interruptions.';
-  const subtitle = siteSettings?.heroSubtitle || 'Premium game, VPS and infrastructure hosting engineered for speed, stability, and complete control.';
+  const title1 = siteSettings?.heroTitleLine1 || 'Host your own';
+  const title2 = siteSettings?.heroTitleLine2 || 'Minecraft Servers.';
+  const subtitle = siteSettings?.heroSubtitle || 'High-performance game hosting built for players who demand speed, stability, and total control. Low-latency infrastructure, instant setup, and support around the clock.';
   const ctaText = siteSettings?.heroCtaText || 'Get Started';
-  const secondaryCtaText = siteSettings?.heroSecondaryCtaText || 'View Prices';
+  const secondaryCtaText = siteSettings?.heroSecondaryCtaText || 'Learn more';
 
   return (
-    <section className="relative min-h-[calc(100vh-72px)] overflow-hidden pb-16 pt-5 sm:pb-24 sm:pt-7 lg:pb-28 lg:pt-8">
-      <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.055] [background-image:linear-gradient(rgba(255,255,255,.55)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.55)_1px,transparent_1px)] [background-size:46px_46px] [mask-image:linear-gradient(to_bottom,black,transparent_92%)]" />
+    <section className="relative min-h-[calc(100svh-68px)] overflow-hidden pb-16 pt-10 sm:pb-24 sm:pt-14 lg:pt-20">
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_32%,rgba(168,85,247,.20),transparent_34%)]" />
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl text-center">
-          <button type="button" onClick={() => navigateTo('services-games')} className="group relative mx-auto mb-12 flex h-[92px] w-full max-w-6xl items-center overflow-hidden rounded-[22px] border border-white/15 bg-white/[0.06] text-left shadow-[0_18px_70px_rgba(0,0,0,.35)] backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-purple-300/50 sm:h-[116px]">
-            <img src={HYTALE_ART} alt="Hytale" className="absolute inset-0 h-full w-full object-cover object-[50%_43%] opacity-95 transition-transform duration-700 group-hover:scale-[1.025]" />
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/65 via-slate-950/15 to-slate-950/50" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_50%,rgba(34,197,94,.15),transparent_28%),radial-gradient(circle_at_82%_50%,rgba(59,130,246,.14),transparent_30%)]" />
-            <div className="relative flex w-full items-center justify-between px-4 sm:px-8">
-              <div className="flex min-w-0 items-center gap-3 sm:gap-5">
-                <div className="rounded-xl border border-white/15 bg-slate-950/45 px-3 py-2 shadow-2xl backdrop-blur-sm sm:px-5 sm:py-2.5">
-                  <span className="font-display text-xl font-black tracking-[-0.04em] text-white drop-shadow-[0_3px_8px_rgba(0,0,0,.8)] sm:text-3xl">HYTALE</span>
-                </div>
-                <span className="hidden h-9 w-px bg-white/25 sm:block" />
-                <div className="hidden sm:block"><p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/60">ArveX Hosting</p><p className="mt-0.5 text-sm font-black uppercase tracking-[0.08em] text-white md:text-base">Hytale Server Hosting</p></div>
+      <div className="mx-auto flex max-w-7xl flex-col px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-6xl text-center">
+          <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-purple-300/30 bg-purple-950/45 px-4 py-2 text-[9px] font-black uppercase tracking-[0.24em] text-purple-100 shadow-[0_0_35px_rgba(168,85,247,.18)] backdrop-blur-xl sm:text-[11px]">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-purple-300 shadow-[0_0_10px_rgba(168,85,247,.9)]" />
+            Premium Game Hosting
+            <Sparkles className="h-3.5 w-3.5 text-purple-300" />
+          </div>
+
+          <h1 className="font-display text-[3.35rem] font-black leading-[.88] tracking-[-0.07em] text-white drop-shadow-[0_10px_45px_rgba(0,0,0,.9)] sm:text-6xl md:text-7xl lg:text-[86px] xl:text-[96px]">
+            {title1}
+            <span className="mt-3 block bg-gradient-to-r from-white via-purple-100 to-fuchsia-300 bg-clip-text text-transparent">{title2}</span>
+          </h1>
+
+          <p className="mx-auto mt-7 max-w-2xl text-sm leading-7 text-slate-100/85 drop-shadow-[0_4px_22px_rgba(0,0,0,.95)] sm:mt-8 sm:text-base sm:leading-8 md:text-lg">
+            {subtitle}
+          </p>
+
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+            <button onClick={() => navigateTo('pricing')} className="group inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-slate-950/55 px-6 py-3.5 text-sm font-bold text-white shadow-2xl backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-purple-300/50 hover:bg-purple-950/60">
+              {secondaryCtaText}<ChevronRight className="h-4 w-4 text-purple-200 transition-transform group-hover:translate-x-1" />
+            </button>
+            <button onClick={() => navigateTo('services')} className="group inline-flex items-center gap-2 rounded-2xl bg-white px-7 py-3.5 text-sm font-black text-slate-950 shadow-[0_12px_55px_rgba(168,85,247,.38)] transition-all duration-300 hover:-translate-y-1 hover:bg-purple-50">
+              {ctaText}<ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </button>
+          </div>
+
+          <div className="mx-auto mt-12 grid max-w-5xl grid-cols-2 overflow-hidden rounded-[22px] border border-white/15 bg-slate-950/45 shadow-[0_25px_80px_rgba(0,0,0,.45)] backdrop-blur-xl sm:grid-cols-4">
+            {trustCards.map(({ value, label, icon: Icon }, index) => (
+              <div key={label} className={`group relative px-4 py-5 transition-colors hover:bg-white/[0.04] sm:px-5 sm:py-6 ${index % 2 ? 'border-l border-white/10' : ''} ${index >= 2 ? 'border-t border-white/10 sm:border-t-0' : ''}`}>
+                <Icon className="mx-auto mb-2 h-4 w-4 text-purple-300 transition-transform duration-300 group-hover:scale-110" />
+                <p className="font-display text-xl font-black tracking-tight text-white sm:text-2xl">{value}</p>
+                <p className="mt-1 text-[8px] font-bold uppercase tracking-[0.16em] text-slate-300/60 sm:text-[9px]">{label}</p>
               </div>
-              <div className="relative ml-3 shrink-0 rounded-xl bg-white px-4 py-2.5 text-xs font-black text-slate-950 shadow-xl transition-all group-hover:bg-slate-100 sm:px-6 sm:py-3 sm:text-sm">Learn More</div>
-            </div>
-          </button>
-
-          <div className="mx-auto max-w-5xl">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-purple-300/25 bg-purple-950/35 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-purple-100 shadow-lg backdrop-blur-md sm:text-[11px]"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-purple-300" /> ArveX Hosting Infrastructure</div>
-            <h1 className="font-display text-[3.25rem] font-black leading-[.91] tracking-[-0.065em] text-white drop-shadow-[0_8px_35px_rgba(0,0,0,.65)] sm:text-6xl md:text-7xl lg:text-[82px] xl:text-[92px]">
-              {title1}<span className="mt-2 block bg-gradient-to-r from-white via-slate-100 to-purple-200 bg-clip-text text-transparent">{title2}</span>
-            </h1>
-            <p className="mx-auto mt-7 max-w-2xl text-sm leading-7 text-slate-200/85 drop-shadow-[0_4px_20px_rgba(0,0,0,.8)] sm:mt-8 sm:text-base sm:leading-8 md:text-lg">{subtitle}</p>
-            <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-              <button onClick={() => navigateTo('pricing')} className="group inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-slate-950/45 px-6 py-3.5 text-sm font-semibold text-white shadow-xl backdrop-blur-xl transition-all hover:-translate-y-1 hover:border-purple-300/40 hover:bg-slate-950/60">{secondaryCtaText}<ChevronRight className="h-4 w-4 text-purple-200" /></button>
-              <button onClick={() => navigateTo('services')} className="group inline-flex items-center gap-2 rounded-2xl bg-white px-7 py-3.5 text-sm font-black text-slate-950 shadow-[0_12px_45px_rgba(124,58,237,.3)] transition-all hover:-translate-y-1 hover:bg-slate-100">{ctaText}<ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></button>
-            </div>
+            ))}
           </div>
 
-          <div className="mx-auto mt-12 grid max-w-2xl grid-cols-3 overflow-hidden rounded-2xl border border-white/15 bg-slate-950/35 shadow-2xl backdrop-blur-xl">
-            {[['99.99%', 'Network uptime'], ['NVMe', 'High-speed storage'], ['24/7', 'Expert support']].map(([value, label], index) => <div key={label} className={`px-3 py-4 sm:px-6 sm:py-5 ${index ? 'border-l border-white/10' : ''}`}><p className="font-display text-lg font-black tracking-tight text-white sm:text-2xl">{value}</p><p className="mt-1 text-[9px] font-bold uppercase tracking-[0.14em] text-slate-300/60 sm:text-[10px]">{label}</p></div>)}
+          <div className="mx-auto mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[9px] font-bold uppercase tracking-[0.18em] text-white/65 sm:text-[10px]">
+            <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-300" /> Secure infrastructure</span>
+            <span className="hidden h-1 w-1 rounded-full bg-white/35 sm:block" />
+            <span className="inline-flex items-center gap-2"><Zap className="h-3.5 w-3.5 text-purple-300" /> Instant deployment</span>
+            <span className="hidden h-1 w-1 rounded-full bg-white/35 sm:block" />
+            <span className="inline-flex items-center gap-2"><Clock3 className="h-3.5 w-3.5 text-blue-300" /> Always online</span>
           </div>
-          <div className="mx-auto mt-8 flex max-w-3xl items-center justify-center gap-3 text-[10px] font-bold uppercase tracking-[0.16em] text-white/60 sm:text-[11px]"><ShieldCheck className="h-4 w-4 text-emerald-300" /> Secure infrastructure <span className="h-1 w-1 rounded-full bg-white/40" /><Zap className="h-3.5 w-3.5 text-purple-200" /> Instant deployment</div>
         </div>
 
-        <div className="mt-11 grid grid-cols-2 gap-3 md:grid-cols-4">
-          {quickServices.map(({ label, detail, icon: Icon, route }) => <button key={label} onClick={() => navigateTo(route)} className="group rounded-2xl border border-white/15 bg-slate-950/40 p-4 text-left shadow-xl backdrop-blur-xl transition-all hover:-translate-y-1 hover:border-purple-300/35 hover:bg-purple-950/35 sm:p-5"><div className="mb-3 grid h-10 w-10 place-items-center rounded-xl border border-purple-300/20 bg-purple-950/45 text-purple-200 transition-transform group-hover:scale-105"><Icon className="h-5 w-5" /></div><p className="text-xs font-bold text-white sm:text-sm">{label}</p><p className="mt-1 text-[10px] leading-4 text-slate-200/60 sm:text-xs">{detail}</p></button>)}
+        <div className="mt-12 grid grid-cols-2 gap-3 md:grid-cols-4 lg:mt-14">
+          {quickServices.map(({ label, detail, icon: Icon, route }) => (
+            <button key={label} onClick={() => navigateTo(route)} className="group relative overflow-hidden rounded-2xl border border-white/15 bg-slate-950/48 p-4 text-left shadow-[0_16px_50px_rgba(0,0,0,.35)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-purple-300/45 hover:bg-purple-950/45 sm:p-5">
+              <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-purple-500/10 blur-2xl transition-all duration-500 group-hover:bg-purple-400/25" />
+              <div className="relative mb-3 grid h-10 w-10 place-items-center rounded-xl border border-purple-300/20 bg-purple-950/55 text-purple-200 shadow-[0_0_25px_rgba(168,85,247,.12)] transition-all duration-300 group-hover:scale-110 group-hover:border-purple-300/40">
+                <Icon className="h-5 w-5" />
+              </div>
+              <p className="relative text-xs font-bold text-white sm:text-sm">{label}</p>
+              <p className="relative mt-1 text-[10px] leading-4 text-slate-200/60 sm:text-xs">{detail}</p>
+            </button>
+          ))}
         </div>
       </div>
     </section>
