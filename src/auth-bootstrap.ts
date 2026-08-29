@@ -25,7 +25,7 @@ async function checkSession(headers: Record<string, string>) {
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
-      const response = await fetch('/api/auth/me', {
+      const response = await fetch(`/api/auth/me?auth_check=${Date.now()}-${attempt}`, {
         method: 'GET',
         credentials: 'include',
         cache: 'no-store',
