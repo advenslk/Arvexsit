@@ -1,45 +1,21 @@
 @import "tailwindcss";
 
 @layer base {
-  html,
-  body,
-  #root {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    overflow-x: hidden;
-  }
-
-  html,
-  body {
-    min-height: 100%;
-    background: #03040a;
-  }
-
-  body {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    background-color: #03040a;
-  }
-
-  #root {
-    background: transparent !important;
-    position: relative;
-    z-index: 1;
-  }
-
-  .font-mono {
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  .font-display {
-    font-family: 'Space Grotesk', sans-serif;
-  }
+  html, body, #root { width: 100%; max-width: 100%; min-width: 0; overflow-x: hidden; }
+  html, body { min-height: 100%; background: #03040a; }
+  body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; background-color: #03040a; }
+  #root { background: transparent !important; position: relative; z-index: 1; }
+  .font-mono { font-family: 'JetBrains Mono', monospace; }
+  .font-display { font-family: 'Space Grotesk', sans-serif; }
 }
 
-/* Premium homepage motion system. */
-@keyframes arvexWorldDrift {
-  0%, 100% { transform: scale(1.035) translate3d(0, 0, 0); }
-  50% { transform: scale(1.075) translate3d(-1.2%, -0.8%, 0); }
+/* The Minecraft hero artwork stays locked to the viewport while the page scrolls. */
+.arvex-mc-world {
+  animation: none !important;
+  transform: scale(1.035) translate3d(0, 0, 0) !important;
+  will-change: auto;
+  filter: saturate(1.16) contrast(1.05);
+  background-attachment: fixed;
 }
 
 @keyframes arvexParticleFloat {
@@ -66,71 +42,23 @@
   100% { transform: translateY(120%); opacity: 0; }
 }
 
-@keyframes arvexGlowPulse {
-  0%, 100% { opacity: .28; }
-  50% { opacity: .58; }
-}
+.arvex-particle { animation: arvexParticleFloat 10s ease-in-out infinite; will-change: transform, opacity; }
 
-.arvex-mc-world {
-  animation: arvexWorldDrift 18s ease-in-out infinite;
-  will-change: transform;
-  filter: saturate(1.16) contrast(1.05);
+.arvex-orb {
+  position: absolute; width: 42vw; height: 42vw; max-width: 720px; max-height: 720px;
+  border-radius: 9999px; filter: blur(80px); pointer-events: none;
 }
+.arvex-orb-one { left: -16vw; top: 18vh; background: rgba(124, 58, 237, .20); animation: arvexOrbFloatOne 16s ease-in-out infinite; }
+.arvex-orb-two { right: -15vw; top: 42vh; background: rgba(79, 70, 229, .16); animation: arvexOrbFloatTwo 20s ease-in-out infinite; }
+.arvex-scanline { position: absolute; left: 0; right: 0; top: -20%; height: 18%; background: linear-gradient(to bottom, transparent, rgba(168,85,247,.13), transparent); filter: blur(10px); animation: arvexScan 13s linear infinite; }
 
 .arvex-grid-glow {
-  background-image:
-    linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
   background-size: 52px 52px;
   mask-image: linear-gradient(to bottom, black, transparent 88%);
 }
 
-.arvex-particle {
-  animation: arvexParticleFloat 10s ease-in-out infinite;
-  will-change: transform, opacity;
-}
-
-.arvex-orb {
-  position: absolute;
-  width: 42vw;
-  height: 42vw;
-  max-width: 720px;
-  max-height: 720px;
-  border-radius: 9999px;
-  filter: blur(80px);
-  pointer-events: none;
-}
-
-.arvex-orb-one {
-  left: -16vw;
-  top: 18vh;
-  background: rgba(124, 58, 237, .20);
-  animation: arvexOrbFloatOne 16s ease-in-out infinite;
-}
-
-.arvex-orb-two {
-  right: -15vw;
-  top: 42vh;
-  background: rgba(79, 70, 229, .16);
-  animation: arvexOrbFloatTwo 20s ease-in-out infinite;
-}
-
-.arvex-scanline {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: -20%;
-  height: 18%;
-  background: linear-gradient(to bottom, transparent, rgba(168,85,247,.13), transparent);
-  filter: blur(10px);
-  animation: arvexScan 13s linear infinite;
-}
-
-/* Subtle entrance motion for the major homepage sections. */
-.arvex-home-page > .relative.z-10 > * {
-  animation: arvexSectionIn .8s cubic-bezier(.2,.75,.25,1) both;
-}
-
+.arvex-home-page > .relative.z-10 > * { animation: arvexSectionIn .8s cubic-bezier(.2,.75,.25,1) both; }
 .arvex-home-page > .relative.z-10 > *:nth-child(2) { animation-delay: .05s; }
 .arvex-home-page > .relative.z-10 > *:nth-child(3) { animation-delay: .10s; }
 .arvex-home-page > .relative.z-10 > *:nth-child(4) { animation-delay: .15s; }
@@ -141,73 +69,23 @@
 .arvex-home-page > .relative.z-10 > *:nth-child(9) { animation-delay: .40s; }
 .arvex-home-page > .relative.z-10 > *:nth-child(10) { animation-delay: .45s; }
 
-@keyframes arvexSectionIn {
-  from { opacity: 0; transform: translateY(18px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+@keyframes arvexSectionIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .arvex-mc-world,
-  .arvex-particle,
-  .arvex-orb-one,
-  .arvex-orb-two,
-  .arvex-scanline,
-  .arvex-home-page > .relative.z-10 > * {
-    animation: none !important;
-  }
+  .arvex-mc-world, .arvex-particle, .arvex-orb-one, .arvex-orb-two, .arvex-scanline, .arvex-home-page > .relative.z-10 > * { animation: none !important; }
 }
 
-/* Custom Grid Background Matching Screenshots */
 .bg-grid-pattern {
-  background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-image: linear-gradient(to right, rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.04) 1px, transparent 1px);
   background-size: 40px 40px;
 }
+.bg-radial-gradient { background: radial-gradient(circle at 50% 10%, rgba(139,92,246,.12) 0%, rgba(9,10,15,0) 70%); }
+.glow-card { box-shadow: 0 0 25px -5px rgba(139,92,246,.15); }
+.glow-button { box-shadow: 0 0 20px 2px rgba(168,85,247,.3); }
 
-.bg-radial-gradient {
-  background: radial-gradient(circle at 50% 10%, rgba(139, 92, 246, 0.12) 0%, rgba(9, 10, 15, 0) 70%);
-}
-
-.glow-card {
-  box-shadow: 0 0 25px -5px rgba(139, 92, 246, 0.15);
-}
-
-.glow-button {
-  box-shadow: 0 0 20px 2px rgba(168, 85, 247, 0.3);
-}
-
-/* Continuous Infinite Marquee Animation for Partners & Reviews */
-@keyframes marquee {
-  0% { transform: translateX(0%); }
-  100% { transform: translateX(-50%); }
-}
-
-@keyframes marquee-reverse {
-  0% { transform: translateX(-50%); }
-  100% { transform: translateX(0%); }
-}
-
-.animate-marquee {
-  display: flex;
-  width: max-content;
-  animation: marquee 35s linear infinite;
-}
-
-.animate-marquee-slow {
-  display: flex;
-  width: max-content;
-  animation: marquee 45s linear infinite;
-}
-
-.animate-marquee-fast {
-  display: flex;
-  width: max-content;
-  animation: marquee 25s linear infinite;
-}
-
-.animate-marquee-reverse {
-  display: flex;
-  width: max-content;
-  animation: marquee-reverse 35s linear infinite;
-}
+@keyframes marquee { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
+@keyframes marquee-reverse { 0% { transform: translateX(-50%); } 100% { transform: translateX(0%); } }
+.animate-marquee { display: flex; width: max-content; animation: marquee 35s linear infinite; }
+.animate-marquee-slow { display: flex; width: max-content; animation: marquee 45s linear infinite; }
+.animate-marquee-fast { display: flex; width: max-content; animation: marquee 25s linear infinite; }
+.animate-marquee-reverse { display: flex; width: max-content; animation: marquee-reverse 35s linear infinite; }
