@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Globe, Radio, Activity, CheckCircle2, Zap } from 'lucide-react';
+import { Activity, CheckCircle2, Globe2, Radio, Zap } from 'lucide-react';
 
 interface NodeLocation {
   id: string;
@@ -9,169 +9,107 @@ interface NodeLocation {
   hardware: string;
   ping: number;
   status: 'online' | 'coming_soon';
-  coords: { x: number; y: number }; // percentage on map
+  x: number;
+  y: number;
 }
+
+const locations: NodeLocation[] = [
+  { id: 'lk', country: 'Sri Lanka', flag: '🇱🇰', city: 'Colombo Edge', hardware: 'AMD Ryzen 9 7950X', ping: 14, status: 'online', x: 72, y: 55 },
+  { id: 'sg', country: 'Singapore', flag: '🇸🇬', city: 'Singapore Central', hardware: 'AMD Ryzen 9 9950X', ping: 18, status: 'online', x: 78, y: 60 },
+  { id: 'in', country: 'India', flag: '🇮🇳', city: 'Mumbai', hardware: 'AMD EPYC 7R13', ping: 35, status: 'coming_soon', x: 68, y: 49 },
+  { id: 'us', country: 'United States', flag: '🇺🇸', city: 'Dallas / US Central', hardware: 'AMD EPYC 9R14', ping: 156, status: 'online', x: 23, y: 42 },
+  { id: 'de', country: 'Germany', flag: '🇩🇪', city: 'Frankfurt DC', hardware: 'AMD Ryzen 9 7950X3D', ping: 130, status: 'online', x: 49, y: 34 },
+];
+
+const routes = [
+  'M23 42 C34 35 40 34 49 34',
+  'M49 34 C57 35 62 42 68 49',
+  'M68 49 C72 52 75 56 78 60',
+  'M23 42 C40 51 58 56 78 60',
+  'M49 34 C57 42 65 48 72 55',
+];
 
 export const OurLocationsMapSection: React.FC = () => {
   const [activeNode, setActiveNode] = useState<string>('sg');
 
-  const locations: NodeLocation[] = [
-    {
-      id: 'lk',
-      country: 'Sri Lanka',
-      flag: '🇱🇰',
-      city: 'Colombo Edge',
-      hardware: 'AMD Ryzen 9 7950X',
-      ping: 14,
-      status: 'online',
-      coords: { x: 72, y: 58 },
-    },
-    {
-      id: 'sg',
-      country: 'Singapore',
-      flag: '🇸🇬',
-      city: 'Singapore Central',
-      hardware: 'AMD Ryzen 9 9950X',
-      ping: 18,
-      status: 'online',
-      coords: { x: 78, y: 62 },
-    },
-    {
-      id: 'in',
-      country: 'India',
-      flag: '🇮🇳',
-      city: 'Mumbai',
-      hardware: 'AMD EPYC 7R13',
-      ping: 35,
-      status: 'coming_soon',
-      coords: { x: 68, y: 52 },
-    },
-    {
-      id: 'us',
-      country: 'United States',
-      flag: '🇺🇸',
-      city: 'Dallas / US Central',
-      hardware: 'AMD EPYC 9R14',
-      ping: 156,
-      status: 'online',
-      coords: { x: 24, y: 42 },
-    },
-    {
-      id: 'de',
-      country: 'Germany',
-      flag: '🇩🇪',
-      city: 'Frankfurt DC',
-      hardware: 'AMD Ryzen 9 7950X3D',
-      ping: 130,
-      status: 'online',
-      coords: { x: 50, y: 35 },
-    },
-  ];
-
   return (
-    <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-      {/* Header matching Screenshot 4 */}
-      <div className="text-center max-w-3xl mx-auto mb-12">
-        <div className="flex items-center justify-center gap-3 text-2xl sm:text-3xl mb-3">
-          <span>🇱🇰</span>
-          <span>🇮🇳</span>
-          <span>🇸🇬</span>
-          <span>🇺🇸</span>
+    <section className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
+      <div className="mb-12 text-center">
+        <div className="mb-4 flex items-center justify-center gap-3 text-2xl sm:text-3xl"><span>🇱🇰</span><span>🇮🇳</span><span>🇸🇬</span><span>🇺🇸</span></div>
+        <div className="mx-auto mb-4 inline-flex items-center gap-2 rounded-full border border-purple-400/20 bg-purple-950/30 px-4 py-2 text-[10px] font-black uppercase tracking-[.24em] text-purple-200 shadow-[0_0_35px_rgba(168,85,247,.12)]">
+          <Globe2 className="h-3.5 w-3.5" /> Global infrastructure
         </div>
-
-        <h2 className="text-3xl sm:text-5xl font-black text-white font-display tracking-tight uppercase mb-3">
-          OUR LOCATIONS
-        </h2>
-        <p className="text-slate-400 text-sm sm:text-base">
-          Strategically placed servers so you always connect to the fastest node near you.
-        </p>
+        <h2 className="font-display text-4xl font-black uppercase tracking-tight text-white sm:text-6xl">Our Locations</h2>
+        <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-400 sm:text-base">Strategically placed servers with low-latency routes, live node health and premium hardware.</p>
       </div>
 
-      {/* Interactive Map & Nodes Card */}
-      <div className="bg-[#0e101d] border border-white/10 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
-        {/* World Map Grid Outline SVG */}
-        <div className="relative w-full h-80 sm:h-[420px] rounded-2xl bg-[#090b14] border border-white/5 overflow-hidden flex items-center justify-center">
-          {/* Subtle World Map SVG Silhouette */}
-          <svg
-            className="w-full h-full opacity-20 text-slate-400 object-cover"
-            viewBox="0 0 1000 500"
-            fill="currentColor"
-          >
-            {/* Americas */}
-            <path d="M150,120 Q190,100 230,130 Q270,160 250,220 Q230,260 260,320 Q280,380 250,440 Q220,400 200,320 Q170,250 140,200 Z" />
-            {/* Europe */}
-            <path d="M470,100 Q530,90 550,140 Q540,190 490,190 Q460,170 470,100 Z" />
-            {/* Africa */}
-            <path d="M480,210 Q540,200 560,260 Q570,340 520,420 Q480,380 470,300 Q460,240 480,210 Z" />
-            {/* Asia */}
-            <path d="M580,90 Q720,80 840,140 Q880,220 800,280 Q720,260 670,220 Q610,200 580,90 Z" />
-            {/* Australia */}
-            <path d="M800,350 Q880,340 890,400 Q860,450 810,430 Q780,390 800,350 Z" />
+      <div className="arvex-3d-card relative overflow-hidden rounded-[30px] border border-white/10 bg-[#070a14]/90 p-3 shadow-[0_35px_120px_rgba(0,0,0,.65)] backdrop-blur-2xl sm:p-6">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(124,58,237,.16),transparent_42%)]" />
+        <div className="relative h-[360px] overflow-hidden rounded-[24px] border border-white/10 bg-[#040711] sm:h-[480px]">
+          {/* Tech world map: dark continents + latitude/longitude grid + animated network routes. */}
+          <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 70" preserveAspectRatio="none" aria-label="ArveX global network map">
+            <defs>
+              <pattern id="latlon" width="8" height="7" patternUnits="userSpaceOnUse">
+                <path d="M 8 0 L 0 0 0 7" fill="none" stroke="rgba(148,163,184,.10)" strokeWidth=".12" />
+              </pattern>
+              <linearGradient id="routeGlow" x1="0" x2="1">
+                <stop offset="0" stopColor="#22c55e" stopOpacity=".1" />
+                <stop offset=".5" stopColor="#a855f7" stopOpacity="1" />
+                <stop offset="1" stopColor="#22d3ee" stopOpacity=".25" />
+              </linearGradient>
+              <filter id="softGlow"><feGaussianBlur stdDeviation=".65" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+            </defs>
+            <rect width="100" height="70" fill="url(#latlon)" />
+            <path d="M3 17 C8 10 17 8 23 13 L28 22 25 30 28 38 24 49 20 58 16 51 15 43 10 38 8 30 4 27Z" fill="#111827" stroke="#334155" strokeWidth=".35" />
+            <path d="M41 18 L46 15 51 17 54 21 51 25 46 24 43 28 39 24Z" fill="#111827" stroke="#334155" strokeWidth=".35" />
+            <path d="M44 28 C49 26 54 29 55 35 L53 44 48 54 44 50 43 42 40 35Z" fill="#111827" stroke="#334155" strokeWidth=".35" />
+            <path d="M53 17 C61 11 73 10 85 16 L94 25 90 31 82 32 77 28 70 30 64 25 57 24Z" fill="#111827" stroke="#334155" strokeWidth=".35" />
+            <path d="M75 48 C81 45 88 47 91 52 L88 58 81 59 75 55Z" fill="#111827" stroke="#334155" strokeWidth=".35" />
+            {routes.map((d, i) => (
+              <path key={i} d={d} fill="none" stroke="url(#routeGlow)" strokeWidth=".28" strokeDasharray="1.4 1.1" filter="url(#softGlow)" className="arvex-map-route" style={{ animationDelay: `${i * .45}s` }} />
+            ))}
           </svg>
 
-          {/* Interactive Node Pins matching Screenshot 4 */}
-          {locations.map((loc) => (
-            <div
-              key={loc.id}
-              onClick={() => setActiveNode(loc.id)}
-              style={{ top: `${loc.coords.y}%`, left: `${loc.coords.x}%` }}
-              className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-20"
-            >
-              {/* Pin Bubble */}
-              <div
-                className={`relative px-3 py-1.5 rounded-xl border flex items-center gap-2 shadow-2xl transition-all ${
-                  activeNode === loc.id
-                    ? 'bg-purple-950/95 border-purple-400 text-white scale-110 shadow-purple-500/30'
-                    : 'bg-[#121422]/90 border-white/10 hover:border-purple-500/50 text-slate-300'
-                }`}
-              >
-                {/* Ping Pulse */}
-                {loc.status === 'online' ? (
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                ) : (
-                  <span className="w-2 h-2 rounded-full bg-amber-400" />
-                )}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_30%,rgba(2,4,12,.55)_100%)]" />
 
-                <span className="text-xs">{loc.flag}</span>
-                <div className="flex flex-col text-left">
-                  <span className="text-[11px] font-bold leading-none">{loc.city}</span>
-                  <span className="text-[9px] text-purple-300 font-mono mt-0.5">
-                    {loc.status === 'online' ? `${loc.ping} ms` : 'Coming Soon'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Nodes Grid Summary */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-6">
           {locations.map((loc) => (
             <button
               key={loc.id}
+              type="button"
               onClick={() => setActiveNode(loc.id)}
-              className={`p-4 rounded-2xl border text-left transition-all ${
-                activeNode === loc.id
-                  ? 'bg-purple-950/40 border-purple-500/60 shadow-lg shadow-purple-950/40'
-                  : 'bg-[#121422] border-white/5 hover:border-white/20'
-              }`}
+              style={{ left: `${loc.x}%`, top: `${loc.y}%` }}
+              className={`arvex-map-node absolute z-20 -translate-x-1/2 -translate-y-1/2 rounded-2xl border px-3 py-2 text-left backdrop-blur-xl transition-all ${activeNode === loc.id ? 'scale-110 border-purple-400/80 bg-purple-950/85 shadow-[0_0_45px_rgba(168,85,247,.48)]' : 'border-white/10 bg-[#0b1020]/90 hover:border-purple-400/50'}`}
             >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-base">{loc.flag}</span>
-                {loc.status === 'online' ? (
-                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                    {loc.ping}ms
-                  </span>
-                ) : (
-                  <span className="text-[9px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">
-                    Soon
-                  </span>
-                )}
-              </div>
-              <h4 className="text-xs font-bold text-white mt-1">{loc.city}</h4>
-              <p className="text-[10px] text-slate-400 font-mono truncate">{loc.hardware}</p>
+              <span className="flex items-center gap-2 whitespace-nowrap">
+                <span className={`h-2 w-2 rounded-full ${loc.status === 'online' ? 'bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,.9)]' : 'bg-amber-400'}`} />
+                <span className="text-[11px] font-bold text-white">{loc.flag} {loc.city}</span>
+              </span>
+              <span className="mt-1 block pl-4 font-mono text-[9px] text-purple-200">{loc.status === 'online' ? `${loc.ping} ms` : 'Coming Soon'}</span>
             </button>
           ))}
+
+          <div className="absolute left-4 top-4 flex items-center gap-2 rounded-xl border border-white/10 bg-black/35 px-3 py-2 text-[9px] font-bold uppercase tracking-[.16em] text-slate-400 backdrop-blur-xl">
+            <Radio className="h-3.5 w-3.5 text-emerald-400" /> Live network telemetry
+          </div>
+          <div className="absolute bottom-4 right-4 flex items-center gap-2 rounded-xl border border-purple-400/20 bg-black/35 px-3 py-2 text-[9px] font-bold text-purple-200 backdrop-blur-xl">
+            <Zap className="h-3.5 w-3.5" /> Encrypted backbone
+          </div>
+        </div>
+
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {locations.map((loc) => (
+            <button key={loc.id} type="button" onClick={() => setActiveNode(loc.id)} className={`arvex-3d-button arvex-3d-button-dark rounded-2xl border p-4 text-left ${activeNode === loc.id ? 'border-purple-500/60 bg-purple-950/40' : 'border-white/5 bg-[#0b0f1b]'}`}>
+              <div className="mb-2 flex items-center justify-between"><span>{loc.flag}</span><span className={`text-[9px] font-bold ${loc.status === 'online' ? 'text-emerald-300' : 'text-amber-300'}`}>{loc.status === 'online' ? `${loc.ping}ms` : 'Soon'}</span></div>
+              <h4 className="text-xs font-bold text-white">{loc.city}</h4>
+              <p className="mt-1 truncate font-mono text-[9px] text-slate-500">{loc.hardware}</p>
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[9px] font-bold uppercase tracking-[.16em] text-slate-500">
+          <span className="inline-flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> Nodes online</span>
+          <span className="inline-flex items-center gap-2"><Activity className="h-3.5 w-3.5 text-purple-400" /> Live routing</span>
+          <span className="inline-flex items-center gap-2"><Radio className="h-3.5 w-3.5 text-cyan-400" /> DDoS protected</span>
         </div>
       </div>
     </section>
