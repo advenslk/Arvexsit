@@ -31,9 +31,16 @@ export const AuthModal: React.FC = () => {
         const r=await fetch(endpoint,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         const j=await r.json().catch(()=>({}));
         if(!r.ok)throw new Error(j.error||'Verification failed.');
-        if(authModalTab==='admin'){localStorage.setItem('arvex_admin_token',j.token||'');serverUserLogin(j);setSuccessMsg('Administrator identity verified.');setTimeout(()=>{close();setIsAdminOpen(true)},450)}
-        else if(mode==='forgot'){setSuccessMsg('Password reset successfully. You can now sign in.');setChallengeId('');setOtp('');setPassword('');setMode('auth');setAuthModalTab('login')}
-        else{serverUserLogin(j);setSuccessMsg(mode==='verify-register'?'Email verified successfully.':'Signed in successfully.');setTimeout(close,500)}
+        if(authModalTab==='admin'){
+          // sessionStorage intentionally clears the admin bearer token when the browser session ends.
+          sessionStorage.setItem('arvex_admin_token',j.token||'');
+          setSuccessMsg('Administrator identity verified.');
+          setTimeout(()=>{close();setIsAdminOpen(true)},450)
+        }else if(mode==='forgot'){
+          setSuccessMsg('Password reset successfully. You can now sign in.');setChallengeId('');setOtp('');setPassword('');setMode('auth');setAuthModalTab('login')
+        }else{
+          serverUserLogin(j);setSuccessMsg(mode==='verify-register'?'Email verified successfully.':'Signed in successfully.');setTimeout(close,500)
+        }
       }catch(x){setErrorMsg(x instanceof Error?x.message:'Verification failed')}finally{setBusy(false)}
       return;
     }
@@ -80,7 +87,6 @@ export const AuthModal: React.FC = () => {
             <div><h3 className="font-display text-xl font-black text-white">{authModalTab==='admin'?'Admin Portal':'ArveX Account'}</h3><p className="text-xs text-slate-500">Secure authentication for ArveX Hosting</p></div>
           </div>
 
-          {/* Normal users can sign in or create an account. Admin authentication is intentionally login-only. */}
           {!challengeId&&mode==='auth'&&authModalTab!=='admin'&&<div className="mb-5 grid grid-cols-2 rounded-xl border border-white/5 bg-black/20 p-1 text-xs font-bold"><button type="button" onClick={()=>setTab('login')} className={`rounded-lg py-2.5 ${authModalTab==='login'?'bg-white text-black':'text-slate-500'}`}>Sign In</button><button type="button" onClick={()=>setTab('register')} className={`rounded-lg py-2.5 ${authModalTab==='register'?'bg-white text-black':'text-slate-500'}`}>Create Account</button></div>}
           {errorMsg&&<div className="mb-4 flex items-start gap-2 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-xs text-rose-300"><AlertCircle className="h-4 w-4"/><span>{errorMsg}</span></div>}
           {successMsg&&<div className="mb-4 flex items-start gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-300"><CheckCircle2 className="h-4 w-4"/><span>{successMsg}</span></div>}
