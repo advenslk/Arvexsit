@@ -2,9 +2,8 @@ const USER_KEY = 'arvex_saas_v3_user';
 const ADMIN_TOKEN_KEY = 'arvex_admin_token';
 const BACKUP_KEY = 'arvex_auth_session_backup';
 
-// Authentication is server-authoritative, but a temporary refresh/network race
-// must never destroy the browser's current UI identity or revoke its server
-// session. Explicit logout is handled by the existing logout flow.
+// Server authentication is authoritative. Local storage is only a UI cache and
+// must never promote a stale/old admin identity after a real 401 response.
 function saveUser(user: unknown) {
   try {
     const value = JSON.stringify(user);
@@ -13,7 +12,17 @@ function saveUser(user: unknown) {
   } catch {}
 }
 
+function clearCachedIdentity() {
+  try {
+    localStorage.removeItem(USER_KEY);
+    sessionStorage.removeItem(BACKUP_KEY);
+    localStorage.removeItem(ADMIN_TOKEN_KEY);
+  } catch {}
+}
+
 async function checkSession(headers: Record<string, string>) {
+  let sawUnauthorized = false;
+
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
       const response = await fetch('/api/auth/me', {
@@ -22,12 +31,26 @@ async function checkSession(headers: Record<string, string>) {
         cache: 'no-store',
         headers,
       });
-      if (response.ok) return { ok: true, payload: await response.json().catch(() => null) };
-      if (response.status !== 401) return { ok: false, unauthorized: false };
-    } catch {}
-    if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 350 * (attempt + 1)));
+
+      if (response.ok) {
+        return { ok: true, unauthorized: false, networkError: false, payload: await response.json().catch(() => null) };
+      }
+
+      if (response.status === 401) {
+        sawUnauthorized = true;
+      } else {
+        // A 403/5xx is not proof that the session is invalid.
+        return { ok: false, unauthorized: false, networkError: false };
+      }
+    } catch {
+      // Keep retrying. A temporary browser/Cloudflare/API connection failure
+      // must not turn into a logout.
+    }
+
+    if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 300 * (attempt + 1)));
   }
-  return { ok: false, unauthorized: true };
+
+  return { ok: false, unauthorized: sawUnauthorized, networkError: !sawUnauthorized };
 }
 
 export const authBootstrap: Promise<void> = (async () => {
@@ -39,24 +62,29 @@ export const authBootstrap: Promise<void> = (async () => {
     if (adminToken) headers.Authorization = `Bearer ${adminToken}`;
 
     const result = await checkSession(headers);
+
     if (result.ok) {
       const payload = result.payload;
       if (payload?.authenticated && payload.user) {
         saveUser(payload.user);
-      } else if (localUser === null && backupUser) {
-        try { localStorage.setItem(USER_KEY, backupUser); } catch {}
+      } else {
+        clearCachedIdentity();
       }
       return;
     }
 
-    // IMPORTANT: never call logout/clearAuth here. A refresh can temporarily
-    // fail while Cloudflare, the API process, or the browser reconnects. Keep
-    // the existing local identity and let the next authenticated API request
-    // retry. This prevents the refresh -> logout loop.
+    // Only a confirmed server-side 401 clears the cached identity. Network
+    // failures leave the existing identity alone so refreshes cannot log out
+    // customers/admins during a short API or Cloudflare hiccup.
+    if (result.unauthorized) {
+      clearCachedIdentity();
+      return;
+    }
+
     if (!localUser && backupUser) {
       try { localStorage.setItem(USER_KEY, backupUser); } catch {}
     }
   } catch {
-    // Network/API failures must never log a user out.
+    // Never log out on an unexpected bootstrap error.
   }
 })();
