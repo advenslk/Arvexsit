@@ -12,9 +12,8 @@ import { FaqSection } from '../FaqSection';
 import { DomainSection } from '../DomainSection';
 import { FloatingSocialWidgets } from '../FloatingSocialWidgets';
 
-// Reliable image CDN URL. The image is used only as the opening cinematic layer;
-// the rest of the page transitions into ArveX's dark purple infrastructure theme.
 const MINECRAFT_BACKDROP = 'https://www.image2url.com/r2/default/images/1788176922731-5e6dc6ce-f58f-40a6-bd49-f7d856157f42.jpeg';
+const HERO_VIDEO = 'https://videotourl.com/videos/1788180973614-5e0ed4b7-443a-4b26-b505-adf7a4fda22a.mp4';
 
 const particles = Array.from({ length: 42 }, (_, i) => ({
   left: `${(i * 37) % 100}%`,
@@ -34,14 +33,17 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="arvex-home-page relative min-h-screen overflow-x-clip bg-[#03040a] text-slate-200">
-      {/* Opening Minecraft artwork. It stays visually behind the hero while scrolling,
-          then dissolves into the dark/purple infrastructure background. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[1050px] overflow-hidden sm:h-[1120px] lg:h-[1180px]">
-        <div
-          className="arvex-mc-world absolute -inset-[4%] bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${MINECRAFT_BACKDROP})` }}
+        <video
+          className="absolute -inset-[4%] h-[108%] w-[108%] object-cover"
+          src={HERO_VIDEO}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(1,3,10,.10)_0%,rgba(3,4,10,.08)_28%,rgba(3,4,10,.30)_50%,rgba(4,3,13,.70)_68%,rgba(6,3,15,.96)_86%,#07030f_96%,#07030f_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(1,3,10,.20)_0%,rgba(3,4,10,.12)_28%,rgba(3,4,10,.30)_50%,rgba(4,3,13,.72)_68%,rgba(6,3,15,.96)_86%,#07030f_96%,#07030f_100%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_52%_28%,rgba(124,58,237,.28),transparent_44%),radial-gradient(ellipse_at_12%_48%,rgba(16,185,129,.08),transparent_30%),radial-gradient(ellipse_at_88%_42%,rgba(59,130,246,.10),transparent_32%)]" />
         <div className="arvex-grid-glow absolute inset-0 opacity-[.18]" />
         {particles.map((particle, i) => (
