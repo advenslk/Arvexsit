@@ -2,7 +2,7 @@ import React from 'react';
 import { useApp } from '../context/AppContext';
 import { MessageSquare, Twitter, Github, Mail, ArrowUp, Shield } from 'lucide-react';
 
-const ARVEX_LOGO = 'https://www.image2url.com/r2/default/images/1787805975676-5a4d373d-c6bd-4d39-bb64-1336474f4a7a.png';
+const ARVEX_LOGO = 'https://www.image2url.com/r2/default/images/1788183036437-67d0ec6b-01c0-4372-bfee-e663f263531b.png';
 
 export const Footer: React.FC = () => {
   const { siteSettings, navigateTo } = useApp();
