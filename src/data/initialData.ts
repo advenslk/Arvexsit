@@ -33,7 +33,7 @@ import {
 
 export const INITIAL_SITE_IMAGES: SiteImagesConfig = {
   logoUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=120&q=80',
-  heroBackgroundUrl: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1920&q=80',
+  heroBackgroundUrl: 'https://www.image2url.com/r2/default/images/1788177971214-d1820aaa-f247-467f-bdb1-974fb6d8e313.png',
   heroIllustrationUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=80',
   controlPanelScreenshotUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80',
   pterodactylBannerUrl: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80',
