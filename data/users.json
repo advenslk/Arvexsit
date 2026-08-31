@@ -1,0 +1,24 @@
+[
+  {
+    "id": "usr-google-795b22b4-b16d-448f-8875-a8cf596f0fae",
+    "name": "Renato Xdeee",
+    "email": "renatoxdeee75@gmail.com",
+    "role": "customer",
+    "provider": "google",
+    "googleSub": "108399300400253419242",
+    "avatar": "https://lh3.googleusercontent.com/a/ACg8ocK5vrJA-l7wDIt5rNL_fvpoDeKRLjfRBD0-aXVghsaaQbMDHA=s96-c",
+    "emailVerified": true,
+    "createdAt": "2026-08-29T20:35:05.331Z"
+  },
+  {
+    "id": "usr-google-12d36676-50c0-4c2d-a257-5f73c6e14ff4",
+    "name": "sewmeth nithum",
+    "email": "nithumsewmeth@gmail.com",
+    "role": "customer",
+    "provider": "google",
+    "googleSub": "116800341340266853315",
+    "avatar": "https://lh3.googleusercontent.com/a/ACg8ocIJ-3irwz8v8G6a9V4ppzL-gkhTesdZb5ug15un_5RO0CNZQks=s96-c",
+    "emailVerified": true,
+    "createdAt": "2026-08-30T12:12:46.922Z"
+  }
+]
