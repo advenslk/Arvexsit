@@ -14,7 +14,7 @@ import { FloatingSocialWidgets } from '../FloatingSocialWidgets';
 
 // Reliable image CDN URL. The image is used only as the opening cinematic layer;
 // the rest of the page transitions into ArveX's dark purple infrastructure theme.
-const MINECRAFT_BACKDROP = 'https://images.unsplash.com/photo-1627856013091-fed6e4e30025?auto=format&fit=crop&w=2600&q=92';
+const MINECRAFT_BACKDROP = 'https://www.image2url.com/r2/default/images/1788176922731-5e6dc6ce-f58f-40a6-bd49-f7d856157f42.jpeg';
 
 const particles = Array.from({ length: 42 }, (_, i) => ({
   left: `${(i * 37) % 100}%`,
