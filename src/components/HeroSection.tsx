@@ -2,7 +2,7 @@ import React from 'react';
 import { ArrowRight, ChevronRight, Cloud, Gamepad2, Globe2, Server, ShieldCheck, Zap, Clock3, Database, Headphones, Sparkles, Star } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
-const HERO_BANNER = 'https://www.image2url.com/r2/default/images/1788177971214-d1820aaa-f247-467f-bdb1-974fb6d8e313.png';
+const HERO_VIDEO = 'https://videotourl.com/videos/1788180973614-5e0ed4b7-443a-4b26-b505-adf7a4fda22a.mp4';
 
 const quickServices = [
   { label: 'Game Hosting', detail: 'Minecraft, Rust, ARK & more', icon: Gamepad2, route: 'services-games' as const },
@@ -29,7 +29,9 @@ export const HeroSection: React.FC = () => {
   return (
     <section className="relative isolate min-h-[760px] overflow-hidden bg-[#03040a] pb-8 pt-10 sm:min-h-[790px] sm:pb-10 sm:pt-14 lg:min-h-[820px] lg:pt-16">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden bg-[#03040a]">
-        <img src={HERO_BANNER} alt="" className="absolute inset-0 h-full w-full object-cover object-center" referrerPolicy="no-referrer" />
+        <video autoPlay muted loop playsInline preload="auto" className="absolute inset-0 h-full w-full object-cover object-center" aria-hidden="true">
+          <source src={HERO_VIDEO} type="video/mp4" />
+        </video>
         <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(1,3,10,.18)_0%,rgba(3,4,10,.12)_28%,rgba(3,4,10,.30)_54%,rgba(3,4,10,.68)_72%,rgba(3,4,10,.93)_88%,#03040a_100%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_28%,rgba(124,58,237,.28),transparent_46%),linear-gradient(to_right,rgba(3,4,10,.18),transparent_35%,transparent_65%,rgba(3,4,10,.24))]" />
         <div className="arvex-grid-glow absolute inset-0 opacity-[.12]" />
