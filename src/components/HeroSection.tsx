@@ -2,6 +2,8 @@ import React from 'react';
 import { ArrowRight, ChevronRight, Cloud, Gamepad2, Globe2, Server, ShieldCheck, Zap, Clock3, Database, Headphones, Sparkles, Star } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
+const HERO_VIDEO = 'https://videotourl.com/videos/1788180973614-5e0ed4b7-443a-4b26-b505-adf7a4fda22a.mp4';
+
 const quickServices = [
   { label: 'Game Hosting', detail: 'Minecraft, Rust, ARK & more', icon: Gamepad2, route: 'services-games' as const },
   { label: 'VPS Hosting', detail: 'Fast NVMe virtual servers', icon: Server, route: 'services-vps' as const },
@@ -25,28 +27,42 @@ export const HeroSection: React.FC = () => {
   const secondaryCtaText = siteSettings?.heroSecondaryCtaText || 'View Prices';
 
   return (
-    <section className="relative overflow-hidden pb-8 pt-10 sm:pb-10 sm:pt-14 lg:pt-20">
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_50%_30%,rgba(168,85,247,.20),transparent_42%)]" />
+    <section className="relative isolate min-h-[760px] overflow-hidden bg-[#03040a] pb-8 pt-10 sm:min-h-[790px] sm:pb-10 sm:pt-14 lg:min-h-[820px] lg:pt-16">
+      {/* Hero video is deliberately contained inside the hero only. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden bg-[#03040a]">
+        <video
+          className="absolute inset-0 h-full w-full object-cover object-center"
+          src={HERO_VIDEO}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(1,3,10,.18)_0%,rgba(3,4,10,.12)_28%,rgba(3,4,10,.30)_54%,rgba(3,4,10,.68)_72%,rgba(3,4,10,.93)_88%,#03040a_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_28%,rgba(124,58,237,.28),transparent_46%),linear-gradient(to_right,rgba(3,4,10,.18),transparent_35%,transparent_65%,rgba(3,4,10,.24))]" />
+        <div className="arvex-grid-glow absolute inset-0 opacity-[.12]" />
+      </div>
 
       <div className="mx-auto flex max-w-7xl flex-col px-4 sm:px-6 lg:px-8">
         <div className="mx-auto w-full max-w-6xl text-center">
-          <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-purple-300/25 bg-black/30 px-4 py-2 text-[9px] font-black uppercase tracking-[0.24em] text-purple-100 shadow-[0_0_40px_rgba(168,85,247,.18)] backdrop-blur-xl sm:text-[11px]">
+          <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-purple-300/25 bg-black/35 px-4 py-2 text-[9px] font-black uppercase tracking-[0.24em] text-purple-100 shadow-[0_0_40px_rgba(168,85,247,.18)] backdrop-blur-xl sm:text-[11px]">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-purple-300 shadow-[0_0_12px_rgba(168,85,247,1)]" />
             ArveX Hosting Infrastructure
             <Sparkles className="h-3.5 w-3.5 text-purple-300" />
           </div>
 
-          <h1 className="font-display text-[3.25rem] font-black leading-[.88] tracking-[-0.075em] text-white drop-shadow-[0_12px_55px_rgba(0,0,0,.95)] sm:text-6xl md:text-7xl lg:text-[88px] xl:text-[98px]">
+          <h1 className="font-display text-[3.25rem] font-black leading-[.9] tracking-[-0.075em] text-white drop-shadow-[0_12px_55px_rgba(0,0,0,.95)] sm:text-6xl md:text-7xl lg:text-[82px] xl:text-[94px]">
             {title1}
             <span className="mt-3 block bg-gradient-to-r from-white via-slate-100 to-purple-300 bg-clip-text text-transparent">{title2}</span>
           </h1>
 
-          <p className="mx-auto mt-7 max-w-2xl text-sm leading-7 text-slate-100/80 drop-shadow-[0_5px_25px_rgba(0,0,0,.95)] sm:mt-8 sm:text-base sm:leading-8 md:text-lg">
+          <p className="mx-auto mt-7 max-w-2xl text-sm leading-7 text-slate-100/85 drop-shadow-[0_5px_25px_rgba(0,0,0,.95)] sm:mt-8 sm:text-base sm:leading-8 md:text-lg">
             {subtitle}
           </p>
 
           <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
-            <button onClick={() => navigateTo('pricing')} className="arvex-3d-button arvex-3d-button-dark group inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-black/45 px-6 py-3.5 text-sm font-bold text-white backdrop-blur-xl">
+            <button onClick={() => navigateTo('pricing')} className="arvex-3d-button arvex-3d-button-dark group inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-black/50 px-6 py-3.5 text-sm font-bold text-white backdrop-blur-xl">
               {secondaryCtaText}<ChevronRight className="h-4 w-4 text-purple-200 transition-transform group-hover:translate-x-1" />
             </button>
 
@@ -61,7 +77,7 @@ export const HeroSection: React.FC = () => {
             </div>
           </div>
 
-          <div className="mx-auto mt-12 grid max-w-5xl grid-cols-2 overflow-hidden rounded-[24px] border border-white/15 bg-black/30 shadow-[0_25px_100px_rgba(0,0,0,.55)] backdrop-blur-2xl sm:grid-cols-4">
+          <div className="mx-auto mt-12 grid max-w-5xl grid-cols-2 overflow-hidden rounded-[24px] border border-white/15 bg-black/35 shadow-[0_25px_100px_rgba(0,0,0,.55)] backdrop-blur-2xl sm:grid-cols-4">
             {trustCards.map(({ value, label, icon: Icon }, index) => (
               <div key={label} className={`arvex-3d-card group relative px-4 py-5 transition-all duration-300 hover:bg-white/[0.055] sm:px-5 sm:py-6 ${index % 2 ? 'border-l border-white/10' : ''} ${index >= 2 ? 'border-t border-white/10 sm:border-t-0' : ''}`}>
                 <Icon className="mx-auto mb-2 h-4 w-4 text-purple-300 transition-transform duration-300 group-hover:scale-125 group-hover:text-purple-200" />
@@ -82,7 +98,7 @@ export const HeroSection: React.FC = () => {
 
         <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-4 lg:mt-12">
           {quickServices.map(({ label, detail, icon: Icon, route }) => (
-            <button key={label} onClick={() => navigateTo(route)} className="arvex-3d-button-dark arvex-3d-card group relative overflow-hidden rounded-2xl border border-white/12 bg-black/35 p-4 text-left backdrop-blur-2xl sm:p-5">
+            <button key={label} onClick={() => navigateTo(route)} className="arvex-3d-button-dark arvex-3d-card group relative overflow-hidden rounded-2xl border border-white/12 bg-black/40 p-4 text-left backdrop-blur-2xl sm:p-5">
               <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-purple-500/10 blur-2xl transition-all duration-500 group-hover:bg-purple-400/25" />
               <div className="relative mb-3 grid h-10 w-10 place-items-center rounded-xl border border-purple-300/20 bg-purple-950/50 text-purple-200 shadow-[0_0_25px_rgba(168,85,247,.12)] transition-all duration-300 group-hover:scale-110 group-hover:border-purple-300/40">
                 <Icon className="h-5 w-5" />
