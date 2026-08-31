@@ -7,11 +7,7 @@ export const OfficialPartnersTicker: React.FC = () => {
   const { partners, navigateTo, user, setIsAdminOpen } = useApp();
 
   const activePartners: Partner[] = (partners || []).filter((p) => p.active !== false);
-
-  // If no partners, fallback safely or show prompt
   const displayPartners = activePartners.length > 0 ? activePartners : [];
-
-  // Double the array for seamless infinite marquee loop
   const marqueeItems = [...displayPartners, ...displayPartners];
 
   const handlePartnerClick = (item: Partner) => {
@@ -23,46 +19,42 @@ export const OfficialPartnersTicker: React.FC = () => {
   };
 
   return (
-    <div className="w-full py-6 bg-gradient-to-b from-[#090a12] via-[#0e101d] to-[#090a12] border-y border-purple-900/30 overflow-hidden relative marquee-container">
-      {/* Background Ambient Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-20 bg-purple-600/10 blur-3xl pointer-events-none" />
+    <section className="relative w-full overflow-hidden border-y border-white/[0.06] bg-[#020207] py-5 sm:py-6">
+      {/* Soft transition from the hero into the black partner strip */}
+      <div className="pointer-events-none absolute -top-12 left-1/2 h-24 w-[80%] -translate-x-1/2 rounded-full bg-purple-600/[0.08] blur-3xl" />
 
-      {/* Top Header matching Screenshot */}
-      <div className="max-w-7xl mx-auto px-4 mb-4 flex flex-col sm:flex-row items-center justify-between gap-3 relative z-10">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-950/80 border border-purple-500/30 text-purple-300 text-xs font-bold uppercase tracking-wider shadow-lg shadow-purple-900/20">
-          <Zap className="w-3.5 h-3.5 text-purple-400 fill-purple-400 animate-pulse" />
-          <span>OFFICIAL ARVEX PARTNERS</span>
+      <div className="relative z-10 mx-auto mb-3 flex max-w-7xl items-center justify-between gap-3 px-4 sm:mb-4 sm:px-6 lg:px-8">
+        <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/25 bg-purple-950/50 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.16em] text-purple-200 shadow-[0_0_25px_rgba(124,58,237,.12)] sm:px-4 sm:text-[10px]">
+          <Zap className="h-3.5 w-3.5 animate-pulse text-purple-300" fill="currentColor" />
+          <span>Official ArveX Partners</span>
         </div>
 
         <div className="flex items-center gap-3">
           {user?.role === 'admin' && (
             <button
               onClick={() => setIsAdminOpen(true)}
-              className="text-[11px] text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1 bg-cyan-950/60 border border-cyan-500/30 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+              className="flex cursor-pointer items-center gap-1 rounded-lg border border-cyan-500/30 bg-cyan-950/60 px-2.5 py-1 text-[11px] font-semibold text-cyan-400 transition-colors hover:text-cyan-300"
               title="Edit Partners in Admin Panel"
             >
-              <Settings className="w-3 h-3" />
+              <Settings className="h-3 w-3" />
               <span>Customize Partners</span>
             </button>
           )}
-
           <button
             onClick={() => navigateTo('partners')}
-            className="text-xs text-slate-400 hover:text-purple-300 font-medium flex items-center gap-1 transition-colors cursor-pointer"
+            className="flex cursor-pointer items-center gap-1 text-[10px] font-medium text-slate-500 transition-colors hover:text-purple-300 sm:text-xs"
           >
             <span>Become an Official Partner</span>
-            <ExternalLink className="w-3 h-3" />
+            <ExternalLink className="h-3 w-3" />
           </button>
         </div>
       </div>
 
-      {/* Infinite Horizontal Animation Track */}
-      <div className="relative w-full overflow-hidden mask-gradient">
-        {/* Left and Right Fade Masks for smooth edge blending */}
-        <div className="absolute top-0 bottom-0 left-0 w-16 sm:w-28 bg-gradient-to-r from-[#090a12] to-transparent z-10 pointer-events-none" />
-        <div className="absolute top-0 bottom-0 right-0 w-16 sm:w-28 bg-gradient-to-l from-[#090a12] to-transparent z-10 pointer-events-none" />
+      <div className="relative w-full overflow-hidden">
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-[#020207] to-transparent sm:w-24" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-[#020207] to-transparent sm:w-24" />
 
-        <div className="animate-marquee hover:pause flex items-center gap-4 py-2">
+        <div className="animate-marquee flex w-max items-center gap-3 py-1 will-change-transform sm:gap-4">
           {marqueeItems.map((item, index) => {
             const accentClass = item.accent || 'from-cyan-400 to-indigo-500';
             const iconBgClass = item.iconBg || 'bg-cyan-500/10 text-cyan-400';
@@ -71,51 +63,40 @@ export const OfficialPartnersTicker: React.FC = () => {
               <div
                 key={`${item.id || item.name}-${index}`}
                 onClick={() => handlePartnerClick(item)}
-                className={`flex items-center gap-3 px-5 py-3 rounded-2xl bg-[#121422]/90 hover:bg-[#191d33] border ${
+                className={`group flex shrink-0 cursor-pointer items-center gap-3 rounded-2xl border bg-[#0b0c13]/95 px-4 py-2.5 shadow-[0_8px_30px_rgba(0,0,0,.25)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#11121c] sm:px-5 sm:py-3 ${
                   item.isSpecial
-                    ? 'border-yellow-500/40 shadow-lg shadow-yellow-500/10'
-                    : 'border-white/5 hover:border-purple-500/40 shadow-md'
-                } transition-all duration-200 cursor-pointer shrink-0 group`}
+                    ? 'border-yellow-500/35 shadow-yellow-500/10'
+                    : 'border-white/[0.06] hover:border-purple-500/30'
+                }`}
               >
-                {/* Partner Logo / Badge Graphic */}
-                <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm overflow-hidden shrink-0 ${iconBgClass} group-hover:scale-105 transition-transform`}
-                >
+                <div className={`flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl text-sm font-black transition-transform duration-300 group-hover:scale-105 sm:h-10 sm:w-10 ${iconBgClass}`}>
                   {item.logoUrl ? (
                     <img
                       src={item.logoUrl}
                       alt={item.name}
                       referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover rounded-xl"
+                      className="h-full w-full rounded-xl object-cover"
                       onError={(e) => {
-                        // Fallback if image link fails
                         (e.target as HTMLElement).style.display = 'none';
                       }}
                     />
                   ) : item.isSpecial ? (
-                    <Award className="w-5 h-5 text-yellow-300 fill-yellow-400/20" />
+                    <Award className="h-5 w-5 fill-yellow-400/20 text-yellow-300" />
                   ) : (
-                    <span className="font-display tracking-tighter">
-                      {item.name ? item.name.slice(0, 2).toUpperCase() : 'AR'}
-                    </span>
+                    <span className="font-display tracking-tighter">{item.name ? item.name.slice(0, 2).toUpperCase() : 'AR'}</span>
                   )}
                 </div>
 
-                {/* Partner Details */}
-                <div className="flex flex-col">
+                <div className="flex min-w-0 flex-col">
                   <div className="flex items-center gap-2">
-                    <span
-                      className={`font-display font-extrabold text-sm sm:text-base tracking-wide bg-clip-text text-transparent bg-gradient-to-r ${accentClass}`}
-                    >
+                    <span className={`bg-gradient-to-r bg-clip-text font-display text-sm font-extrabold tracking-wide text-transparent sm:text-base ${accentClass}`}>
                       {item.name}
                     </span>
                     {item.badge && (
-                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-yellow-400/20 text-yellow-300 border border-yellow-400/40">
-                        {item.badge}
-                      </span>
+                      <span className="rounded border border-yellow-400/30 bg-yellow-400/10 px-1.5 py-0.5 text-[8px] font-bold text-yellow-300">{item.badge}</span>
                     )}
                   </div>
-                  <span className="text-[11px] text-slate-400 font-medium truncate max-w-[200px]">
+                  <span className="max-w-[180px] truncate text-[10px] font-medium text-slate-500 sm:max-w-[200px] sm:text-[11px]">
                     {item.tagline || item.description || item.category}
                   </span>
                 </div>
@@ -124,7 +105,6 @@ export const OfficialPartnersTicker: React.FC = () => {
           })}
         </div>
       </div>
-    </div>
+    </section>
   );
 };
-
