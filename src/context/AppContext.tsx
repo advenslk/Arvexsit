@@ -311,6 +311,52 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_PREFIX = 'arvex_saas_v3_';
+const AUTH_SESSION_KEY = 'arvex_auth_session_v1';
+const AUTH_SESSION_MAX_IDLE = 24 * 60 * 60 * 1000;
+
+function getAuthSessionUser<T>(): T | null {
+  try {
+    const raw = localStorage.getItem(AUTH_SESSION_KEY);
+    if (!raw) return null;
+    const session = JSON.parse(raw);
+    if (!session?.user || !session?.lastActivity) return null;
+    if (Date.now() - Number(session.lastActivity) >= AUTH_SESSION_MAX_IDLE) {
+      localStorage.removeItem(AUTH_SESSION_KEY);
+      localStorage.removeItem(LOCAL_STORAGE_PREFIX + 'user');
+      return null;
+    }
+    return session.user as T;
+  } catch {
+    return null;
+  }
+}
+
+function saveAuthSession(user: unknown) {
+  try {
+    localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+      user,
+      lastActivity: Date.now(),
+    }));
+  } catch {}
+}
+
+function touchAuthSession() {
+  try {
+    const raw = localStorage.getItem(AUTH_SESSION_KEY);
+    if (!raw) return;
+    const session = JSON.parse(raw);
+    if (!session?.user) return;
+    if (Date.now() - Number(session.lastActivity || 0) >= AUTH_SESSION_MAX_IDLE) {
+      localStorage.removeItem(AUTH_SESSION_KEY);
+      localStorage.removeItem(LOCAL_STORAGE_PREFIX + 'user');
+      return;
+    }
+    session.lastActivity = Date.now();
+    localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
+  } catch {}
+}
+
+
 
 function getStored<T>(key: string, defaultValue: T): T {
   try {
@@ -401,9 +447,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [customers, setCustomers] = useState<CustomerRecord[]>(() =>
     getStored('customers', INITIAL_CUSTOMERS)
   );
-  const [user, setUser] = useState<UserAccount | null>(() =>
-    getStored('user', INITIAL_USER)
-  );
+  const [user, setUser] = useState<UserAccount | null>(() => {
+    const sessionUser = getAuthSessionUser<UserAccount>();
+    if (sessionUser) return sessionUser;
+    const legacyUser = getStored<UserAccount | null>('user', null);
+    if (legacyUser) {
+      saveAuthSession(legacyUser);
+      return legacyUser;
+    }
+    return null;
+  });
 
   // Orders, Servers & Infrastructure
   const [orders, setOrders] = useState<HostingOrder[]>(() =>
@@ -485,7 +538,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => { setStored('currenciesList', currenciesList); }, [currenciesList]);
   useEffect(() => { setStored('currency', currency); }, [currency]);
   useEffect(() => { setStored('customers', customers); }, [customers]);
-  useEffect(() => { setStored('user', user); }, [user]);
+  useEffect(() => {
+    setStored('user', user);
+    if (user) saveAuthSession(user);
+    else {
+      try { localStorage.removeItem(AUTH_SESSION_KEY); } catch {}
+    }
+  }, [user]);
+
+  // Keep the authenticated session alive while the user is active.
+  // A completely inactive session expires after 24 hours.
+  useEffect(() => {
+    if (!user) return;
+
+    const activity = () => touchAuthSession();
+    const events = ['click','keydown','mousemove','mousedown','touchstart','scroll'];
+    events.forEach((event) => window.addEventListener(event, activity, { passive: true }));
+
+    const interval = window.setInterval(() => {
+      try {
+        const raw = localStorage.getItem(AUTH_SESSION_KEY);
+        if (!raw) return;
+        const session = JSON.parse(raw);
+        if (!session?.user) return;
+        if (Date.now() - Number(session.lastActivity || 0) >= AUTH_SESSION_MAX_IDLE) {
+          localStorage.removeItem(AUTH_SESSION_KEY);
+          localStorage.removeItem(LOCAL_STORAGE_PREFIX + 'user');
+          setUser(null);
+          showNotification('Your session expired after 24 hours of inactivity.', 'info');
+        }
+      } catch {}
+    }, 60000);
+
+    return () => {
+      events.forEach((event) => window.removeEventListener(event, activity));
+      window.clearInterval(interval);
+    };
+  }, [user]);
   useEffect(() => { setStored('orders', orders); }, [orders]);
   useEffect(() => { setStored('deployedServers', deployedServers); }, [deployedServers]);
   useEffect(() => { setStored('serverNodes', serverNodes); }, [serverNodes]);
@@ -967,6 +1056,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
       createdAt: new Date().toISOString(),
     };
+    saveAuthSession(defaultUser);
     setStored('user', defaultUser);
     setUser(defaultUser);
     showNotification(`Signed in as ${defaultUser.name} (${role})`);
@@ -984,6 +1074,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
       createdAt: new Date().toISOString(),
     };
+    saveAuthSession(googleUser);
     setStored('user', googleUser);
     setUser(googleUser);
     showNotification('Successfully authenticated via Google OAuth!');
@@ -1000,6 +1091,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=200&q=80',
       createdAt: new Date().toISOString(),
     };
+    saveAuthSession(githubUser);
     setStored('user', githubUser);
     setUser(githubUser);
     showNotification('Authenticated via GitHub!');
@@ -1016,6 +1108,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
       createdAt: new Date().toISOString(),
     };
+    saveAuthSession(discordUser);
     setStored('user', discordUser);
     setUser(discordUser);
     showNotification('Connected with Discord ID!');
@@ -1023,6 +1116,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const logout = () => {
+    try { localStorage.removeItem(AUTH_SESSION_KEY); } catch {}
     setStored('user', null);
     try { localStorage.removeItem('arvex_admin_token'); } catch {}
     setUser(null);
@@ -1038,6 +1132,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       provider: 'email',
       createdAt: new Date().toISOString(),
     };
+    saveAuthSession(newUser);
     setStored('user', newUser);
     setUser(newUser);
     showNotification(`Account created! Welcome to ArveX, ${name}`);
