@@ -56,6 +56,19 @@
 .arvex-scanline { position:absolute; left:0; right:0; top:-20%; height:18%; background:linear-gradient(to bottom,transparent,rgba(168,85,247,.13),transparent); filter:blur(10px); animation:arvexScan 13s linear infinite; }
 .arvex-grid-glow { background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px); background-size:52px 52px; mask-image:linear-gradient(to bottom,black,transparent 88%); }
 
+/* Use the supplied ArveX brand artwork in the navbar logo slot. */
+header.sticky button.group > div.relative.w-8.h-8 {
+  background-image: url('https://www.image2url.com/r2/default/images/1788183036437-67d0ec6b-01c0-4372-bfee-e663f263531b.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  background-color: transparent;
+}
+header.sticky button.group > div.relative.w-8.h-8 > span,
+header.sticky button.group > div.relative.w-8.h-8 > div {
+  opacity: 0 !important;
+}
+
 /* Premium 3D UI treatment. Kept subtle so the dashboard and checkout controls remain usable. */
 .arvex-3d-button {
   position: relative;
