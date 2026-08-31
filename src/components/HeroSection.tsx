@@ -25,7 +25,7 @@ export const HeroSection: React.FC = () => {
   const secondaryCtaText = siteSettings?.heroSecondaryCtaText || 'View Prices';
 
   return (
-    <section className="relative min-h-[calc(100svh-68px)] overflow-hidden pb-20 pt-10 sm:pb-28 sm:pt-14 lg:pt-20">
+    <section className="relative overflow-hidden pb-8 pt-10 sm:pb-10 sm:pt-14 lg:pt-20">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_50%_30%,rgba(168,85,247,.20),transparent_42%)]" />
 
       <div className="mx-auto flex max-w-7xl flex-col px-4 sm:px-6 lg:px-8">
@@ -80,7 +80,7 @@ export const HeroSection: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-12 grid grid-cols-2 gap-3 md:grid-cols-4 lg:mt-14">
+        <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-4 lg:mt-12">
           {quickServices.map(({ label, detail, icon: Icon, route }) => (
             <button key={label} onClick={() => navigateTo(route)} className="arvex-3d-button-dark arvex-3d-card group relative overflow-hidden rounded-2xl border border-white/12 bg-black/35 p-4 text-left backdrop-blur-2xl sm:p-5">
               <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-purple-500/10 blur-2xl transition-all duration-500 group-hover:bg-purple-400/25" />
