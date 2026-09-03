@@ -86,9 +86,9 @@ export const LegalPage: React.FC = () => {
             <p>
               You must provide accurate, complete, and current information upon creating an account. You are responsible for safeguarding your credentials, API tokens, and 2FA keys.
             </p>
-            <h3 className="text-base font-bold text-white">3. Payments, Billing &amp; 7-Day Refund Policy</h3>
+            <h3 className="text-base font-bold text-white">3. Payments, Billing &amp; 24-Hour Refund Policy</h3>
             <p>
-              Services are billed in advance on a recurring monthly, quarterly, or yearly cycle. We offer a 7-day money-back guarantee on all Minecraft and Game Hosting plans. Dedicated servers, domain registrations, and software licenses are non-refundable once provisioned.
+              Services are billed in advance on a recurring monthly, quarterly, or yearly cycle. We offer a 24-hour money-back guarantee on all Minecraft and Game Hosting plans. Dedicated servers, domain registrations, and software licenses are non-refundable once provisioned.
             </p>
             <h3 className="text-base font-bold text-white">4. Service Suspension &amp; Termination</h3>
             <p>
