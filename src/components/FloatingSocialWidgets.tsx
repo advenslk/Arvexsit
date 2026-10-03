@@ -9,7 +9,7 @@ export const FloatingSocialWidgets: React.FC = () => {
   const [chatLog, setChatLog] = useState<Array<{ sender: 'agent' | 'user'; text: string; time: string }>>([
     {
       sender: 'agent',
-      text: 'Ayubowan! 👋 Welcome to ArveX Cloud Support. How can we assist with your server deployment or Sri Lankan payment today?',
+      text: 'Ayubowan! 👋 Welcome to HelzerX Cloud Support. How can we assist with your server deployment or Sri Lankan payment today?',
       time: 'Just now',
     },
   ]);
@@ -45,11 +45,11 @@ export const FloatingSocialWidgets: React.FC = () => {
       <div className="fixed bottom-6 left-6 z-50 flex flex-col items-center gap-3">
         {/* Discord Floating Button (Purple) */}
         <a
-          href="https://discord.gg/arvexhosting"
+          href="https://discord.gg/helzerxcloud"
           target="_blank"
           rel="noopener noreferrer"
           className="w-12 h-12 rounded-full bg-[#5865F2] hover:bg-[#4752C4] text-white flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all group"
-          title="Join ArveX Discord Community"
+          title="Join HelzerX Discord Community"
         >
           {/* Discord Vector SVG */}
           <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
@@ -75,7 +75,7 @@ export const FloatingSocialWidgets: React.FC = () => {
         <button
           onClick={() => setIsLiveChatOpen(!isLiveChatOpen)}
           className="w-12 h-12 rounded-full bg-cyan-600 hover:bg-cyan-500 text-white flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all"
-          title="Open ArveX Live Chat"
+          title="Open HelzerX Live Chat"
         >
           <HelpCircle className="w-6 h-6" />
         </button>
@@ -98,12 +98,12 @@ export const FloatingSocialWidgets: React.FC = () => {
             <div className="flex items-center gap-3">
               <div className="relative">
                 <div className="w-9 h-9 rounded-xl bg-purple-600 flex items-center justify-center font-bold text-xs">
-                  AX
+                  HX
                 </div>
                 <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#111320]" />
               </div>
               <div>
-                <h4 className="text-xs font-bold">ArveX Cloud Live Help</h4>
+                <h4 className="text-xs font-bold">HelzerX Cloud Live Help</h4>
                 <p className="text-[10px] text-purple-200">Online • Colombo NOC</p>
               </div>
             </div>

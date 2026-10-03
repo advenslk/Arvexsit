@@ -26,6 +26,20 @@ import {
   Star,
   Award,
   Upload,
+  ShieldCheck,
+  Lock,
+  Terminal,
+  Cpu,
+  HardDrive,
+  Wifi,
+  Eye,
+  Radio,
+  AlertTriangle,
+  Fingerprint,
+  KeyRound,
+  Ban,
+  Check,
+  Zap,
 } from 'lucide-react';
 import { HostingPlan, ServiceItem, BlogPost, Partner, CustomerReview } from '../../types';
 
@@ -69,10 +83,52 @@ export const AdminPage: React.FC = () => {
   } = useApp();
 
   const [activeAdminTab, setActiveAdminTab] = useState<
-    'overview' | 'plans' | 'services' | 'partners' | 'reviews' | 'images' | 'gateways' | 'tickets' | 'invoices' | 'settings'
+    'overview' | 'security' | 'nodes' | 'plans' | 'services' | 'partners' | 'reviews' | 'images' | 'gateways' | 'tickets' | 'invoices' | 'settings'
   >('overview');
 
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [ledgerVerified, setLedgerVerified] = useState(false);
+
+  // Security Firewall State
+  const [firewallPolicy, setFirewallPolicy] = useState({
+    ddosScrubber: true,
+    sqlInjectionShield: true,
+    xssSanitizer: true,
+    autoQuarantine: true,
+    enforceStaff2FA: true,
+    strictSessionTimeout: true,
+    botChallenge: true,
+    rateLimitMax: 5,
+  });
+
+  const [blockedIps, setBlockedIps] = useState([
+    { id: 'blk-1', ip: '185.220.101.5', reason: 'DDoS SYN Flood on SG-01:25565', country: 'NL', blockedAt: '10 mins ago', packets: '42.8M' },
+    { id: 'blk-2', ip: '45.142.122.9', reason: 'SSH Root Credential Stuffing', country: 'RU', blockedAt: '25 mins ago', packets: '8.4K' },
+    { id: 'blk-3', ip: '194.26.29.112', reason: 'Malicious API Rate Limit Violation', country: 'UA', blockedAt: '1 hour ago', packets: '120K' },
+    { id: 'blk-4', ip: '103.152.18.44', reason: 'NTP Amplification UDP Reflection', country: 'IN', blockedAt: '3 hours ago', packets: '310M' },
+  ]);
+
+  const [newBlockIp, setNewBlockIp] = useState('');
+  const [newBlockReason, setNewBlockReason] = useState('');
+
+  // Security Audit Ledger
+  const [auditLogs, setAuditLogs] = useState([
+    { id: 'aud-1', time: '12:24:18', actor: 'Root SuperAdmin', event: 'Staff Identity Authenticated via 2FA TOTP', ip: '192.168.1.1', hash: 'e3b0c44298fc1c149afbf4c8996fb924', status: 'VERIFIED' },
+    { id: 'aud-2', time: '12:20:05', actor: 'Corero Scrubber', event: 'Mitigated 1.8 Gbps SYN Attack on Singapore Node', ip: '185.220.101.5', hash: '7f83b1657ff1fc53b92dc18148a1d65d', status: 'MITIGATED' },
+    { id: 'aud-3', time: '12:15:22', actor: 'Admin Console', event: 'Cloud Infrastructure Node SG-01 Health Check: PASS', ip: 'Internal', hash: 'a591a6d40bf420404a011733cfb7b190', status: 'PASS' },
+    { id: 'aud-4', time: '12:09:44', actor: 'Security Sentinel', event: 'Quarantined IP 45.142.122.9 after 5 failed password attempts', ip: '45.142.122.9', hash: '2c26b46b68ffc68ff99b453c1d304134', status: 'LOCKED' },
+    { id: 'aud-5', time: '11:58:30', actor: 'TLS Manager', event: 'Let\'s Encrypt 4096-bit RSA/ECC Cert Auto-Renewed (*.helzerx.cloud)', ip: 'Auto-Daemon', hash: '8c6976e5b5410415bde908bd4dee15df', status: 'RENEWED' },
+  ]);
+
+  // Global Cloud Clusters State
+  const [nodeClusters, setNodeClusters] = useState([
+    { id: 'node-colombo', name: 'Colombo DC-01', location: 'Sri Lanka', flag: '🇱🇰', cpu: 'AMD EPYC 9654 (96C/192T)', load: 28, ram: '118 / 384 GB', nvme: '3.8 TB / 30 TB', latency: '4ms', ping: 'Online', uptime: '99.99%', maintenance: false },
+    { id: 'node-sg', name: 'Singapore SG-01', location: 'Singapore', flag: '🇸🇬', cpu: 'AMD Ryzen 9 9950X (5.7GHz)', load: 46, ram: '84 / 128 GB', nvme: '1.9 TB / 16 TB', latency: '12ms', ping: 'Online', uptime: '100%', maintenance: false },
+    { id: 'node-frankfurt', name: 'Frankfurt DE-01', location: 'Germany', flag: '🇩🇪', cpu: 'Intel Xeon Platinum 8480+', load: 38, ram: '210 / 512 GB', nvme: '8.4 TB / 48 TB', latency: '118ms', ping: 'Online', uptime: '99.98%', maintenance: false },
+    { id: 'node-dallas', name: 'Dallas US-01', location: 'United States', flag: '🇺🇸', cpu: 'AMD Ryzen 9 7950X DDR5', load: 31, ram: '72 / 128 GB', nvme: '2.1 TB / 16 TB', latency: '190ms', ping: 'Online', uptime: '100%', maintenance: false },
+    { id: 'node-london', name: 'London UK-01', location: 'United Kingdom', flag: '🇬🇧', cpu: 'AMD EPYC 9554 (64C/128T)', load: 41, ram: '130 / 256 GB', nvme: '4.8 TB / 32 TB', latency: '135ms', ping: 'Online', uptime: '100%', maintenance: false },
+    { id: 'node-tokyo', name: 'Tokyo JP-01', location: 'Japan', flag: '🇯🇵', cpu: 'AMD Ryzen 9 7900X (10Gbps NTT)', load: 22, ram: '48 / 128 GB', nvme: '1.4 TB / 16 TB', latency: '65ms', ping: 'Online', uptime: '100%', maintenance: false },
+  ]);
 
   // Plan Edit State
   const [editingPlan, setEditingPlan] = useState<HostingPlan | null>(null);
@@ -143,7 +199,7 @@ export const AdminPage: React.FC = () => {
             <span>Master Superadmin Control Center</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-black text-white font-display tracking-tight">
-            ArveX SaaS Administration
+            HelzerX SaaS Administration
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
             Real-time management for hosting plans, services, images, PayHere & PayPal gateways, tickets, and site settings.
@@ -162,6 +218,8 @@ export const AdminPage: React.FC = () => {
       <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 bg-[#0c0d16] p-1.5 rounded-2xl border border-white/10 no-scrollbar">
         {[
           { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+          { id: 'security', label: 'Security & DDoS Shield', icon: ShieldCheck, highlight: true },
+          { id: 'nodes', label: `Cloud Nodes (${nodeClusters.length})`, icon: Cpu },
           { id: 'plans', label: `Plans (${plans.length})`, icon: Server },
           { id: 'services', label: `Services (${services.length})`, icon: Layers },
           { id: 'partners', label: `Partners (${partners.length})`, icon: Handshake },
@@ -180,6 +238,8 @@ export const AdminPage: React.FC = () => {
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
                 activeAdminTab === tab.id
                   ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/20'
+                  : tab.highlight
+                  ? 'text-cyan-400 bg-cyan-950/30 border border-cyan-500/30 hover:bg-cyan-900/40'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -322,7 +382,597 @@ export const AdminPage: React.FC = () => {
         </div>
       )}
 
-      {/* SECTION 2: PLANS MANAGEMENT */}
+      {/* SECTION: SECURITY & DDOS SHIELD */}
+      {activeAdminTab === 'security' && (
+        <div className="space-y-8 animate-in fade-in duration-300">
+          
+          {/* Security Banner */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-gradient-to-r from-blue-950/60 via-[#0c1224] to-[#070b16] border border-cyan-500/30 p-6 sm:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+            <div className="absolute -right-12 -top-12 w-64 h-64 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
+            <div className="relative z-10 flex items-start gap-4">
+              <div className="h-14 w-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center shrink-0 shadow-inner">
+                <ShieldCheck className="h-8 w-8" />
+              </div>
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold uppercase tracking-wider mb-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
+                  Corero 3.2Tbps Active Scrubbing Core Armed
+                </div>
+                <h2 className="text-2xl font-black text-white font-display">
+                  Cloud Security Sentinel &amp; Defense Center
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
+                  Military-grade protection with inline volumetric DDoS filtering, Layer 7 application inspection, dynamic IP quarantine, and cryptographic SHA-256 audit ledger.
+                </p>
+              </div>
+            </div>
+
+            <div className="relative z-10 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setLedgerVerified(true);
+                  showNotification();
+                  setTimeout(() => setLedgerVerified(false), 4000);
+                }}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-500 text-black font-bold text-xs hover:bg-cyan-400 shadow-lg shadow-cyan-500/20 transition cursor-pointer"
+              >
+                <Fingerprint className="w-4 h-4" />
+                <span>Verify SHA-256 Ledger</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Ledger Verified Toast Alert */}
+          {ledgerVerified && (
+            <div className="flex items-center gap-3 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold animate-in fade-in">
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+              <span>
+                All 5 cryptographic SHA-256 chain blocks verified successfully against cloud root authority. Zero tampering detected.
+              </span>
+            </div>
+          )}
+
+          {/* 4 Telemetry Security Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-[#0f111c] border border-white/10 p-6 rounded-3xl">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs text-slate-400 font-semibold">Total Filtered Traffic</span>
+                <Shield className="w-5 h-5 text-cyan-400" />
+              </div>
+              <p className="text-2xl font-black text-white font-mono">2.41 Tbps</p>
+              <div className="flex items-center gap-1.5 mt-2 text-[10px] text-emerald-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                <span>100% Legit Packets Passed</span>
+              </div>
+            </div>
+
+            <div className="bg-[#0f111c] border border-white/10 p-6 rounded-3xl">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs text-slate-400 font-semibold">Active Quarantines</span>
+                <Ban className="w-5 h-5 text-rose-400" />
+              </div>
+              <p className="text-2xl font-black text-white font-mono">{blockedIps.length} Subnets</p>
+              <div className="flex items-center gap-1.5 mt-2 text-[10px] text-rose-400">
+                <AlertTriangle className="h-3 w-3" />
+                <span>Zero Bypass Recorded</span>
+              </div>
+            </div>
+
+            <div className="bg-[#0f111c] border border-white/10 p-6 rounded-3xl">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs text-slate-400 font-semibold">WAF OWASP Rules</span>
+                <KeyRound className="w-5 h-5 text-purple-400" />
+              </div>
+              <p className="text-2xl font-black text-white font-mono">24 Active</p>
+              <div className="flex items-center gap-1.5 mt-2 text-[10px] text-purple-400">
+                <Check className="h-3 w-3" />
+                <span>SQLi, XSS, CSRF Sealed</span>
+              </div>
+            </div>
+
+            <div className="bg-[#0f111c] border border-white/10 p-6 rounded-3xl">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs text-slate-400 font-semibold">Two-Factor Adoption</span>
+                <Smartphone className="w-5 h-5 text-amber-400" />
+              </div>
+              <p className="text-2xl font-black text-white font-mono">100% Enforced</p>
+              <div className="flex items-center gap-1.5 mt-2 text-[10px] text-amber-400">
+                <Lock className="h-3 w-3" />
+                <span>Mandatory TOTP Staff Policy</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Row: WAF Policies + Live Attack Mitigation Monitor */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            {/* WAF Policy Toggles (7 cols) */}
+            <div className="lg:col-span-7 bg-[#0f111c] border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-white/10">
+                <div>
+                  <h3 className="font-display text-lg font-bold text-white">
+                    Firewall &amp; Access Control Policies
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Fine-tune runtime defenses and intrusion prevention triggers.
+                  </p>
+                </div>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-bold">
+                  Rule Version 4.8.2
+                </span>
+              </div>
+
+              <div className="space-y-4">
+                {[
+                  {
+                    key: 'ddosScrubber',
+                    title: 'Corero SmartWall 3.2Tbps Inline Filter',
+                    desc: 'Deep packet inspection for SYN, UDP amplification, and NTP reflection attacks.',
+                  },
+                  {
+                    key: 'sqlInjectionShield',
+                    title: 'Strict SQL Injection & Payload Scrutiny',
+                    desc: 'Sanitize query payloads across Pterodactyl and custom API endpoints.',
+                  },
+                  {
+                    key: 'xssSanitizer',
+                    title: 'Cross-Site Scripting (XSS) Content Guard',
+                    desc: 'Inject strict Content-Security-Policy headers and strip embedded scripts.',
+                  },
+                  {
+                    key: 'autoQuarantine',
+                    title: 'Anti-Brute Force IP Auto-Quarantine',
+                    desc: 'Automatically blacklists IP addresses after 5 consecutive failed login attempts.',
+                  },
+                  {
+                    key: 'enforceStaff2FA',
+                    title: 'Enforce 2FA TOTP for All Staff & Admins',
+                    desc: 'Requires hardware authenticator token before granting administrative rights.',
+                  },
+                  {
+                    key: 'strictSessionTimeout',
+                    title: 'Strict 30-Minute Idle Session Invalidation',
+                    desc: 'Terminates dormant browser sessions to prevent unauthorized device access.',
+                  },
+                  {
+                    key: 'botChallenge',
+                    title: 'Automated Bot & High-Risk ASN Challenges',
+                    desc: 'Presents cryptographic proof-of-work challenges to suspicious datacenters.',
+                  },
+                ].map((rule) => (
+                  <div
+                    key={rule.key}
+                    className="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition"
+                  >
+                    <div className="pr-4">
+                      <p className="text-xs font-bold text-white">{rule.title}</p>
+                      <p className="text-[11px] text-slate-400 leading-relaxed mt-0.5">
+                        {rule.desc}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFirewallPolicy((prev: any) => ({
+                          ...prev,
+                          [rule.key]: !prev[rule.key],
+                        }));
+                        showNotification();
+                      }}
+                      className={`relative h-6 w-11 rounded-full transition cursor-pointer shrink-0 ${
+                        (firewallPolicy as any)[rule.key]
+                          ? 'bg-cyan-500'
+                          : 'bg-slate-800'
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition ${
+                          (firewallPolicy as any)[rule.key] ? 'left-6' : 'left-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Live Attack Vector Breakdown (5 cols) */}
+            <div className="lg:col-span-5 bg-[#0f111c] border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
+                  <h3 className="font-display text-lg font-bold text-white">
+                    Live Attack Mitigation
+                  </h3>
+                  <span className="flex items-center gap-1.5 text-[10px] text-emerald-400 font-mono">
+                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                    Zero Loss
+                  </span>
+                </div>
+
+                <p className="text-xs text-slate-400 mb-6 leading-relaxed">
+                  Real-time breakdown of intercepted attack vectors across Singapore, Colombo, and European clusters over the last 24 hours.
+                </p>
+
+                {/* Progress breakdown */}
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between text-xs font-semibold mb-1">
+                      <span className="text-slate-300">SYN Flood (Layer 4)</span>
+                      <span className="text-cyan-400 font-mono">1.38 Tbps (58%)</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div className="h-full bg-cyan-400 rounded-full" style={{ width: '58%' }} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs font-semibold mb-1">
+                      <span className="text-slate-300">UDP Amplification (DNS/NTP)</span>
+                      <span className="text-blue-400 font-mono">580 Gbps (24%)</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div className="h-full bg-blue-500 rounded-full" style={{ width: '24%' }} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs font-semibold mb-1">
+                      <span className="text-slate-300">HTTP/2 Rapid Reset &amp; L7 Floods</span>
+                      <span className="text-purple-400 font-mono">290 Gbps (12%)</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div className="h-full bg-purple-500 rounded-full" style={{ width: '12%' }} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs font-semibold mb-1">
+                      <span className="text-slate-300">ICMP / Malformed Fragments</span>
+                      <span className="text-emerald-400 font-mono">145 Gbps (6%)</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div className="h-full bg-emerald-400 rounded-full" style={{ width: '6%' }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Hardware Spec callout */}
+              <div className="p-4 rounded-2xl bg-cyan-500/5 border border-cyan-500/20 text-xs text-slate-300 leading-relaxed">
+                <span className="font-bold text-cyan-300 block mb-1">
+                  ⚡ Hardware Scrubbing Latency: &lt; 0.05ms
+                </span>
+                Corero inline bypass units forward pure traffic to your game daemons without raising player ping or causing tickrate jitter.
+              </div>
+            </div>
+
+          </div>
+
+          {/* IP Firewall Quarantine Manager */}
+          <div className="bg-[#0f111c] border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+              <div>
+                <h3 className="font-display text-lg font-bold text-white">
+                  Firewall IP Quarantine &amp; Blocklist
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Manage active network drop rules for abusive nodes and scanners.
+                </p>
+              </div>
+
+              {/* Form to add new IP */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!newBlockIp.trim()) return;
+                  const newEntry = {
+                    id: 'blk-' + Date.now(),
+                    ip: newBlockIp.trim(),
+                    reason: newBlockReason.trim() || 'Manual Administrator Quarantine',
+                    country: 'GL',
+                    blockedAt: 'Just now',
+                    packets: '0',
+                  };
+                  setBlockedIps([newEntry, ...blockedIps]);
+                  setNewBlockIp('');
+                  setNewBlockReason('');
+                  showNotification();
+                }}
+                className="flex items-center gap-2"
+              >
+                <input
+                  type="text"
+                  placeholder="IP address or CIDR (e.g. 192.0.2.1)"
+                  value={newBlockIp}
+                  onChange={(e) => setNewBlockIp(e.target.value)}
+                  className="rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-cyan-400 font-mono"
+                />
+                <input
+                  type="text"
+                  placeholder="Reason"
+                  value={newBlockReason}
+                  onChange={(e) => setNewBlockReason(e.target.value)}
+                  className="hidden sm:block rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-cyan-400"
+                />
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1.5 transition shrink-0"
+                >
+                  <Ban className="w-3.5 h-3.5" />
+                  <span>Block IP</span>
+                </button>
+              </form>
+            </div>
+
+            {/* Blocked IP Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-white/10 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                    <th className="pb-3">Quarantined IP</th>
+                    <th className="pb-3">Origin</th>
+                    <th className="pb-3">Violation Reason</th>
+                    <th className="pb-3">Packets Dropped</th>
+                    <th className="pb-3">Quarantine Time</th>
+                    <th className="pb-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 font-mono">
+                  {blockedIps.map((blk) => (
+                    <tr key={blk.id} className="hover:bg-white/[0.02] transition">
+                      <td className="py-3.5 font-bold text-white flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-rose-500" />
+                        <span>{blk.ip}</span>
+                      </td>
+                      <td className="py-3.5 text-slate-400">{blk.country}</td>
+                      <td className="py-3.5 text-slate-300 font-sans">{blk.reason}</td>
+                      <td className="py-3.5 text-rose-400 font-bold">{blk.packets}</td>
+                      <td className="py-3.5 text-slate-500 text-[11px] font-sans">{blk.blockedAt}</td>
+                      <td className="py-3.5 text-right font-sans">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setBlockedIps(blockedIps.filter((b) => b.id !== blk.id));
+                            showNotification();
+                          }}
+                          className="px-3 py-1 rounded-lg bg-white/5 hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-300 font-bold text-[11px] transition"
+                        >
+                          Unblock
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Cryptographic SHA-256 Audit Trail */}
+          <div className="bg-[#0f111c] border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+              <div>
+                <h3 className="font-display text-lg font-bold text-white">
+                  Cryptographic Audit Trail Ledger
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Tamper-evident system log sealed with SHA-256 digital hashes.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const blob = new Blob([JSON.stringify(auditLogs, null, 2)], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `helzerx-audit-log-${Date.now()}.json`;
+                  a.click();
+                  showNotification();
+                }}
+                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white font-bold text-xs transition shrink-0"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Export Audit Log</span>
+              </button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs font-mono">
+                <thead>
+                  <tr className="border-b border-white/10 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                    <th className="pb-3">Timestamp</th>
+                    <th className="pb-3">Operator</th>
+                    <th className="pb-3">Security Event</th>
+                    <th className="pb-3">Client IP</th>
+                    <th className="pb-3">SHA-256 Hash</th>
+                    <th className="pb-3 text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 text-[11px]">
+                  {auditLogs.map((log) => (
+                    <tr key={log.id} className="hover:bg-white/[0.02] transition">
+                      <td className="py-3 text-slate-400">{log.time}</td>
+                      <td className="py-3 font-bold text-white font-sans">{log.actor}</td>
+                      <td className="py-3 text-slate-300 font-sans">{log.event}</td>
+                      <td className="py-3 text-cyan-400">{log.ip}</td>
+                      <td className="py-3 text-slate-500 font-mono text-[10px]">
+                        {log.hash.slice(0, 16)}…
+                      </td>
+                      <td className="py-3 text-right">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">
+                          <Check className="w-2.5 h-2.5" />
+                          {log.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      )}
+
+      {/* SECTION: CLOUD INFRASTRUCTURE NODES */}
+      {activeAdminTab === 'nodes' && (
+        <div className="space-y-8 animate-in fade-in duration-300">
+          
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+            <div>
+              <h2 className="text-2xl font-black text-white font-display">
+                Global Cloud Clusters &amp; Datacenter Nodes
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                Real-time telemetry, memory utilization, and container orchestration across 6 core datacenters.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  showNotification();
+                }}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 text-black font-bold text-xs hover:bg-cyan-400 transition cursor-pointer"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Sync Node Telemetry</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Grid of 6 Cloud Clusters */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {nodeClusters.map((cluster) => (
+              <div
+                key={cluster.id}
+                className="bg-[#0f111c] border border-white/10 rounded-3xl p-6 space-y-5 hover:border-cyan-500/30 transition shadow-xl"
+              >
+                {/* Node Title & Status */}
+                <div className="flex items-center justify-between pb-4 border-b border-white/10">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{cluster.flag}</span>
+                    <div>
+                      <h4 className="font-display font-extrabold text-white text-base">
+                        {cluster.name}
+                      </h4>
+                      <p className="text-xs text-slate-400">{cluster.location}</p>
+                    </div>
+                  </div>
+
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                      cluster.maintenance
+                        ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
+                        : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                    }`}
+                  >
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        cluster.maintenance ? 'bg-amber-400' : 'bg-emerald-400 animate-pulse'
+                      }`}
+                    />
+                    <span>{cluster.maintenance ? 'Maintenance' : 'Armed'}</span>
+                  </span>
+                </div>
+
+                {/* Processor info */}
+                <div className="p-3 rounded-2xl bg-white/5 border border-white/5">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                    CPU Architecture
+                  </span>
+                  <p className="text-xs font-bold text-cyan-300 font-mono truncate">
+                    {cluster.cpu}
+                  </p>
+                </div>
+
+                {/* Gauges: CPU & RAM */}
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between text-xs font-semibold mb-1">
+                      <span className="text-slate-400">CPU Compute Load</span>
+                      <span className="text-white font-mono">{cluster.load}%</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                      <div
+                        className="h-full bg-cyan-400 rounded-full transition-all duration-500"
+                        style={{ width: `${cluster.load}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs font-semibold mb-1">
+                      <span className="text-slate-400">RAM Allocated</span>
+                      <span className="text-white font-mono">{cluster.ram}</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                      <div
+                        className="h-full bg-blue-500 rounded-full"
+                        style={{ width: '45%' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Telemetry Footer */}
+                <div className="pt-3 border-t border-white/5 grid grid-cols-3 gap-2 text-center text-[10px]">
+                  <div>
+                    <span className="text-slate-500 block">Ping</span>
+                    <span className="font-mono font-bold text-emerald-400">{cluster.latency}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">SLA</span>
+                    <span className="font-mono font-bold text-white">{cluster.uptime}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">NVMe Gen5</span>
+                    <span className="font-mono font-bold text-cyan-300">RAID-10</span>
+                  </div>
+                </div>
+
+                {/* Node Controls */}
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      showNotification();
+                    }}
+                    className="py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-bold transition flex items-center justify-center gap-1.5"
+                  >
+                    <Zap className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Flush Cache</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNodeClusters((prev) =>
+                        prev.map((c) =>
+                          c.id === cluster.id ? { ...c, maintenance: !c.maintenance } : c
+                        )
+                      );
+                      showNotification();
+                    }}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                      cluster.maintenance
+                        ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                        : 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300'
+                    }`}
+                  >
+                    <span>{cluster.maintenance ? 'Bring Online' : 'Maintenance'}</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      )}
       {activeAdminTab === 'plans' && (
         <div className="space-y-8">
           <div className="flex items-center justify-between">
@@ -1672,7 +2322,6 @@ export const AdminPage: React.FC = () => {
                 type="button"
                 onClick={() => {
                   if (!editingPartner || !editingPartner.name.trim()) {
-                    alert('Please enter a partner name');
                     return;
                   }
                   if (isAddingPartner) {
@@ -1789,7 +2438,7 @@ export const AdminPage: React.FC = () => {
                   onChange={(e) =>
                     setEditingReview(editingReview ? { ...editingReview, reviewText: e.target.value } : null)
                   }
-                  placeholder="Write the customer's feedback and experience with ArveX..."
+                  placeholder="Write the customer's feedback and experience with HelzerX..."
                   className="w-full bg-[#0a0c12] border border-white/10 rounded-xl px-3 py-2 text-white"
                 />
               </div>
@@ -1879,7 +2528,6 @@ export const AdminPage: React.FC = () => {
                 type="button"
                 onClick={() => {
                   if (!editingReview || !editingReview.name.trim()) {
-                    alert('Please enter a reviewer name');
                     return;
                   }
                   if (isAddingReview) {

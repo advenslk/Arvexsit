@@ -61,7 +61,7 @@ export const CheckoutPage: React.FC = () => {
   const [selectedCycle, setSelectedCycle] = useState<BillingCycle>(billingCycle || 'monthly');
   const [selectedServerType, setSelectedServerType] = useState<string>('papermc');
   const [selectedLocation, setSelectedLocation] = useState<string>('singapore');
-  const [serverName, setServerName] = useState<string>('My ArveX Server');
+  const [serverName, setServerName] = useState<string>('My HelzerX Server');
   const [serverNotes, setServerNotes] = useState<string>('');
 
   // Customer Auth / Checkout Type (Screenshot 1)
@@ -243,7 +243,7 @@ export const CheckoutPage: React.FC = () => {
     if (!user && fullName) {
       setUser({
         id: `usr-${Date.now()}`,
-        name: fullName || 'ArveX Customer',
+        name: fullName || 'HelzerX Customer',
         email: emailAddress,
         role: 'Client',
         avatar: 'AX',
@@ -262,19 +262,19 @@ export const CheckoutPage: React.FC = () => {
   const handleCompleteOrderSuccess = () => {
     const newOrder = createOrder({
       customerName: fullName || user?.name || 'Valued Customer',
-      customerEmail: emailAddress || user?.email || 'customer@arvex.host',
+      customerEmail: emailAddress || user?.email || 'customer@helzerx.cloud',
       planName: plan.name,
       planId: plan.id,
       billingCycle: selectedCycle,
       amount: finalTotalLkr / 300,
       location: selectedLocation === 'singapore' ? 'Singapore' : selectedLocation === 'sri-lanka' ? 'Sri Lanka' : 'US Central',
-      hostname: `${serverName.toLowerCase().replace(/[^a-z0-9]/g, '-') || 'server'}.arvex.host`,
+      hostname: `${serverName.toLowerCase().replace(/[^a-z0-9]/g, '-') || 'server'}.helzerx.cloud`,
       status: 'Paid',
     });
 
     // Deploy instant Pterodactyl node
     const newServer = deployServer({
-      serverName: serverName || 'My ArveX Minecraft Node',
+      serverName: serverName || 'My HelzerX Minecraft Node',
       planName: plan.name,
       planId: plan.id,
       location: selectedLocation === 'singapore' ? 'Singapore' : selectedLocation === 'sri-lanka' ? 'Sri Lanka' : 'Dallas, TX',
@@ -293,7 +293,7 @@ export const CheckoutPage: React.FC = () => {
       ipAddress: `${newServer.ipAddress}:${newServer.port}`,
     });
 
-    showNotification('Payment verified! Server provisioned on ArveX Node.', 'success');
+    showNotification('Payment verified! Server provisioned on HelzerX Node.', 'success');
   };
 
   return (
@@ -1035,7 +1035,7 @@ export const CheckoutPage: React.FC = () => {
 
             <div className="p-6 space-y-4 text-xs">
               <div className="p-3 rounded-xl bg-[#181b30] border border-white/5 space-y-1">
-                <p className="text-slate-400">Merchant: <strong className="text-white">ArveX Cloud Lanka (Pvt) Ltd</strong></p>
+                <p className="text-slate-400">Merchant: <strong className="text-white">HelzerX Cloud Lanka (Pvt) Ltd</strong></p>
                 <p className="text-slate-400">Order Reference: <strong className="text-purple-300 font-mono">{bankReference}</strong></p>
                 <p className="text-slate-400">Item: <strong className="text-white">{plan.name} ({selectedCycle})</strong></p>
               </div>
@@ -1125,7 +1125,7 @@ export const CheckoutPage: React.FC = () => {
 
             <div className="p-3.5 rounded-2xl bg-[#16182c] border border-white/10 space-y-2 text-xs">
               <p className="text-slate-400">Bank: <strong className="text-white">Commercial Bank of Ceylon</strong></p>
-              <p className="text-slate-400">Account Name: <strong className="text-white">ArveX Cloud LK Pvt Ltd</strong></p>
+              <p className="text-slate-400">Account Name: <strong className="text-white">HelzerX Cloud LK Pvt Ltd</strong></p>
               <p className="text-slate-400">Account Number: <strong className="text-purple-300 font-mono text-sm">8009284711</strong></p>
               <p className="text-slate-400">Branch: <strong className="text-white">Colombo Main Branch (001)</strong></p>
               <p className="text-slate-400">Reference: <strong className="text-yellow-400 font-mono text-sm">{bankReference}</strong></p>
@@ -1196,7 +1196,7 @@ export const CheckoutPage: React.FC = () => {
                 <span className="text-[10px] text-slate-400 block mb-1">Send USDT to TRC20 Address:</span>
                 <div className="flex items-center justify-between bg-[#101222] p-2 rounded-xl border border-white/10">
                   <span className="font-mono text-[11px] text-purple-300 truncate">
-                    TXk79gM1d8VqArveXCloudPterodactylNode
+                    TXk79gM1d8VqHelzerXCloudPterodactylNode
                   </span>
                   <button
                     type="button"

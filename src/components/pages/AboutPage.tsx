@@ -30,7 +30,7 @@ export const AboutPage: React.FC = () => {
       <nav className="flex items-center gap-2 text-xs text-slate-400 mb-8 overflow-x-auto whitespace-nowrap pb-2">
         <button onClick={() => navigateTo('home')} className="hover:text-white transition-colors">Home</button>
         <ChevronRight className="w-3.5 h-3.5 text-slate-600 shrink-0" />
-        <span className="text-cyan-400 font-semibold">About ArveX Cloud Infrastructure</span>
+        <span className="text-cyan-400 font-semibold">About HelzerX Cloud Infrastructure</span>
       </nav>
 
       {/* Hero */}
@@ -49,7 +49,7 @@ export const AboutPage: React.FC = () => {
           </h1>
 
           <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-8 max-w-2xl">
-            ArveX Hosting was founded with a singular mission: to eliminate lag, noisy-neighbor slowdowns, and overpriced hosting. Today, we power thousands of Minecraft networks, multiplayer studios, Discord bots, and production web apps worldwide.
+            HelzerX Cloud was founded with a singular mission: to eliminate lag, noisy-neighbor slowdowns, and overpriced hosting. Today, we power thousands of Minecraft networks, multiplayer studios, Discord bots, and production web apps worldwide.
           </p>
 
           <div className="flex flex-wrap items-center gap-4">

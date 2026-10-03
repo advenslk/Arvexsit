@@ -87,7 +87,7 @@ export const ContactPage: React.FC = () => {
                 <h3 className="text-sm font-bold text-white">Discord Community</h3>
                 <p className="text-xs text-slate-400 mt-0.5">5,000+ members, live announcements &amp; giveaways</p>
                 <a
-                  href="https://discord.gg/arvex"
+                  href="https://discord.gg/helzerxcloud"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold mt-2 inline-block"
@@ -103,7 +103,7 @@ export const ContactPage: React.FC = () => {
               </div>
               <div>
                 <h3 className="text-sm font-bold text-white">Direct Email</h3>
-                <p className="text-xs text-slate-400 mt-0.5">support@arvex.host / legal@arvex.host</p>
+                <p className="text-xs text-slate-400 mt-0.5">support@helzerx.cloud / legal@helzerx.cloud</p>
               </div>
             </div>
           </div>

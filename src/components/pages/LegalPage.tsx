@@ -52,7 +52,7 @@ export const LegalPage: React.FC = () => {
           Legal Terms &amp; Policies
         </h1>
         <p className="text-slate-400 text-xs sm:text-sm">
-          Last revised: January 1, 2025. Please review the agreements governing your use of ArveX Hosting infrastructure.
+          Last revised: January 1, 2025. Please review the agreements governing your use of HelzerX Cloud infrastructure.
         </p>
       </div>
 
@@ -80,7 +80,7 @@ export const LegalPage: React.FC = () => {
           <>
             <h2 className="text-xl font-bold text-white font-display">1. Terms of Service &amp; Agreement</h2>
             <p>
-              By accessing or purchasing services from ArveX Hosting ("Company", "we", "us", or "our"), you agree to be bound by these Terms of Service. If you do not agree to all terms, you are expressly prohibited from using the platform.
+              By accessing or purchasing services from HelzerX Cloud ("Company", "we", "us", or "our"), you agree to be bound by these Terms of Service. If you do not agree to all terms, you are expressly prohibited from using the platform.
             </p>
             <h3 className="text-base font-bold text-white">2. Account Registration &amp; Security</h3>
             <p>
@@ -101,7 +101,7 @@ export const LegalPage: React.FC = () => {
           <>
             <h2 className="text-xl font-bold text-white font-display">Privacy Policy &amp; Data Protection</h2>
             <p>
-              ArveX Hosting respects your privacy. We never sell, rent, or monetize personal customer records to third parties.
+              HelzerX Cloud respects your privacy. We never sell, rent, or monetize personal customer records to third parties.
             </p>
             <h3 className="text-base font-bold text-white">Information We Collect</h3>
             <p>
@@ -136,7 +136,7 @@ export const LegalPage: React.FC = () => {
           <>
             <h2 className="text-xl font-bold text-white font-display">Acceptable Use Policy (AUP)</h2>
             <p>
-              To safeguard our network integrity and IP reputation, the following activities are strictly prohibited on all ArveX servers:
+              To safeguard our network integrity and IP reputation, the following activities are strictly prohibited on all HelzerX servers:
             </p>
             <ul className="list-disc pl-5 space-y-2">
               <li>Outbound denial of service (DDoS/DoS) attacks, IP port scanning, and stress testing.</li>

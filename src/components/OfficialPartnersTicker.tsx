@@ -1,25 +1,65 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { Award, ExternalLink, Zap, Settings } from 'lucide-react';
 import { Partner } from '../types';
 
+const defaultLogos = [
+  { name: 'PayPal', badge: 'Payments', iconText: 'PayPal' },
+  { name: 'Notion', badge: 'Workspace', iconText: 'N' },
+  { name: 'Slack', badge: 'Comms', iconText: '# slack' },
+  { name: 'Loom', badge: 'Video', iconText: 'loom' },
+  { name: 'Monday.com', badge: 'Work OS', iconText: 'monday.com' },
+  { name: 'Afterpay', badge: 'Fintech', iconText: 'afterpay' },
+  { name: 'Cloudflare', badge: 'Security', iconText: 'Cloudflare' },
+  { name: 'AMD Ryzen', badge: 'Hardware', iconText: 'AMD RYZEN' },
+  { name: 'Pterodactyl', badge: 'Control Panel', iconText: 'Pterodactyl' },
+  { name: 'Ubuntu', badge: 'OS', iconText: 'ubuntu' },
+];
+
 export const OfficialPartnersTicker: React.FC = () => {
-  const { partners, navigateTo, user, setIsAdminOpen } = useApp();
-  const activePartners: Partner[] = (partners || []).filter(p => p.active !== false);
-  const marqueeItems = [...activePartners, ...activePartners];
-  const handlePartnerClick = (item: Partner) => item.url?.startsWith('http') ? window.open(item.url, '_blank', 'noopener,noreferrer') : navigateTo('partners');
-  return <section className="relative w-full overflow-hidden bg-gradient-to-b from-[#020207]/60 via-[#020207] to-[#03030a] py-5 sm:py-6">
-    <div className="pointer-events-none absolute -top-16 left-1/2 h-28 w-[85%] -translate-x-1/2 rounded-full bg-purple-600/[0.10] blur-3xl" />
-    <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
-    <div className="relative z-10 mx-auto mb-3 flex max-w-7xl items-center justify-between gap-3 px-4 sm:mb-4 sm:px-6 lg:px-8">
-      <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/25 bg-purple-950/50 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.16em] text-purple-200 shadow-[0_0_25px_rgba(124,58,237,.12)] sm:px-4 sm:text-[10px]"><Zap className="h-3.5 w-3.5 animate-pulse text-purple-300" fill="currentColor" />Official ArveX Partners</div>
-      <div className="flex items-center gap-3">{user?.role === 'admin' && <button onClick={() => setIsAdminOpen(true)} className="flex cursor-pointer items-center gap-1 rounded-lg border border-cyan-500/30 bg-cyan-950/60 px-2.5 py-1 text-[11px] font-semibold text-cyan-400"><Settings className="h-3 w-3" />Customize Partners</button>}<button onClick={() => navigateTo('partners')} className="flex cursor-pointer items-center gap-1 text-[10px] font-medium text-slate-500 hover:text-purple-300 sm:text-xs">Become an Official Partner<ExternalLink className="h-3 w-3" /></button></div>
-    </div>
-    <div className="relative w-full overflow-hidden"><div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-[#020207] to-transparent sm:w-24" /><div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-[#020207] to-transparent sm:w-24" /><div className="animate-marquee flex w-max items-center gap-3 py-1 will-change-transform sm:gap-4">
-      {marqueeItems.map((item,index) => <div key={`${item.id||item.name}-${index}`} onClick={() => handlePartnerClick(item)} className={`group flex shrink-0 cursor-pointer items-center gap-3 rounded-2xl border bg-[#0b0c13]/95 px-4 py-2.5 shadow-[0_8px_30px_rgba(0,0,0,.25)] transition-all duration-300 hover:-translate-y-1 hover:bg-[#11121c] sm:px-5 sm:py-3 ${item.isSpecial?'border-yellow-500/35 shadow-yellow-500/10':'border-white/[0.06] hover:border-purple-500/30'}`}>
-        <div className={`flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl text-sm font-black transition-transform duration-300 group-hover:scale-110 sm:h-10 sm:w-10 ${item.iconBg||'bg-cyan-500/10 text-cyan-400'}`}>{item.logoUrl?<img src={item.logoUrl} alt={item.name} referrerPolicy="no-referrer" className="h-full w-full rounded-xl object-cover" />:item.isSpecial?<Award className="h-5 w-5 fill-yellow-400/20 text-yellow-300" />:<span className="font-display tracking-tighter">{item.name?item.name.slice(0,2).toUpperCase():'AR'}</span>}</div>
-        <div className="flex min-w-0 flex-col"><div className="flex items-center gap-2"><span className={`bg-gradient-to-r bg-clip-text font-display text-sm font-extrabold tracking-wide text-transparent sm:text-base ${item.accent||'from-cyan-400 to-indigo-500'}`}>{item.name}</span>{item.badge&&<span className="rounded border border-yellow-400/30 bg-yellow-400/10 px-1.5 py-0.5 text-[8px] font-bold text-yellow-300">{item.badge}</span>}</div><span className="max-w-[180px] truncate text-[10px] font-medium text-slate-500 sm:max-w-[200px] sm:text-[11px]">{item.tagline||item.description||item.category}</span></div>
-      </div>)}
-    </div></div>
-  </section>;
+  const { partners, navigateTo } = useApp();
+  const activePartners: Partner[] = (partners || []).filter((p) => p.active !== false);
+
+  const displayList = activePartners.length > 0 ? activePartners : defaultLogos;
+  const marqueeItems = [...displayList, ...displayList];
+
+  return (
+    <section className="relative w-full overflow-hidden bg-white py-12 border-b border-slate-100">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center mb-8">
+        <h2 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+          Trusted By More Than <span className="text-blue-600">+10,000 Users</span>
+        </h2>
+        <p className="text-xs sm:text-sm text-slate-500 mt-2 font-medium">
+          Leading gaming communities, SaaS founders, and engineers run on HelzerX Cloud Infrastructure.
+        </p>
+      </div>
+
+      <div className="relative w-full overflow-hidden">
+        {/* Soft edge blur masks */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-white to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-white to-transparent" />
+
+        <div className="animate-marquee flex w-max items-center gap-6 py-2 will-change-transform">
+          {marqueeItems.map((item: any, index: number) => (
+            <div
+              key={`${item.name}-${index}`}
+              onClick={() => navigateTo('partners')}
+              className="flex shrink-0 cursor-pointer items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/70 px-5 py-3 shadow-sm hover:shadow-md hover:border-blue-300 hover:bg-white transition-all duration-200"
+            >
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-600/10 text-blue-700 font-black text-xs font-display">
+                {item.logoUrl ? (
+                  <img src={item.logoUrl} alt={item.name} className="h-full w-full object-contain p-1" />
+                ) : (
+                  <span>{item.name.slice(0, 2).toUpperCase()}</span>
+                )}
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="font-display text-sm font-bold text-slate-800">{item.name}</span>
+                <span className="text-[10px] text-slate-400 font-medium">{item.category || item.badge || 'Verified Partner'}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 };

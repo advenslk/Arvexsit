@@ -6,26 +6,17 @@ import {
   Gamepad2,
   Cpu,
   Globe,
-  Sun,
-  Moon,
   ChevronDown,
   X,
   Shield,
   User as UserIcon,
   LogOut,
-  Terminal,
   Layers,
-  Sparkles,
   Menu,
-  Receipt,
-  LifeBuoy,
   CreditCard,
-  BookOpen,
-  MessageCircle,
-  ExternalLink,
   Zap,
+  Sparkles,
 } from 'lucide-react';
-import { AppPage } from '../types';
 
 export const Navbar: React.FC = () => {
   const {
@@ -37,21 +28,16 @@ export const Navbar: React.FC = () => {
     setIsAuthModalOpen,
     setAuthModalTab,
     openCheckout,
-    plans,
     isAnnouncementVisible,
     dismissAnnouncement,
     currentPage,
     navigateTo,
+    setIsClientAreaOpen,
   } = useApp();
 
   const [isCurrencyDropdownOpen, setIsCurrencyDropdownOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'si' | 'ta'>('en');
-
-  const handleGetStarted = () => {
-    navigateTo('services-minecraft');
-  };
 
   const toggleDropdown = (name: string) => {
     setActiveDropdown((prev) => (prev === name ? null : name));
@@ -63,23 +49,19 @@ export const Navbar: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#080911]/95 backdrop-blur-xl border-b border-purple-950/40">
+    <header className="sticky top-0 z-50 w-full bg-[#1b4bd6]/90 backdrop-blur-xl border-b border-white/15 text-white">
       {/* Top Announcement Bar */}
       {isAnnouncementVisible && siteSettings.announcementActive && (
-        <div
-          id="announcement-bar"
-          className="w-full bg-gradient-to-r from-purple-950 via-[#15122b] to-purple-950 border-b border-purple-800/30 text-xs text-purple-200 py-1.5 px-4 flex items-center justify-between"
-        >
+        <div className="w-full bg-[#173eaf] border-b border-white/10 text-xs text-blue-100 py-1.5 px-4 flex items-center justify-between">
           <div className="flex-1 text-center flex items-center justify-center gap-2">
-            <span className="font-semibold">{siteSettings.announcementText}</span>
-            <span className="font-mono font-bold bg-purple-900/80 text-purple-200 px-2 py-0.5 rounded border border-purple-500/40">
+            <span className="font-medium">{siteSettings.announcementText}</span>
+            <span className="font-mono font-bold bg-white/20 text-white px-2 py-0.5 rounded-full border border-white/30 text-[11px]">
               {siteSettings.announcementCoupon}
             </span>
           </div>
           <button
-            id="dismiss-announcement-btn"
             onClick={dismissAnnouncement}
-            className="text-purple-300 hover:text-white p-1 transition-colors"
+            className="text-blue-200 hover:text-white p-1 transition-colors"
             title="Dismiss announcement"
           >
             <X className="w-3.5 h-3.5" />
@@ -87,51 +69,47 @@ export const Navbar: React.FC = () => {
         </div>
       )}
 
-      {/* Main Navbar matching Screenshot 4 & 5 */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Brand Logo */}
-        <div className="flex items-center gap-7">
+      {/* Main Navbar matching Gabrun Top Bar */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+        
+        {/* Brand Zone */}
+        <div className="flex items-center gap-8">
           <button
+            type="button"
             onClick={() => {
               navigateTo('home');
               closeDropdowns();
             }}
-            className="flex items-center gap-2.5 group text-left cursor-pointer"
+            className="flex items-center gap-2.5 group cursor-pointer text-left"
           >
-            {/* Glowing Purple 'A' Logo Icon matching Screenshot 4 & 5 */}
-            <div className="relative w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 via-indigo-600 to-purple-800 flex items-center justify-center text-white font-black text-base shadow-lg shadow-purple-600/30 group-hover:scale-105 transition-transform">
-              <span className="tracking-tighter font-display">A</span>
-              <div className="absolute inset-0 rounded-xl border border-white/25" />
+            <div className="h-9 w-9 rounded-2xl bg-white text-blue-600 flex items-center justify-center font-black shadow-md shadow-black/10 group-hover:scale-105 transition-transform font-display text-xs">
+              HX
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-lg font-black tracking-tight text-white font-display">
-                ArveX
-              </span>
-              <span className="text-lg font-medium tracking-tight text-purple-300 font-display">
-                Hosting
-              </span>
-            </div>
+            <span className="text-xl font-extrabold tracking-tight text-white font-display">
+              {siteSettings.brandName || 'HelzerX Cloud'}
+            </span>
           </button>
 
-          {/* Desktop Nav Items matching Screenshot 4 & 5: Services ▾, Social ▾, About ▾, Status, Legal ▾ */}
-          <nav className="hidden lg:flex items-center gap-1 text-sm text-slate-300">
-            {/* 1. Services Dropdown */}
+          {/* Desktop Nav Items */}
+          <nav className="hidden lg:flex items-center gap-1 text-xs font-semibold text-blue-100">
+            {/* Services Dropdown */}
             <div className="relative">
               <button
+                type="button"
                 onClick={() => toggleDropdown('services')}
-                className={`flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors ${
+                className={`flex items-center gap-1 px-3 py-2 rounded-full transition-colors ${
                   activeDropdown === 'services' || currentPage.startsWith('services')
-                    ? 'text-purple-300 bg-purple-950/50'
-                    : 'text-slate-300 hover:text-white hover:bg-white/5'
+                    ? 'text-white bg-white/20'
+                    : 'hover:text-white hover:bg-white/10'
                 }`}
               >
                 <span>Services</span>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                <ChevronDown className="w-3.5 h-3.5 opacity-70" />
               </button>
 
               {activeDropdown === 'services' && (
                 <div
-                  className="absolute left-0 mt-2 w-64 bg-[#0e101d] border border-purple-500/30 rounded-2xl shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150"
+                  className="absolute left-0 mt-2 w-64 bg-white text-slate-800 border border-slate-200 rounded-2xl shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150"
                   onMouseLeave={() => setActiveDropdown(null)}
                 >
                   <button
@@ -139,433 +117,310 @@ export const Navbar: React.FC = () => {
                       navigateTo('services-minecraft');
                       closeDropdowns();
                     }}
-                    className="w-full text-left p-2.5 rounded-xl hover:bg-white/5 flex items-center gap-3 transition-colors group"
+                    className="w-full text-left p-2.5 rounded-xl hover:bg-blue-50 flex items-center gap-3 transition"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-xs">
-                      🎮
-                    </div>
+                    <Gamepad2 className="w-5 h-5 text-blue-600" />
                     <div>
-                      <h4 className="text-xs font-bold text-white group-hover:text-purple-300">Minecraft Hosting</h4>
-                      <p className="text-[10px] text-slate-400">Paper, Purpur, Forge &amp; Bedrock</p>
+                      <p className="text-xs font-bold text-slate-900">Minecraft Servers</p>
+                      <p className="text-[10px] text-slate-500">Purpur, Paper &amp; Bedrock</p>
                     </div>
                   </button>
-
-                  <button
-                    onClick={() => {
-                      navigateTo('services-games');
-                      closeDropdowns();
-                    }}
-                    className="w-full text-left p-2.5 rounded-xl hover:bg-white/5 flex items-center gap-3 transition-colors group"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-xs">
-                      🕹
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-white group-hover:text-purple-300">Game Servers</h4>
-                      <p className="text-[10px] text-slate-400">Palworld, Rust, Ark, Valheim</p>
-                    </div>
-                  </button>
-
                   <button
                     onClick={() => {
                       navigateTo('services-vps');
                       closeDropdowns();
                     }}
-                    className="w-full text-left p-2.5 rounded-xl hover:bg-white/5 flex items-center gap-3 transition-colors group"
+                    className="w-full text-left p-2.5 rounded-xl hover:bg-blue-50 flex items-center gap-3 transition"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center font-bold text-xs">
-                      ⚡
-                    </div>
+                    <Cpu className="w-5 h-5 text-blue-600" />
                     <div>
-                      <h4 className="text-xs font-bold text-white group-hover:text-purple-300">VPS Cloud Hosting</h4>
-                      <p className="text-[10px] text-slate-400">AMD EPYC &amp; NVMe Storage</p>
+                      <p className="text-xs font-bold text-slate-900">Cloud VPS</p>
+                      <p className="text-[10px] text-slate-500">AMD Ryzen 9 NVMe</p>
                     </div>
                   </button>
-
+                  <button
+                    onClick={() => {
+                      navigateTo('services-vds');
+                      closeDropdowns();
+                    }}
+                    className="w-full text-left p-2.5 rounded-xl hover:bg-blue-50 flex items-center gap-3 transition"
+                  >
+                    <Server className="w-5 h-5 text-blue-600" />
+                    <div>
+                      <p className="text-xs font-bold text-slate-900">Dedicated VDS</p>
+                      <p className="text-[10px] text-slate-500">100% Dedicated vCPUs</p>
+                    </div>
+                  </button>
                   <button
                     onClick={() => {
                       navigateTo('services-bot-hosting');
                       closeDropdowns();
                     }}
-                    className="w-full text-left p-2.5 rounded-xl hover:bg-white/5 flex items-center gap-3 transition-colors group"
+                    className="w-full text-left p-2.5 rounded-xl hover:bg-blue-50 flex items-center gap-3 transition"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center font-bold text-xs">
-                      🤖
-                    </div>
+                    <Zap className="w-5 h-5 text-blue-600" />
                     <div>
-                      <h4 className="text-xs font-bold text-white group-hover:text-purple-300">Discord Bot Hosting</h4>
-                      <p className="text-[10px] text-slate-400">Node.js, Python 24/7 Runtime</p>
+                      <p className="text-xs font-bold text-slate-900">Bot &amp; App Hosting</p>
+                      <p className="text-[10px] text-slate-500">Node.js, Python 24/7</p>
                     </div>
                   </button>
                 </div>
               )}
             </div>
 
-            {/* 2. Social Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => toggleDropdown('social')}
-                className={`flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors ${
-                  activeDropdown === 'social'
-                    ? 'text-purple-300 bg-purple-950/50'
-                    : 'text-slate-300 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <span>Social</span>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-              </button>
-
-              {activeDropdown === 'social' && (
-                <div
-                  className="absolute left-0 mt-2 w-48 bg-[#0e101d] border border-purple-500/30 rounded-2xl shadow-2xl p-2 z-50"
-                  onMouseLeave={() => setActiveDropdown(null)}
-                >
-                  <a
-                    href="https://discord.gg/arvexhosting"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-full text-left p-2 rounded-xl hover:bg-white/5 flex items-center gap-2.5 text-xs text-slate-200 hover:text-purple-300"
-                  >
-                    <span className="text-[#5865F2]">Discord Community</span>
-                  </a>
-                  <a
-                    href="https://wa.me/94770000000"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-full text-left p-2 rounded-xl hover:bg-white/5 flex items-center gap-2.5 text-xs text-slate-200 hover:text-emerald-400"
-                  >
-                    <span>WhatsApp Sri Lanka</span>
-                  </a>
-                  <button
-                    onClick={() => {
-                      navigateTo('partners');
-                      closeDropdowns();
-                    }}
-                    className="w-full text-left p-2 rounded-xl hover:bg-white/5 flex items-center gap-2.5 text-xs text-slate-200 hover:text-purple-300"
-                  >
-                    <span>Official Partners</span>
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* 3. About Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => toggleDropdown('about')}
-                className={`flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors ${
-                  activeDropdown === 'about' || currentPage === 'about'
-                    ? 'text-purple-300 bg-purple-950/50'
-                    : 'text-slate-300 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <span>About</span>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-              </button>
-
-              {activeDropdown === 'about' && (
-                <div
-                  className="absolute left-0 mt-2 w-48 bg-[#0e101d] border border-purple-500/30 rounded-2xl shadow-2xl p-2 z-50"
-                  onMouseLeave={() => setActiveDropdown(null)}
-                >
-                  <button
-                    onClick={() => {
-                      navigateTo('about');
-                      closeDropdowns();
-                    }}
-                    className="w-full text-left p-2 rounded-xl hover:bg-white/5 text-xs text-slate-200 hover:text-purple-300"
-                  >
-                    About ArveX
-                  </button>
-                  <button
-                    onClick={() => {
-                      navigateTo('locations');
-                      closeDropdowns();
-                    }}
-                    className="w-full text-left p-2 rounded-xl hover:bg-white/5 text-xs text-slate-200 hover:text-purple-300"
-                  >
-                    Global Locations
-                  </button>
-                  <button
-                    onClick={() => {
-                      navigateTo('hardware');
-                      closeDropdowns();
-                    }}
-                    className="w-full text-left p-2 rounded-xl hover:bg-white/5 text-xs text-slate-200 hover:text-purple-300"
-                  >
-                    Hardware &amp; Network
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* 4. Status (Direct link) */}
             <button
               onClick={() => {
-                navigateTo('status');
+                navigateTo('plans');
                 closeDropdowns();
               }}
-              className={`px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors ${
-                currentPage === 'status'
-                  ? 'text-purple-300 bg-purple-950/50'
-                  : 'text-slate-300 hover:text-white hover:bg-white/5'
-              }`}
+              className="px-3 py-2 rounded-full hover:text-white hover:bg-white/10 transition"
             >
-              Status
+              Plans
             </button>
-
-            {/* 5. Legal Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => toggleDropdown('legal')}
-                className={`flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors ${
-                  activeDropdown === 'legal' || currentPage === 'terms'
-                    ? 'text-purple-300 bg-purple-950/50'
-                    : 'text-slate-300 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <span>Legal</span>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-              </button>
-
-              {activeDropdown === 'legal' && (
-                <div
-                  className="absolute left-0 mt-2 w-48 bg-[#0e101d] border border-purple-500/30 rounded-2xl shadow-2xl p-2 z-50"
-                  onMouseLeave={() => setActiveDropdown(null)}
-                >
-                  <button
-                    onClick={() => {
-                      navigateTo('terms');
-                      closeDropdowns();
-                    }}
-                    className="w-full text-left p-2 rounded-xl hover:bg-white/5 text-xs text-slate-200 hover:text-purple-300"
-                  >
-                    Terms of Service
-                  </button>
-                  <button
-                    onClick={() => {
-                      navigateTo('privacy');
-                      closeDropdowns();
-                    }}
-                    className="w-full text-left p-2 rounded-xl hover:bg-white/5 text-xs text-slate-200 hover:text-purple-300"
-                  >
-                    Privacy Policy
-                  </button>
-                  <button
-                    onClick={() => {
-                      navigateTo('sla');
-                      closeDropdowns();
-                    }}
-                    className="w-full text-left p-2 rounded-xl hover:bg-white/5 text-xs text-slate-200 hover:text-purple-300"
-                  >
-                    SLA Guarantee
-                  </button>
-                </div>
-              )}
-            </div>
+            <button
+              onClick={() => {
+                navigateTo('locations');
+                closeDropdowns();
+              }}
+              className="px-3 py-2 rounded-full hover:text-white hover:bg-white/10 transition"
+            >
+              Locations
+            </button>
+            <button
+              onClick={() => {
+                navigateTo('pricing');
+                closeDropdowns();
+              }}
+              className="px-3 py-2 rounded-full hover:text-white hover:bg-white/10 transition"
+            >
+              Pricing
+            </button>
+            <button
+              onClick={() => {
+                navigateTo('hardware');
+                closeDropdowns();
+              }}
+              className="px-3 py-2 rounded-full hover:text-white hover:bg-white/10 transition"
+            >
+              Hardware
+            </button>
+            <button
+              onClick={() => {
+                navigateTo('support');
+                closeDropdowns();
+              }}
+              className="px-3 py-2 rounded-full hover:text-white hover:bg-white/10 transition"
+            >
+              Support
+            </button>
           </nav>
         </div>
 
-        {/* Right Tools & Language Pill & Dashboard Action matching Screenshot 4 & 5 */}
+        {/* Right Zone: Currency Selector + Gabrun Pill Button [ ☷ Menu ] + [ Deploy ] */}
         <div className="flex items-center gap-3">
-          {/* Language Pill: English | සිංහල | தமிழ் */}
-          <div className="hidden sm:flex items-center bg-[#121422] border border-white/10 rounded-full px-3 py-1 text-[11px] font-medium text-slate-300">
+          {/* Currency Pill */}
+          <div className="relative hidden sm:block">
             <button
-              onClick={() => setSelectedLanguage('en')}
-              className={`px-1.5 py-0.5 rounded-full transition-colors ${
-                selectedLanguage === 'en'
-                  ? 'text-purple-300 font-bold'
-                  : 'text-slate-400 hover:text-white'
-              }`}
+              onClick={() => setIsCurrencyDropdownOpen(!isCurrencyDropdownOpen)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 text-xs font-semibold transition"
             >
-              English
-            </button>
-            <span className="text-slate-600">|</span>
-            <button
-              onClick={() => setSelectedLanguage('si')}
-              className={`px-1.5 py-0.5 rounded-full transition-colors ${
-                selectedLanguage === 'si'
-                  ? 'text-purple-300 font-bold'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              සිංහල
-            </button>
-            <span className="text-slate-600">|</span>
-            <button
-              onClick={() => setSelectedLanguage('ta')}
-              className={`px-1.5 py-0.5 rounded-full transition-colors ${
-                selectedLanguage === 'ta'
-                  ? 'text-purple-300 font-bold'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              தமிழ்
-            </button>
-          </div>
-
-          {/* Currency Dropdown */}
-          <div className="relative">
-            <button
-              id="currency-selector-btn"
-              onClick={() => {
-                setIsCurrencyDropdownOpen(!isCurrencyDropdownOpen);
-                setActiveDropdown(null);
-              }}
-              className="flex items-center gap-1 text-xs font-semibold text-purple-200 bg-[#141628] hover:bg-[#1c2038] px-3 py-1.5 rounded-xl border border-purple-500/30 transition-colors"
-            >
-              <span>{currency.label}</span>
-              <ChevronDown className="w-3 h-3 text-purple-400" />
+              <span>{currency.code}</span>
+              <ChevronDown className="w-3 h-3 opacity-80" />
             </button>
 
             {isCurrencyDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-36 bg-[#111320] border border-purple-500/30 rounded-xl shadow-2xl py-1 z-50">
-                {CURRENCIES.map((c) => (
+              <div
+                className="absolute right-0 mt-2 w-32 bg-white text-slate-800 border border-slate-200 rounded-xl shadow-xl p-1.5 z-50 animate-in fade-in duration-100"
+                onMouseLeave={() => setIsCurrencyDropdownOpen(false)}
+              >
+                {CURRENCIES.map((curr) => (
                   <button
-                    key={c.code}
+                    key={curr.code}
                     onClick={() => {
-                      setCurrency(c);
+                      setCurrency(curr);
                       setIsCurrencyDropdownOpen(false);
                     }}
-                    className={`w-full text-left px-3 py-1.5 text-xs flex items-center justify-between hover:bg-white/5 transition-colors ${
-                      currency.code === c.code ? 'text-purple-300 font-semibold bg-white/5' : 'text-slate-300'
+                    className={`w-full text-left px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center justify-between ${
+                      currency.code === curr.code ? 'bg-blue-50 text-blue-700' : 'hover:bg-slate-50'
                     }`}
                   >
-                    <span>{c.label}</span>
-                    <span className="text-slate-500 font-mono text-[10px]">{c.code}</span>
+                    <span>{curr.code}</span>
+                    <span className="text-[10px] text-slate-400">{curr.symbol}</span>
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Dashboard Button matching Screenshot 4 & 5 */}
-          <button
-            onClick={() => navigateTo('dashboard')}
-            className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-md ${
-              currentPage === 'dashboard'
-                ? 'bg-purple-600 text-white shadow-purple-600/30'
-                : 'bg-[#15182c] hover:bg-[#1e233f] text-slate-200 border border-purple-500/30'
-            }`}
-          >
-            <div className="grid grid-cols-2 gap-0.5 w-3.5 h-3.5">
-              <span className="w-1.5 h-1.5 rounded-xs bg-purple-400" />
-              <span className="w-1.5 h-1.5 rounded-xs bg-purple-400" />
-              <span className="w-1.5 h-1.5 rounded-xs bg-purple-400" />
-              <span className="w-1.5 h-1.5 rounded-xs bg-purple-400" />
-            </div>
-            <span>Dashboard</span>
-          </button>
-
-          {/* User Sign In / Sign Up */}
+          {/* User Logged In state */}
           {user ? (
-            <button
-              onClick={logout}
-              className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-white/5"
-              title="Sign Out"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              {user.role === 'admin' && (
+                <button
+                  type="button"
+                  onClick={() => navigateTo('admin')}
+                  className="flex items-center gap-1.5 rounded-full bg-cyan-400 text-black px-3.5 py-2 text-xs font-black hover:bg-cyan-300 shadow-md shadow-cyan-500/25 transition cursor-pointer"
+                  title="Open Admin Control Center"
+                >
+                  <Shield className="w-3.5 h-3.5 text-black" />
+                  <span>Admin Panel</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsClientAreaOpen(true)}
+                className="flex items-center gap-2 rounded-full bg-[#0b0f19] px-4 py-2 text-xs font-bold text-white hover:bg-slate-900 shadow-md transition"
+              >
+                <UserIcon className="w-3.5 h-3.5 text-blue-400" />
+                <span className="max-w-[90px] truncate">{user.name.split(' ')[0]}</span>
+              </button>
+              <button
+                type="button"
+                onClick={logout}
+                className="p-2 rounded-full hover:bg-white/15 text-blue-200 hover:text-white transition"
+                title="Log out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
           ) : (
-            <button
-              onClick={() => {
-                setAuthModalTab('signup');
-                setIsAuthModalOpen(true);
-              }}
-              className="hidden sm:inline-flex px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/20 transition-all active:scale-95"
-            >
-              Sign Up
-            </button>
+            <>
+              {/* Gabrun Signature Dark Pill Menu / Portal Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthModalTab('login');
+                  setIsAuthModalOpen(true);
+                }}
+                className="flex items-center gap-2 rounded-full bg-[#0b0f19] px-4 py-2 text-xs font-bold text-white hover:bg-slate-900 shadow-md transition"
+              >
+                <span className="grid grid-cols-2 gap-0.5">
+                  <span className="h-1 w-1 rounded-sm bg-white" />
+                  <span className="h-1 w-1 rounded-sm bg-white" />
+                  <span className="h-1 w-1 rounded-sm bg-white" />
+                  <span className="h-1 w-1 rounded-sm bg-white" />
+                </span>
+                <span>Menu</span>
+              </button>
+
+              {/* Get Started Button */}
+              <button
+                type="button"
+                onClick={() => navigateTo('plans')}
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-white px-5 py-2 text-xs font-extrabold text-blue-700 hover:bg-blue-50 shadow-md transition"
+              >
+                <span>Get Started</span>
+              </button>
+            </>
           )}
 
-          {/* Mobile Menu Toggle */}
+          {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/5"
+            className="lg:hidden p-2 rounded-full bg-white/15 text-white hover:bg-white/25"
           >
-            <Menu className="w-5 h-5" />
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </div>
 
       {/* Mobile Drawer */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden bg-[#0a0c16] border-b border-purple-900/30 px-4 py-5 space-y-3">
-          <div className="flex items-center justify-between pb-3 border-b border-white/5">
-            <span className="text-xs font-bold text-purple-300 uppercase">Navigation</span>
-            <button
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-slate-400 hover:text-white"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <button
-              onClick={() => {
-                navigateTo('home');
-                setIsMobileMenuOpen(false);
-              }}
-              className="p-2.5 rounded-xl bg-[#121422] text-left text-slate-200 font-medium"
-            >
-              Home
-            </button>
+        <div className="lg:hidden bg-[#173eaf] border-t border-white/10 px-4 py-6 space-y-4">
+          <div className="grid grid-cols-2 gap-2 text-xs font-bold">
             <button
               onClick={() => {
                 navigateTo('services-minecraft');
                 setIsMobileMenuOpen(false);
               }}
-              className="p-2.5 rounded-xl bg-[#121422] text-left text-purple-300 font-bold"
+              className="p-3 rounded-xl bg-white/10 text-left hover:bg-white/20"
             >
               Minecraft Hosting
             </button>
             <button
               onClick={() => {
-                navigateTo('pricing');
+                navigateTo('services-vps');
                 setIsMobileMenuOpen(false);
               }}
-              className="p-2.5 rounded-xl bg-[#121422] text-left text-slate-200 font-medium"
+              className="p-3 rounded-xl bg-white/10 text-left hover:bg-white/20"
             >
-              Pricing &amp; Plans
+              Cloud VPS
             </button>
             <button
               onClick={() => {
-                navigateTo('games');
+                navigateTo('plans');
                 setIsMobileMenuOpen(false);
               }}
-              className="p-2.5 rounded-xl bg-[#121422] text-left text-slate-200 font-medium"
+              className="p-3 rounded-xl bg-white/10 text-left hover:bg-white/20"
             >
-              Supported Games
+              Game Plans
             </button>
             <button
               onClick={() => {
-                navigateTo('partners');
+                navigateTo('locations');
                 setIsMobileMenuOpen(false);
               }}
-              className="p-2.5 rounded-xl bg-[#121422] text-left text-slate-200 font-medium"
+              className="p-3 rounded-xl bg-white/10 text-left hover:bg-white/20"
             >
-              Official Partners
+              Locations
             </button>
-            <button
-              onClick={() => {
-                navigateTo('status');
-                setIsMobileMenuOpen(false);
-              }}
-              className="p-2.5 rounded-xl bg-[#121422] text-left text-slate-200 font-medium"
-            >
-              Node Status
-            </button>
-            <button
-              onClick={() => {
-                navigateTo('dashboard');
-                setIsMobileMenuOpen(false);
-              }}
-              className="p-2.5 rounded-xl bg-purple-600 text-left text-white font-bold col-span-2 flex items-center justify-between"
-            >
-              <span>Open Server Dashboard</span>
-              <span>→</span>
-            </button>
+          </div>
+
+          <div className="pt-2 border-t border-white/10 space-y-2">
+            {user ? (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsClientAreaOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex-1 rounded-full bg-[#0b0f19] py-3 text-center text-xs font-bold text-white shadow-md flex items-center justify-center gap-2"
+                >
+                  <UserIcon className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Client Area ({user.name})</span>
+                </button>
+                {user.role === 'admin' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigateTo('admin');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="px-4 rounded-full bg-cyan-400 text-black py-3 text-center text-xs font-black shadow-md flex items-center justify-center gap-1.5"
+                  >
+                    <Shield className="w-3.5 h-3.5" />
+                    <span>Admin</span>
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthModalTab('login');
+                    setIsAuthModalOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex-1 rounded-full bg-[#0b0f19] py-3 text-center text-xs font-bold text-white shadow-md"
+                >
+                  Sign In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthModalTab('admin');
+                    setIsAuthModalOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="px-4 rounded-full bg-white/10 text-white py-3 text-center text-xs font-bold shadow-md flex items-center justify-center gap-1.5"
+                >
+                  <Shield className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Admin</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

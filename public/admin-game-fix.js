@@ -56,8 +56,7 @@
     wrap.querySelector('#axg-save').onclick = () => {
       const name = wrap.querySelector('#axg-name').value.trim();
       const image = wrap.querySelector('#axg-image').value.trim();
-      if (!name) return alert('Please enter a game name.');
-      if (!image) return alert('Please enter a cover image URL.');
+      if (!name || !image) return;
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
       const updated = {
         ...current,

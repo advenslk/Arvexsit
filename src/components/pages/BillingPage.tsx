@@ -513,7 +513,7 @@ export const BillingPage: React.FC = () => {
             <div className="bg-[#090a10] p-3.5 rounded-xl border border-white/5 space-y-1.5 text-[11px] font-mono text-slate-400 mb-4">
               <div className="flex justify-between">
                 <span>Client ID:</span>
-                <span className="text-white font-bold">sb-client-id-arvex-hosting-live</span>
+                <span className="text-white font-bold">sb-client-id-helzerx-cloud-live</span>
               </div>
               <div className="flex justify-between">
                 <span>Auto-Capture:</span>

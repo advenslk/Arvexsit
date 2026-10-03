@@ -47,7 +47,7 @@ export const DomainSection: React.FC = () => {
     setTimeout(() => {
       setIsSearching(false);
       // Simulate realistic availability
-      const isTaken = ['google', 'microsoft', 'minecraft', 'hypixel', 'apple', 'arvex'].includes(
+      const isTaken = ['google', 'microsoft', 'minecraft', 'hypixel', 'apple', 'helzerx'].includes(
         cleanName.toLowerCase()
       );
       setSearchResult({

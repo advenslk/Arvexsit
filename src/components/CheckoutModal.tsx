@@ -18,7 +18,7 @@ export const CheckoutModal: React.FC = () => {
     setAuthModalTab,
   } = useApp();
 
-  const [serverName, setServerName] = useState('My ArveX Server');
+  const [serverName, setServerName] = useState('My HelzerX Server');
   const [selectedLocation, setSelectedLocation] = useState(locations[0]?.city || 'Singapore');
   const [couponInput, setCouponInput] = useState('');
   const [coupon, setCoupon] = useState<{ code: string; percent: number } | null>(null);
@@ -60,7 +60,7 @@ export const CheckoutModal: React.FC = () => {
       amount: finalPrice.toFixed(2),
       cycle: billingCycle,
       location: selectedLocation,
-      serverName: serverName || 'My ArveX Server',
+      serverName: serverName || 'My HelzerX Server',
     });
   };
 
@@ -85,7 +85,7 @@ export const CheckoutModal: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-7 rounded-2xl border border-cyan-400/10 bg-cyan-400/[0.04] p-4 text-xs leading-5 text-slate-400">Payment is processed by PayHere. ArveX will only treat an order as paid after the server verifies PayHere’s signed notification. Browser redirects cannot activate services.</div>
+        <div className="mt-7 rounded-2xl border border-cyan-400/10 bg-cyan-400/[0.04] p-4 text-xs leading-5 text-slate-400">Payment is processed by PayHere. HelzerX Cloud will only treat an order as paid after the server verifies PayHere’s signed notification. Browser redirects cannot activate services.</div>
         <button onClick={continueToPayment} className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-500 py-4 text-sm font-black text-black hover:bg-cyan-400"><CreditCard className="h-4 w-4" />Continue to secure payment<ArrowRight className="h-4 w-4" /></button>
       </div>
     </div>

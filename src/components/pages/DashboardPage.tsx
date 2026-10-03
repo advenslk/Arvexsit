@@ -122,7 +122,7 @@ export const DashboardPage: React.FC = () => {
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-950/60 border border-purple-400/30 text-purple-300 text-xs font-bold uppercase tracking-wider mb-2">
             <Server className="w-3.5 h-3.5" />
-            <span>ArveX Pterodactyl Node Manager</span>
+            <span>HelzerX Pterodactyl Node Manager</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-black text-white font-display tracking-tight">
             Client Server Control Panel
@@ -401,7 +401,7 @@ export const DashboardPage: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <Terminal className="w-4 h-4 text-purple-400" />
                     <span className="text-xs font-bold text-white font-mono">
-                      pterodactyl@arvex-node-sg01:~$
+                      pterodactyl@helzerx-node-sg01:~$
                     </span>
                   </div>
                   <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-mono">

@@ -47,7 +47,7 @@ export const KnowledgebasePage: React.FC = () => {
       category: 'Minecraft Hosting',
       readTime: '4 min read',
       content:
-        'Installing plugins on ArveX is instantaneous. You can either use our 1-Click Plugin Downloader in the Pterodactyl panel or drag-and-drop .jar files into the /plugins directory via Web SFTP.',
+        'Installing plugins on HelzerX is instantaneous. You can either use our 1-Click Plugin Downloader in the Pterodactyl panel or drag-and-drop .jar files into the /plugins directory via Web SFTP.',
       codeSnippet: `1. Stop server in console\n2. Upload plugin .jar into /plugins/\n3. Start server to generate config files\n4. Edit configs in built-in web file manager`,
     },
     {
@@ -65,7 +65,7 @@ export const KnowledgebasePage: React.FC = () => {
       category: 'VPS & Cloud',
       readTime: '6 min read',
       content:
-        'Secure your new ArveX KVM VPS instance by disabling root password logins and configuring uncomplicated firewall rules.',
+        'Secure your new HelzerX KVM VPS instance by disabling root password logins and configuring uncomplicated firewall rules.',
       codeSnippet: `sudo ufw default deny incoming\nsudo ufw default allow outgoing\nsudo ufw allow 22/tcp\nsudo ufw enable`,
     },
     {
@@ -74,7 +74,7 @@ export const KnowledgebasePage: React.FC = () => {
       category: 'Databases',
       readTime: '2 min read',
       content:
-        'Every ArveX game server includes 2 complimentary high-performance MariaDB/MySQL databases hosted in the same local subnet for ultra-low latency queries.',
+        'Every HelzerX game server includes 2 complimentary high-performance MariaDB/MySQL databases hosted in the same local subnet for ultra-low latency queries.',
       codeSnippet: `Host: 127.0.0.1\nPort: 3306\nDatabase: s1_luckperms\nUser: u1_admin`,
     },
   ];

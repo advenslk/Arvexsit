@@ -118,7 +118,7 @@ export const DomainsPage: React.FC = () => {
             <Search className="w-5 h-5 text-slate-400 ml-3 shrink-0" />
             <input
               type="text"
-              placeholder="Search your brand or domain (e.g. playarvex.com, myserver.gg)..."
+              placeholder="Search your brand or domain (e.g. playhelzerx.com, myserver.gg)..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-transparent border-none text-white text-sm sm:text-base px-3 py-2 focus:outline-none placeholder-slate-500"

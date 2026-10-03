@@ -1,59 +1,147 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { MessageSquare, Twitter, Github, Mail, ArrowUp, Shield } from 'lucide-react';
+import { MessageSquare, Twitter, Github, Mail, Shield, ArrowUp, Youtube } from 'lucide-react';
 
-const ARVEX_LOGO = 'https://www.image2url.com/r2/default/images/1788183036437-67d0ec6b-01c0-4372-bfee-e663f263531b.png';
+const HELZERX_LOGO = 'https://www.image2url.com/r2/default/images/1787805975676-5a4d373d-c6bd-4d39-bb64-1336474f4a7a.png';
 
 export const Footer: React.FC = () => {
   const { siteSettings, navigateTo } = useApp();
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   return (
-    <footer className="bg-[#07080c] border-t border-white/10 pt-16 pb-12 relative text-slate-400 text-xs">
+    <footer className="bg-white border-t border-slate-200 text-slate-600 text-xs pt-16 pb-12 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-10 mb-12">
-          <div className="md:col-span-2 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-purple-400/20 bg-white/[0.03] shadow-lg shadow-purple-900/20">
-                <img src={ARVEX_LOGO} alt="ArveX Hosting" className="h-full w-full object-contain p-1" loading="lazy" />
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-slate-100">
+          
+          {/* Col 1: Brand & Bio (matching Gabrun left) */}
+          <div className="md:col-span-5 space-y-4 text-left">
+            <div className="flex items-center gap-2.5">
+              <div className="h-9 w-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black shadow-md shadow-blue-500/20">
+                <span className="font-display tracking-tight text-sm">HX</span>
               </div>
-              <span className="text-base font-bold text-white font-display">{siteSettings.brandName}</span>
+              <span className="text-xl font-extrabold text-slate-900 font-display">
+                {siteSettings.brandName || 'HelzerX Cloud'}
+              </span>
             </div>
-            <p className="max-w-sm text-slate-400 leading-relaxed text-xs">{siteSettings.tagline}</p>
-            <div className="flex items-center gap-3 pt-2">
-              <a href={siteSettings.discordUrl} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-colors" title="Discord Community"><MessageSquare className="w-4 h-4" /></a>
-              <a href={siteSettings.twitterUrl} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-colors" title="Twitter"><Twitter className="w-4 h-4" /></a>
-              <a href={siteSettings.githubUrl} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-colors" title="GitHub"><Github className="w-4 h-4" /></a>
-              <a href={`mailto:${siteSettings.supportEmail}`} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-colors" title="Email Support"><Mail className="w-4 h-4" /></a>
-            </div>
+
+            <p className="max-w-sm text-slate-500 text-xs sm:text-sm leading-relaxed">
+              HelzerX Cloud has a passion for simplifying cloud &amp; game infrastructure. We deliver high-performance,
+              zero-lag hosting solutions for all your multiplayer gaming and developer needs.
+            </p>
           </div>
 
-          <div><h4 className="font-bold text-white uppercase tracking-wider text-xs mb-4">Products</h4><ul className="space-y-2.5">
-            <li><button onClick={() => navigateTo('plans')} className="hover:text-white transition-colors text-left">Game Servers</button></li>
-            <li><button onClick={() => navigateTo('services')} className="hover:text-white transition-colors text-left">VPS Cloud Servers</button></li>
-            <li><button onClick={() => navigateTo('hardware')} className="hover:text-white transition-colors text-left">Bare Metal Hardware</button></li>
-            <li><button onClick={() => navigateTo('locations')} className="hover:text-white transition-colors text-left">Global Datacenters</button></li>
-            <li><button onClick={() => navigateTo('dashboard')} className="hover:text-white transition-colors text-left">Pterodactyl Panel</button></li>
-          </ul></div>
+          {/* Col 2: Home links */}
+          <div className="md:col-span-2 text-left">
+            <h4 className="font-display font-bold text-slate-900 text-sm mb-4">Home</h4>
+            <ul className="space-y-3 font-medium text-slate-500">
+              <li>
+                <button onClick={() => navigateTo('about')} className="hover:text-blue-600 transition-colors text-left">
+                  About
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigateTo('plans')} className="hover:text-blue-600 transition-colors text-left">
+                  Game Plans
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigateTo('services')} className="hover:text-blue-600 transition-colors text-left">
+                  Cloud VPS
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigateTo('contact')} className="hover:text-blue-600 transition-colors text-left">
+                  Contact Us
+                </button>
+              </li>
+            </ul>
+          </div>
 
-          <div><h4 className="font-bold text-white uppercase tracking-wider text-xs mb-4">Client & Billing</h4><ul className="space-y-2.5">
-            <li><button onClick={() => navigateTo('billing')} className="hover:text-white transition-colors text-left">Billing & Cards (LKR/USD)</button></li>
-            <li><button onClick={() => navigateTo('tickets')} className="hover:text-white transition-colors text-left">Support Desk (24/7)</button></li>
-            <li><button onClick={() => navigateTo('blog')} className="hover:text-white transition-colors text-left">Knowledgebase & Guides</button></li>
-            <li><button onClick={() => navigateTo('admin')} className="text-cyan-400 hover:underline flex items-center gap-1 text-left font-semibold"><Shield className="w-3 h-3" /><span>Admin Control Center</span></button></li>
-          </ul></div>
+          {/* Col 3: Company links */}
+          <div className="md:col-span-2 text-left">
+            <h4 className="font-display font-bold text-slate-900 text-sm mb-4">Company</h4>
+            <ul className="space-y-3 font-medium text-slate-500">
+              <li>
+                <button onClick={() => navigateTo('hardware')} className="hover:text-blue-600 transition-colors text-left">
+                  Hardware &amp; SLA
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigateTo('blog')} className="hover:text-blue-600 transition-colors text-left">
+                  Blog &amp; News
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigateTo('support')} className="hover:text-blue-600 transition-colors text-left">
+                  Support Center
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigateTo('admin')} className="text-blue-600 font-bold hover:underline flex items-center gap-1 text-left">
+                  <Shield className="w-3 h-3" />
+                  <span>Admin Portal</span>
+                </button>
+              </li>
+            </ul>
+          </div>
 
-          <div><h4 className="font-bold text-white uppercase tracking-wider text-xs mb-4">Legal & Trust</h4><ul className="space-y-2.5">
-            <li><button onClick={() => navigateTo('privacy')} className="hover:text-white transition-colors text-left">Privacy Policy</button></li>
-            <li><button onClick={() => navigateTo('terms')} className="hover:text-white transition-colors text-left">Terms of Service</button></li>
-            <li><button onClick={() => navigateTo('sla')} className="hover:text-white transition-colors text-left">SLA 99.99% Agreement</button></li>
-            <li><button onClick={() => navigateTo('hardware')} className="hover:text-white transition-colors text-left">Corero 3.2Tbps DDoS SLA</button></li>
-          </ul></div>
+          {/* Col 4: Social Media Icons (matching Gabrun right circle icons) */}
+          <div className="md:col-span-3 text-left md:text-right space-y-4">
+            <h4 className="font-display font-bold text-slate-900 text-sm">Social Media</h4>
+            <div className="flex items-center gap-2.5 md:justify-end">
+              <a
+                href={siteSettings.discordUrl || 'https://discord.gg'}
+                target="_blank"
+                rel="noreferrer"
+                className="w-9 h-9 rounded-full bg-slate-900 text-white hover:bg-blue-600 flex items-center justify-center transition-all shadow-sm"
+                title="Discord"
+              >
+                <MessageSquare className="w-4 h-4" />
+              </a>
+              <a
+                href={siteSettings.twitterUrl || 'https://twitter.com'}
+                target="_blank"
+                rel="noreferrer"
+                className="w-9 h-9 rounded-full bg-slate-900 text-white hover:bg-blue-600 flex items-center justify-center transition-all shadow-sm"
+                title="Twitter"
+              >
+                <Twitter className="w-4 h-4" />
+              </a>
+              <a
+                href={siteSettings.githubUrl || 'https://github.com'}
+                target="_blank"
+                rel="noreferrer"
+                className="w-9 h-9 rounded-full bg-slate-900 text-white hover:bg-blue-600 flex items-center justify-center transition-all shadow-sm"
+                title="GitHub"
+              >
+                <Github className="w-4 h-4" />
+              </a>
+              <a
+                href={`mailto:${siteSettings.supportEmail || 'support@helzerx.cloud'}`}
+                className="w-9 h-9 rounded-full bg-slate-900 text-white hover:bg-blue-600 flex items-center justify-center transition-all shadow-sm"
+                title="Email"
+              >
+                <Mail className="w-4 h-4" />
+              </a>
+            </div>
+            <p className="text-[11px] text-slate-400">Available 24/7 on Discord ticket desk</p>
+          </div>
+
         </div>
 
-        <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-white/10 flex items-center justify-center text-[10px] text-slate-400">©</div><span>2026 {siteSettings.brandName}. All rights reserved.</span></div>
-          <div className="flex items-center gap-6"><span className="text-slate-500 italic hidden sm:inline">“Reimagine how the world hosts.”</span><button id="scroll-to-top-btn" onClick={scrollToTop} className="w-8 h-8 rounded-full bg-white text-black hover:bg-slate-200 flex items-center justify-center transition-all shadow-md active:scale-95" title="Back to top"><ArrowUp className="w-4 h-4" /></button></div>
+        {/* Bottom Bar matching Gabrun: "Gabrun" on left, "© All Rights Reserved" on right */}
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-400 text-xs font-medium">
+          <span className="font-bold text-slate-700">HelzerX Cloud</span>
+          <div className="flex items-center gap-4">
+            <span>© All Rights Reserved</span>
+            <button
+              onClick={scrollToTop}
+              className="w-7 h-7 rounded-full bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 flex items-center justify-center transition-all"
+              title="Back to top"
+            >
+              <ArrowUp className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </div>
     </footer>

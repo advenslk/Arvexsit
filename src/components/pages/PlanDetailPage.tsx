@@ -120,7 +120,7 @@ export const PlanDetailPage: React.FC = () => {
     },
     {
       q: 'What DDoS protection is included with this plan?',
-      a: 'All plans include permanent Always-On ArveX Shield protection with 3.2+ Tbps multi-layer filtering against Layer 3/4 and Layer 7 game attacks.',
+      a: 'All plans include permanent Always-On HelzerX Shield protection with 3.2+ Tbps multi-layer filtering against Layer 3/4 and Layer 7 game attacks.',
     },
     {
       q: 'Do I get full root / SFTP access to my server files?',
@@ -210,7 +210,7 @@ export const PlanDetailPage: React.FC = () => {
                 <span>Protection</span>
               </div>
               <p className="text-lg font-bold text-white font-display">3.2+ Tbps</p>
-              <p className="text-[10px] text-slate-500">ArveX Shield</p>
+              <p className="text-[10px] text-slate-500">HelzerX Shield</p>
             </div>
           </div>
         </div>
@@ -398,7 +398,7 @@ export const PlanDetailPage: React.FC = () => {
             'Automated Scheduled Restarts & Backups',
             '1-Click Modpack & Plugin Installers',
             'Unlimited MySQL Databases Included',
-            'Dedicated Custom Subdomain (e.g. play.arvex.host)',
+            'Dedicated Custom Subdomain (e.g. play.helzerx.cloud)',
             '24/7/365 Technical Support by Gaming Engineers',
           ]).map((feat, idx) => (
             <div key={idx} className="bg-[#11131e] border border-white/5 p-4 rounded-xl flex items-start gap-3">
@@ -434,7 +434,7 @@ export const PlanDetailPage: React.FC = () => {
             Ready to deploy {plan.name}?
           </h3>
           <p className="text-xs text-slate-400 max-w-xl">
-            Join thousands of active servers hosted on ArveX infrastructure. Instant activation with no setup fees.
+            Join thousands of active servers hosted on HelzerX infrastructure. Instant activation with no setup fees.
           </p>
         </div>
         <button

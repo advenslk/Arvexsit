@@ -27,7 +27,7 @@ export const HardwarePage: React.FC = () => {
           Hardware & Performance Benchmarks
         </h1>
         <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-          We refuse to run budget Xeon CPUs or SATA drives. Every ArveX game server is powered by flagship AMD Ryzen 9 9950X processors boosting up to 5.7 GHz.
+          We refuse to run budget Xeon CPUs or SATA drives. Every HelzerX game server is powered by flagship AMD Ryzen 9 9950X processors boosting up to 5.7 GHz.
         </p>
       </div>
 

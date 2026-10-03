@@ -65,7 +65,7 @@ export const GameDetailPage: React.FC = () => {
     { title: 'Automated Real-Time Backups', desc: 'Create manual restore points or schedule automated daily cloud backups.' },
     { title: 'Live Interactive Web Console', desc: 'Real-time stdout log streams with live command execution and player kick/ban manager.' },
     { title: 'Full SFTP & Database Access', desc: 'Direct secure FTP access and unlimited free MySQL databases for plugins.' },
-    { title: 'ArveX Game Shield (3.2+ Tbps)', desc: 'Engineered filtering specifically calibrated for game protocol UDP floods.' },
+    { title: 'HelzerX Game Shield (3.2+ Tbps)', desc: 'Engineered filtering specifically calibrated for game protocol UDP floods.' },
   ];
 
   return (

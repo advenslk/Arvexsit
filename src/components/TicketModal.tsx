@@ -44,7 +44,7 @@ export const TicketModal: React.FC = () => {
         {
           id: 'msg-' + Date.now(),
           senderId: user?.id || 'usr',
-          senderName: asAdmin ? 'ArveX Staff Support' : user?.name || 'Customer',
+          senderName: asAdmin ? 'HelzerX Staff Support' : user?.name || 'Customer',
           senderRole: asAdmin ? 'staff' : 'customer',
           senderAvatar: user?.avatar,
           message: replyText.trim(),

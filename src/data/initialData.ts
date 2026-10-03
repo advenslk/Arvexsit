@@ -43,34 +43,34 @@ export const INITIAL_SITE_IMAGES: SiteImagesConfig = {
 };
 
 export const INITIAL_SITE_SETTINGS: SiteSettings = {
-  brandName: 'ArveX Hosting',
-  tagline: 'High-performance game hosting built for players who demand speed, stability, and total control.',
+  brandName: 'HelzerX Cloud',
+  tagline: 'High-performance cloud and game hosting built for players and developers who demand speed, stability, and total control.',
   announcementText: 'Get 10% off now using coupon code',
   announcementCoupon: 'VOLTUS10',
   announcementActive: true,
-  heroBadgeText: 'VIEW HYTALE SERVERS',
+  heroBadgeText: 'VIEW CLOUD SERVERS',
   heroBadgeLink: 'plans',
-  heroTitleLine1: 'Build it, Host it.',
+  heroTitleLine1: 'Together, We Build the Future.',
   heroTitleLine2: 'No interruptions.',
-  heroSubtitle: 'High-performance game hosting built for players who demand speed, stability, and total control no lag, no limits.',
+  heroSubtitle: 'High-performance game and cloud hosting built for players and developers who demand speed, stability, and total control — no lag, no limits.',
   heroCtaText: 'Get Started',
   heroSecondaryCtaText: 'View Prices',
   domainSearchTitle: 'Register Your Domain',
   domainSearchSubtitle: 'Secure the perfect domain for your game server or community',
-  gamesSectionTitle: 'Hundreds of Games',
-  gamesSectionSubtitle: 'Host any games that comes to your mind here at ArveX.',
-  pricingSectionTitle: 'GAME SERVER HOSTING',
-  pricingSectionSubtitle: 'High-performance game servers with instant setup, DDoS protection, and powerful hardware for lag-free gaming.',
+  gamesSectionTitle: 'Hundreds of Games & Cloud Nodes',
+  gamesSectionSubtitle: 'Host any game or cloud instance that comes to your mind here at HelzerX Cloud.',
+  pricingSectionTitle: 'GAME & CLOUD SERVER HOSTING',
+  pricingSectionSubtitle: 'High-performance game and cloud servers with instant setup, Corero 3.2Tbps DDoS protection, and powerful hardware for lag-free performance.',
   switchSectionTitle: 'Make The Switch',
-  switchSectionSubtitle: 'Join thousands of gamers who switched to faster, more reliable hosting. Experience the difference today.',
+  switchSectionSubtitle: 'Join thousands of gamers and developers who switched to faster, more reliable hosting. Experience the difference today.',
   switchCouponCode: 'WELCOME10',
   switchDiscountPercent: 10,
   switchCountdownTarget: new Date(Date.now() + 14 * 3600 * 1000 + 45 * 60 * 1000 + 13 * 1000).toISOString(),
-  discordUrl: 'https://discord.gg/arvexhosting',
-  twitterUrl: 'https://twitter.com/arvexhosting',
-  githubUrl: 'https://github.com/arvexhosting',
-  supportEmail: 'support@arvex.host',
-  contactSupportUrl: 'mailto:support@arvex.host',
+  discordUrl: 'https://discord.gg/helzerxcloud',
+  twitterUrl: 'https://twitter.com/helzerxcloud',
+  githubUrl: 'https://github.com/helzerxcloud',
+  supportEmail: 'support@helzerx.cloud',
+  contactSupportUrl: 'mailto:support@helzerx.cloud',
   companyAddress: 'Level 14, West Tower, World Trade Center, Colombo 01, Sri Lanka',
   vatNumber: 'VAT-LK-948120492-B',
 };
@@ -117,7 +117,7 @@ export const INITIAL_GENERAL_SERVICES: GeneralService[] = [
   { id: 'srv-dedicated', title: 'Bare-Metal Dedicated', description: 'Single-tenant physical servers without virtualization overhead, customized for extreme community workloads.', icon: 'Cpu', image: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80', startingPrice: 89.99, badge: 'Enterprise', category: 'Dedicated', features: ['AMD Ryzen 9 9950X / EPYC', 'Unmetered 10Gbps Uplink', 'Custom IPMI / iDRAC Access', 'Hardware RAID Options'], active: true },
   { id: 'srv-web', title: 'cPanel Web Hosting', description: 'Blazing fast LiteSpeed web hosting with free SSL, NVMe SSDs, cPanel control panel, and automated daily backups.', icon: 'Globe', image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80', startingPrice: 3.49, badge: 'Fast & Secure', category: 'Web Solutions', features: ['LiteSpeed Web Server + LSCache', 'Free Automated SSL Certificates', 'Unlimited Mailboxes & MySQL', 'cPanel Management'], active: true },
   { id: 'srv-bot', title: 'Discord Bot Hosting', description: 'Keep your Node.js, Python, Java, or Golang Discord bots online 24/7 with zero interruption and live console telemetry.', icon: 'Bot', image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80', startingPrice: 1.99, badge: 'Low Cost', category: 'Development', features: ['Supports Node.js, Python, Java & Go', 'Git Auto-Deploy Webhooks', 'Persistent Database Storage', '24/7 Process Keep-Alive'], active: true },
-  { id: 'srv-storage', title: 'S3-Compatible Object Storage', description: 'Ultra-reliable distributed cloud storage with unlimited egress to our hosting nodes for world backups and media assets.', icon: 'HardDrive', image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80', startingPrice: 4.99, badge: '99.9999% Reliability', category: 'Storage', features: ['Standard S3 API compatibility', 'Zero egress fee within ArveX DC', 'End-to-end encryption at rest', 'Multi-zone replication'], active: true },
+  { id: 'srv-storage', title: 'S3-Compatible Object Storage', description: 'Ultra-reliable distributed cloud storage with unlimited egress to our hosting nodes for world backups and media assets.', icon: 'HardDrive', image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80', startingPrice: 4.99, badge: '99.9999% Reliability', category: 'Storage', features: ['Standard S3 API compatibility', 'Zero egress fee within HelzerX Cloud DC', 'End-to-end encryption at rest', 'Multi-zone replication'], active: true },
 ];
 
 export const INITIAL_SERVER_LOCATIONS: ServerLocation[] = [
@@ -130,7 +130,7 @@ export const INITIAL_SERVER_LOCATIONS: ServerLocation[] = [
 ];
 
 export const INITIAL_COMPARISON_ROWS: ComparisonRow[] = [
-  { id: 'comp-1', provider: 'ArveX Hosting', isCurrentHost: true, badge: 'Your Host', pricePerGb: '$1.75 / GB', processor: 'AMD Ryzen 9 9950X (5.7GHz)', storage: 'PCIe 5.0 NVMe (14,000 MB/s)', support247: true, ddosProtection: true },
+  { id: 'comp-1', provider: 'HelzerX Cloud', isCurrentHost: true, badge: 'Your Host', pricePerGb: '$1.75 / GB', processor: 'AMD Ryzen 9 9950X (5.7GHz)', storage: 'PCIe 5.0 NVMe (14,000 MB/s)', support247: true, ddosProtection: true },
   { id: 'comp-2', provider: 'Shockbyte', isCurrentHost: false, pricePerGb: '$2.50 / GB', processor: 'Intel Xeon E5 / Older i7', storage: 'Standard SATA SSD', support247: true, ddosProtection: true },
   { id: 'comp-3', provider: 'BisectHosting', isCurrentHost: false, pricePerGb: '$2.99 / GB', processor: 'AMD Ryzen 3000 / 5000', storage: 'Gen3 NVMe SSD', support247: true, ddosProtection: true },
   { id: 'comp-4', provider: 'Apex Hosting', isCurrentHost: false, pricePerGb: '$3.50 / GB', processor: 'Intel Xeon / AMD Ryzen', storage: 'NVMe Gen3', support247: true, ddosProtection: true },
@@ -146,7 +146,7 @@ export const INITIAL_FAQS: FaqItem[] = [
 ];
 
 export const INITIAL_TESTIMONIALS: Testimonial[] = [
-  { id: 'test-1', name: 'Kasun Bandara', role: 'Server Network Owner (600+ Players)', avatarInitial: 'KB', avatarImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80', rating: 5, quote: 'ArveX is hands down the best hosting I have used.' },
+  { id: 'test-1', name: 'Kasun Bandara', role: 'Server Network Owner (600+ Players)', avatarInitial: 'KB', avatarImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80', rating: 5, quote: 'HelzerX Cloud is hands down the best hosting I have used.' },
   { id: 'test-2', name: 'Marcus Vance', role: 'Rust Clan Leader & Admin', avatarInitial: 'MV', avatarImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80', rating: 5, quote: 'The Ryzen 9 9950X hardware handles 200 player wipes without a single dropped frame.' },
   { id: 'test-3', name: 'Elena Rostova', role: 'Game Community Developer', avatarInitial: 'ER', avatarImage: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80', rating: 5, quote: 'The automated control panel and instant Discord bot deployments made managing our community servers effortless.' },
 ];
@@ -160,7 +160,7 @@ export const INITIAL_BLOG_POSTS: BlogPost[] = [
 export const INITIAL_COUPONS: CouponCode[] = [
   { id: 'coupon-voltus', code: 'VOLTUS10', discountPercentage: 10, description: '10% off storewide coupon', active: true, expiresAt: '2026-12-31T23:59:59Z' },
   { id: 'coupon-welcome', code: 'WELCOME10', discountPercentage: 10, description: '10% off new customer switch discount', active: true, expiresAt: '2026-12-31T23:59:59Z' },
-  { id: 'coupon-arvex20', code: 'ARVEX20', discountPercentage: 20, description: '20% VIP seasonal promotional code', active: true, expiresAt: '2026-12-31T23:59:59Z' },
+  { id: 'coupon-helzerx20', code: 'HELZERX20', discountPercentage: 20, description: '20% VIP seasonal promotional code', active: true, expiresAt: '2026-12-31T23:59:59Z' },
   { id: 'coupon-lkrspecial', code: 'LKRSAVE15', discountPercentage: 15, description: '15% Sri Lanka & South Asia special promo', active: true, expiresAt: '2026-12-31T23:59:59Z' },
 ];
 
@@ -175,8 +175,8 @@ export const CURRENCIES: CurrencyConfig[] = [
 ];
 
 export const INITIAL_DEPLOYED_SERVERS: DeployedServer[] = [
-  { id: 'srv-mc-01', userId: 'usr-admin-1', serverName: 'ArveX SMP Realm', gameId: 'minecraft', gameName: 'Minecraft Java 1.21', planName: 'Extreme Diamond Plan', status: 'running', ipAddress: '198.51.100.42', port: 25565, ramUsagePercent: 42, ramUsageGb: 6.7, cpuUsage: 18.2, cpuUsagePercent: 18, diskUsagePercent: 31, location: 'United States (Dallas)', createdAt: '2026-02-10T14:30:00Z', logs: ['[14:10:02 INFO]: Loading properties...', '[14:10:03 INFO]: Default game type: SURVIVAL'] },
-  { id: 'srv-rust-01', userId: 'usr-admin-1', serverName: 'ArveX 2x Main Wipe', gameId: 'rust', gameName: 'Rust High-Tick Server', planName: 'Clan Warlord', status: 'running', ipAddress: '198.51.100.89', port: 28015, ramUsagePercent: 58, ramUsageGb: 11.6, cpuUsage: 24.5, cpuUsagePercent: 24, diskUsagePercent: 45, location: 'Singapore', createdAt: '2026-02-18T10:15:00Z', logs: ['[10:15:00 SYSTEM]: Carbon framework injected successfully.'] },
+  { id: 'srv-mc-01', userId: 'usr-admin-1', serverName: 'HelzerX SMP Realm', gameId: 'minecraft', gameName: 'Minecraft Java 1.21', planName: 'Extreme Diamond Plan', status: 'running', ipAddress: '198.51.100.42', port: 25565, ramUsagePercent: 42, ramUsageGb: 6.7, cpuUsage: 18.2, cpuUsagePercent: 18, diskUsagePercent: 31, location: 'United States (Dallas)', createdAt: '2026-02-10T14:30:00Z', logs: ['[14:10:02 INFO]: Loading properties...', '[14:10:03 INFO]: Default game type: SURVIVAL'] },
+  { id: 'srv-rust-01', userId: 'usr-admin-1', serverName: 'HelzerX 2x Main Wipe', gameId: 'rust', gameName: 'Rust High-Tick Server', planName: 'Clan Warlord', status: 'running', ipAddress: '198.51.100.89', port: 28015, ramUsagePercent: 58, ramUsageGb: 11.6, cpuUsage: 24.5, cpuUsagePercent: 24, diskUsagePercent: 45, location: 'Singapore', createdAt: '2026-02-18T10:15:00Z', logs: ['[10:15:00 SYSTEM]: Carbon framework injected successfully.'] },
 ];
 
 export const INITIAL_SAVED_CARDS: SavedCard[] = [
@@ -190,7 +190,7 @@ export const INITIAL_INVOICES: Invoice[] = [
   { id: 'inv-10044', invoiceNumber: 'INV-2026-10044', userId: 'usr-admin-1', userEmail: 'nethummenura198@gmail.com', userName: 'Nethum Menura', amountUsd: 14.0, amountLocal: 4270.0, currency: 'USD', status: 'unpaid', items: [{ description: 'Standard Gold Minecraft Renewal', period: 'Mar 10, 2026 - Apr 10, 2026', amountUsd: 14.0, quantity: 1 }], subtotalUsd: 14.0, taxUsd: 0.0, discountUsd: 0.0, dueDate: '2026-03-10T14:30:00Z', createdAt: '2026-02-24T00:00:00Z', notes: 'Upcoming monthly service renewal.' },
 ];
 
-export const INITIAL_PAYMENT_SETTINGS: PaymentGatewaySettings = { payhereEnabled: true, payhereMerchantId: '1224892', payhereMerchantSecret: '4x99281a8c9e0d1f77a83b4291', payhereSandbox: false, paypalEnabled: true, paypalClientId: 'sb-client-id-arvex-hosting-live', paypalSandbox: false, cardEnabled: true, cardAutoBilling: true, cryptoEnabled: true, cryptoUsdtAddress: 'TQn9Y2khEsLJW1ChVWFMSMeRDow5KMNPcq', cryptoBtcAddress: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh', bankEnabled: true, bankName: 'Commercial Bank of Ceylon / Bank of Ceylon', bankAccountName: 'ArveX Hosting Pvt Ltd', bankAccountNumber: '8004928190', bankBranch: 'Colombo Main Branch (001)', bankSwiftCode: 'CCEYLKLYXXX', bankInstructions: 'Please include your Invoice Number in the payment reference / deposit slip memo.' };
+export const INITIAL_PAYMENT_SETTINGS: PaymentGatewaySettings = { payhereEnabled: true, payhereMerchantId: '1224892', payhereMerchantSecret: '4x99281a8c9e0d1f77a83b4291', payhereSandbox: false, paypalEnabled: true, paypalClientId: 'sb-client-id-helzerx-cloud-live', paypalSandbox: false, cardEnabled: true, cardAutoBilling: true, cryptoEnabled: true, cryptoUsdtAddress: 'TQn9Y2khEsLJW1ChVWFMSMeRDow5KMNPcq', cryptoBtcAddress: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh', bankEnabled: true, bankName: 'Commercial Bank of Ceylon / Bank of Ceylon', bankAccountName: 'HelzerX Cloud Pvt Ltd', bankAccountNumber: '8004928190', bankBranch: 'Colombo Main Branch (001)', bankSwiftCode: 'CCEYLKLYXXX', bankInstructions: 'Please include your Invoice Number in the payment reference / deposit slip memo.' };
 
 export const INITIAL_SUPPORT_TICKETS: SupportTicket[] = [];
 export const INITIAL_TLDS: DomainTld[] = [
@@ -225,16 +225,16 @@ export const INITIAL_STATUS_COMPONENTS: StatusComponent[] = [
 export const INITIAL_STATUS_INCIDENTS: StatusIncident[] = [{ id: 'inc-001', title: 'Completed Scheduled Kernel Upgrades on Frankfurt Clusters', impact: 'None', status: 'Resolved', affectedComponents: ['Frankfurt Ryzen 9 9950X Game Nodes (EU-Central)'], createdAt: '2026-02-18T02:00:00Z', updatedAt: '2026-02-18T02:40:00Z', updates: [{ id: 'upd-1', status: 'Resolved', message: 'All Linux kernel hotpatches and microcode optimizations for AMD Zen 5 CPUs completed with zero downtime.', timestamp: '2026-02-18T02:40:00Z' }] }];
 
 export const INITIAL_SERVER_NODES: ServerNode[] = [
-  { id: 'node-dal-01', name: 'Node-US-Dallas-01', fqdn: 'dal01.nodes.arvex.host', location: 'Dallas, TX (United States)', memoryTotalMb: 131072, memoryAllocatedMb: 53248, diskTotalMb: 3840000, diskAllocatedMb: 1140000, cpuCores: 32, activeContainers: 18, status: 'connected', daemonVersion: 'v1.11.8', scheme: 'https', port: 8080 },
-  { id: 'node-fra-01', name: 'Node-EU-Frankfurt-01', fqdn: 'fra01.nodes.arvex.host', location: 'Frankfurt (Germany)', memoryTotalMb: 131072, memoryAllocatedMb: 61440, diskTotalMb: 3840000, diskAllocatedMb: 1420000, cpuCores: 32, activeContainers: 22, status: 'connected', daemonVersion: 'v1.11.8', scheme: 'https', port: 8080 },
-  { id: 'node-sin-01', name: 'Node-AP-Singapore-01', fqdn: 'sin01.nodes.arvex.host', location: 'Singapore (Asia)', memoryTotalMb: 65536, memoryAllocatedMb: 32768, diskTotalMb: 1920000, diskAllocatedMb: 760000, cpuCores: 16, activeContainers: 12, status: 'connected', daemonVersion: 'v1.11.8', scheme: 'https', port: 8080 },
-  { id: 'node-cmb-01', name: 'Node-LK-Colombo-01 (Direct SLT/Dialog Peer)', fqdn: 'cmb01.nodes.arvex.host', location: 'Colombo (Sri Lanka)', memoryTotalMb: 65536, memoryAllocatedMb: 24576, diskTotalMb: 1920000, diskAllocatedMb: 490000, cpuCores: 16, activeContainers: 8, status: 'connected', daemonVersion: 'v1.11.8', scheme: 'https', port: 8080 },
+  { id: 'node-dal-01', name: 'Node-US-Dallas-01', fqdn: 'dal01.nodes.helzerx.cloud', location: 'Dallas, TX (United States)', memoryTotalMb: 131072, memoryAllocatedMb: 53248, diskTotalMb: 3840000, diskAllocatedMb: 1140000, cpuCores: 32, activeContainers: 18, status: 'connected', daemonVersion: 'v1.11.8', scheme: 'https', port: 8080 },
+  { id: 'node-fra-01', name: 'Node-EU-Frankfurt-01', fqdn: 'fra01.nodes.helzerx.cloud', location: 'Frankfurt (Germany)', memoryTotalMb: 131072, memoryAllocatedMb: 61440, diskTotalMb: 3840000, diskAllocatedMb: 1420000, cpuCores: 32, activeContainers: 22, status: 'connected', daemonVersion: 'v1.11.8', scheme: 'https', port: 8080 },
+  { id: 'node-sin-01', name: 'Node-AP-Singapore-01', fqdn: 'sin01.nodes.helzerx.cloud', location: 'Singapore (Asia)', memoryTotalMb: 65536, memoryAllocatedMb: 32768, diskTotalMb: 1920000, diskAllocatedMb: 760000, cpuCores: 16, activeContainers: 12, status: 'connected', daemonVersion: 'v1.11.8', scheme: 'https', port: 8080 },
+  { id: 'node-cmb-01', name: 'Node-LK-Colombo-01 (Direct SLT/Dialog Peer)', fqdn: 'cmb01.nodes.helzerx.cloud', location: 'Colombo (Sri Lanka)', memoryTotalMb: 65536, memoryAllocatedMb: 24576, diskTotalMb: 1920000, diskAllocatedMb: 490000, cpuCores: 16, activeContainers: 8, status: 'connected', daemonVersion: 'v1.11.8', scheme: 'https', port: 8080 },
 ];
 
 export const INITIAL_ADMIN_USERS: AdminUserAccount[] = [
   { id: 'adm-1', name: 'Nethum Menura', email: 'nethummenura198@gmail.com', role: 'super_admin', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80', createdAt: '2025-01-01T00:00:00Z', lastActive: 'Just now', twoFactorEnabled: true, permissions: ['all'] },
-  { id: 'adm-2', name: 'Alex Vance (Lead DevOps)', email: 'alex.vance@arvex.host', role: 'admin', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80', createdAt: '2025-03-15T00:00:00Z', lastActive: '12 minutes ago', twoFactorEnabled: true, permissions: ['servers', 'nodes', 'tickets', 'status'] },
-  { id: 'adm-3', name: 'Sarah Connor (Support Specialist)', email: 'sarah.c@arvex.host', role: 'support', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80', createdAt: '2025-06-01T00:00:00Z', lastActive: '1 hour ago', twoFactorEnabled: false, permissions: ['tickets', 'customers_view'] },
+  { id: 'adm-2', name: 'Alex Vance (Lead DevOps)', email: 'alex.vance@helzerx.cloud', role: 'admin', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80', createdAt: '2025-03-15T00:00:00Z', lastActive: '12 minutes ago', twoFactorEnabled: true, permissions: ['servers', 'nodes', 'tickets', 'status'] },
+  { id: 'adm-3', name: 'Sarah Connor (Support Specialist)', email: 'sarah.c@helzerx.cloud', role: 'support', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80', createdAt: '2025-06-01T00:00:00Z', lastActive: '1 hour ago', twoFactorEnabled: false, permissions: ['tickets', 'customers_view'] },
 ];
 
 export const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [];

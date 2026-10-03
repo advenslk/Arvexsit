@@ -73,7 +73,7 @@ export const StatusPage: React.FC = () => {
           <span>Real-Time Node Telemetry</span>
         </div>
         <h1 className="text-4xl sm:text-5xl font-black text-white font-display tracking-tight mb-4">
-          ArveX Systems Status
+          HelzerX Systems Status
         </h1>
         <p className="text-slate-400 text-sm sm:text-base leading-relaxed mb-8">
           Live monitoring of global game clusters, VPS hypervisors, API gateways, and Anycast network routes.

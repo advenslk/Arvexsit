@@ -128,7 +128,7 @@ export const AdminPanelModal: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xl sm:text-2xl font-bold text-white font-display">
-                  ArveX Master Admin Panel
+                  HelzerX Master Admin Panel
                 </h2>
                 <span className="bg-cyan-950 text-cyan-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border border-cyan-500/30">
                   LIVE EDIT MODE
@@ -232,7 +232,7 @@ export const AdminPanelModal: React.FC = () => {
               <div className="rounded-2xl bg-[#131622] border border-white/10 p-6">
                 <h3 className="text-base font-bold text-white mb-2">Quick Site Customization Guide</h3>
                 <p className="text-xs text-slate-400 leading-relaxed mb-4">
-                  Every section of ArveX Hosting is fully dynamic. Any changes you make here are instantly saved to your browser's persistent storage and rendered live on the website.
+                  Every section of HelzerX Cloud is fully dynamic. Any changes you make here are instantly saved to your browser's persistent storage and rendered live on the website.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                   <button
@@ -1596,7 +1596,6 @@ export const AdminPanelModal: React.FC = () => {
                   onClick={() => {
                     const name = (document.getElementById('form-partner-name') as HTMLInputElement).value;
                     if (!name.trim()) {
-                      alert('Please enter a partner name');
                       return;
                     }
                     const category = (document.getElementById('form-partner-cat') as HTMLInputElement).value;
@@ -1612,7 +1611,7 @@ export const AdminPanelModal: React.FC = () => {
                       addPartner({
                         name,
                         category: category || 'Official Partner',
-                        tagline: tagline || 'Trusted Partner of ArveX Hosting',
+                        tagline: tagline || 'Trusted Partner of HelzerX Cloud',
                         logoUrl: logoUrl || undefined,
                         url: url || undefined,
                         badge: badge || undefined,
@@ -1733,7 +1732,7 @@ export const AdminPanelModal: React.FC = () => {
                     rows={3}
                     defaultValue={editingReview?.reviewText || ''}
                     id="form-review-text"
-                    placeholder="Write the customer's feedback and experience with ArveX..."
+                    placeholder="Write the customer's feedback and experience with HelzerX..."
                     className="w-full bg-[#0a0c12] border border-white/10 rounded-xl px-3 py-2 text-white"
                   />
                 </div>
@@ -1835,7 +1834,6 @@ export const AdminPanelModal: React.FC = () => {
                   onClick={() => {
                     const name = (document.getElementById('form-review-name') as HTMLInputElement).value;
                     if (!name.trim()) {
-                      alert('Please enter a reviewer name');
                       return;
                     }
                     const role = (document.getElementById('form-review-role') as HTMLInputElement).value;

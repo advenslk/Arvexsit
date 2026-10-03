@@ -1135,7 +1135,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     saveAuthSession(newUser);
     setStored('user', newUser);
     setUser(newUser);
-    showNotification(`Account created! Welcome to ArveX, ${name}`);
+    showNotification(`Account created! Welcome to HelzerX Cloud, ${name}`);
   };
 
   // Server Deployments
@@ -1254,7 +1254,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: 'inv-' + Date.now(),
       invoiceNumber: `INV-2026-${Math.floor(10000 + Math.random() * 90000)}`,
       userId: user?.id || 'guest',
-      userEmail: user?.email || 'customer@arvex.host',
+      userEmail: user?.email || 'customer@helzerx.cloud',
       userName: user?.name || 'Valued Customer',
       amountUsd: finalAmount,
       amountLocal: lkrAmount,
@@ -1353,7 +1353,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: 'tkt-' + Date.now(),
       ticketNumber: `#TKT-${Math.floor(10000 + Math.random() * 90000)}`,
       userId: user?.id || 'guest',
-      userEmail: user?.email || 'guest@arvex.host',
+      userEmail: user?.email || 'guest@helzerx.cloud',
       userName: user?.name || 'Customer',
       subject: data.subject,
       department: data.department,
@@ -1385,7 +1385,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newMessage = {
       id: 'msg-' + Date.now(),
       senderId: asAdmin ? 'staff-admin' : user?.id || 'user',
-      senderName: asAdmin ? 'ArveX Staff Support' : user?.name || 'Customer',
+      senderName: asAdmin ? 'HelzerX Staff Support' : user?.name || 'Customer',
       senderRole: (asAdmin ? 'staff' : 'customer') as 'staff' | 'customer',
       senderAvatar: asAdmin
         ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80'
@@ -1453,14 +1453,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newReg: DomainRegistration = {
       id: 'dom-' + Date.now(),
       userId: user?.id || 'guest',
-      userEmail: user?.email || 'customer@arvex.host',
+      userEmail: user?.email || 'customer@helzerx.cloud',
       domainName: domainName.toLowerCase().trim(),
       status: 'active',
       registrationDate: new Date().toISOString(),
       expiryDate: new Date(Date.now() + years * 365 * 86400000).toISOString(),
       autoRenew: true,
       whoisPrivacy,
-      nameservers: ['ns1.arvexcloud.net', 'ns2.arvexcloud.net', 'ns3.arvexcloud.net'],
+      nameservers: ['ns1.helzerxcloud.net', 'ns2.helzerxcloud.net', 'ns3.helzerxcloud.net'],
       dnsRecords: [
         {
           id: 'dns-1',
@@ -1486,7 +1486,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: 'inv-dom-' + Date.now(),
       invoiceNumber: `INV-DOM-${Math.floor(10000 + Math.random() * 90000)}`,
       userId: user?.id || 'guest',
-      userEmail: user?.email || 'customer@arvex.host',
+      userEmail: user?.email || 'customer@helzerx.cloud',
       userName: user?.name || 'Valued Customer',
       amountUsd: totalCost,
       amountLocal: totalCost * currency.rateToUsd,
@@ -1553,7 +1553,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: 'ord-' + Date.now(),
       orderNumber: `ARX-ORD-${Math.floor(100000 + Math.random() * 900000)}`,
       userId: user?.id || 'guest',
-      userEmail: user?.email || 'customer@arvex.host',
+      userEmail: user?.email || 'customer@helzerx.cloud',
       userName: user?.name || 'Valued Customer',
       planId: data.plan.id,
       planName: data.plan.name,
@@ -1586,7 +1586,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       invoiceId: inv.id,
       userId: user?.id || 'guest',
       customerName: user?.name || 'Valued Customer',
-      customerEmail: user?.email || 'customer@arvex.host',
+      customerEmail: user?.email || 'customer@helzerx.cloud',
       provider: data.paymentMethod,
       amount: finalAmount,
       currency: currency.code,
@@ -1600,7 +1600,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Add Audit Log
     addAuditLog({
       actorName: user?.name || 'Customer',
-      actorEmail: user?.email || 'customer@arvex.host',
+      actorEmail: user?.email || 'customer@helzerx.cloud',
       actorRole: user?.role || 'customer',
       action: 'ORDER_CREATED',
       targetType: 'order',

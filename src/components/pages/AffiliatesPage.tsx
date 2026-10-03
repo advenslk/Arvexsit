@@ -19,8 +19,8 @@ export const AffiliatesPage: React.FC = () => {
   const { user, formatPrice, navigateTo, showNotification } = useApp();
   const [copied, setCopied] = useState<boolean>(false);
 
-  const affiliateCode = user?.id ? user.id.replace('user-', 'arvex-') : 'arvex-vip';
-  const affiliateUrl = `https://arvex.host/?ref=${affiliateCode}`;
+  const affiliateCode = user?.id ? user.id.replace('user-', 'helzerx-') : 'helzerx-vip';
+  const affiliateUrl = `https://helzerx.cloud/?ref=${affiliateCode}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(affiliateUrl);
@@ -49,7 +49,7 @@ export const AffiliatesPage: React.FC = () => {
           <h1 className="text-4xl sm:text-6xl font-black text-white font-display tracking-tight leading-tight mb-5">
             Earn with the <br />
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400">
-              ArveX Affiliate Program
+              HelzerX Affiliate Program
             </span>
           </h1>
 

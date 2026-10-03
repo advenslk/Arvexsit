@@ -72,7 +72,7 @@ export const PartnersPage: React.FC = () => {
           <h1 className="text-4xl sm:text-6xl font-black text-white font-display tracking-tight leading-tight mb-5">
             Partner with <br />
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400">
-              ArveX Cloud
+              HelzerX Cloud
             </span>
           </h1>
 
@@ -246,7 +246,7 @@ export const PartnersPage: React.FC = () => {
 
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Pitch / Why Partner with ArveX?
+              Pitch / Why Partner with HelzerX?
             </label>
             <textarea
               rows={4}
