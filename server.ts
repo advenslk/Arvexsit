@@ -433,6 +433,14 @@ async function requireClientPortalSession(req: Request, res: Response): Promise<
   return { session, user, token };
 }
 
+function buildSecurityEmail(code: string, title: string, intro: string, label: string) {
+  const banner = 'https://www.image2url.com/r2/default/images/1791094365908-9bc024c7-0697-4491-ba9a-b8b86bf953ac.png';
+  const year = new Date().getFullYear();
+  const text = `${title}\n\n${intro}\n\n${label}: ${code}\n\nThis code expires in 10 minutes. Never share it with anyone.\n\nSupport: support@helzerx.cyou\nWebsite: https://helzerx.cyou\n\n© ${year} HelzerX Cloud (Pvt) Ltd. All rights reserved.`;
+  const html = `<!doctype html><html><body style="margin:0;background:#f4f1ff;font-family:Arial,Helvetica,sans-serif;color:#17122b"><div style="max-width:620px;margin:auto;padding:28px 14px"><div style="background:#fff;border:1px solid #e9e2ff;border-radius:24px;overflow:hidden;box-shadow:0 18px 50px rgba(82,48,160,.14)"><img src="${banner}" alt="HelzerX Cloud" style="display:block;width:100%;max-height:210px;object-fit:cover"><div style="padding:30px 28px;text-align:center"><div style="display:inline-block;padding:7px 12px;border-radius:999px;background:#f1eaff;color:#673ab7;font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase">HELZERX CLOUD SECURITY</div><h1 style="margin:18px 0 8px;font-size:25px;color:#24134f">${title}</h1><p style="margin:0 auto 22px;max-width:470px;color:#6b6780;font-size:14px;line-height:1.7">${intro}</p><div style="margin:22px auto;padding:22px 18px;border-radius:20px;background:linear-gradient(135deg,#6d28d9,#8b5cf6);box-shadow:0 14px 30px rgba(109,40,217,.28)"><div style="color:#e9ddff;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase">${label}</div><div style="margin-top:8px;color:#fff;font-size:42px;line-height:1;font-weight:900;letter-spacing:11px">${code}</div></div><div style="padding:14px 16px;border-radius:14px;background:#faf8ff;border:1px solid #eee7ff;text-align:left;font-size:12px;color:#514b68;line-height:1.7"><strong>Valid for 10 minutes</strong><br>If you did not request this email, you can safely ignore it.</div><div style="border-top:1px solid #eeeaf7;margin-top:22px;padding-top:20px;color:#77718c;font-size:12px;line-height:1.8;text-align:left"><strong style="color:#40395a">Security tips</strong><br>• Never share your verification code or password.<br>• HelzerX staff will never ask for your OTP.<br>• Always check that you are using the official HelzerX website.</div></div><div style="background:#17112b;padding:22px 26px;text-align:center;color:#cfc7e8;font-size:11px;line-height:1.8"><strong style="color:#fff;font-size:13px">HelzerX Cloud</strong><br>Fast • Secure • Reliable Cloud Infrastructure<br><a href="https://helzerx.cyou" style="color:#b794ff;text-decoration:none">helzerx.cyou</a> &nbsp;•&nbsp; <a href="mailto:support@helzerx.cyou" style="color:#b794ff;text-decoration:none">Support</a> &nbsp;•&nbsp; Discord Community<br><br>© ${year} HelzerX Cloud (Pvt) Ltd. All rights reserved.</div></div><div style="text-align:center;color:#9690a8;font-size:10px;margin-top:14px">This is an automated security email. Please do not reply.</div></div></body></html>`;
+  return { text, html };
+}
+
 async function sendMail(to: string, subject: string, text: string, html?: string): Promise<boolean> {
   if (!RESEND_API_KEY || !RESEND_FROM) {
     console.error('[HelzerX Email] Resend is not configured. Set RESEND_API_KEY and RESEND_FROM.');
@@ -1272,7 +1280,8 @@ async function start() {
       attempts: 0,
     });
 
-    const sent = await sendMail(email, 'HelzerX Cloud email verification', `Your HelzerX verification code is: ${code}`);
+    const emailContent = buildSecurityEmail(code, 'Verify your HelzerX Cloud account', 'Use the code below to complete your account registration.', 'Email verification code');
+    const sent = await sendMail(email, 'HelzerX Cloud email verification', emailContent.text, emailContent.html);
     if (!sent) {
       otpChallenges.delete(challengeId);
       return res.status(502).json({ error: 'Unable to send the verification code. Please try again later.' });
@@ -1378,7 +1387,8 @@ async function start() {
       attempts: 0,
     });
 
-    const sent = await sendMail(email, 'HelzerX Cloud sign-in code', `Your ArveX sign-in code is: ${code}`);
+    const emailContent = buildSecurityEmail(code, 'Sign in to HelzerX Cloud', 'A sign-in attempt was made for your account. Enter the code below to continue.', 'Sign-in code');
+    const sent = await sendMail(email, 'HelzerX Cloud sign-in code', emailContent.text, emailContent.html);
     if (!sent) {
       otpChallenges.delete(challengeId);
       return res.status(502).json({ error: 'Unable to send the sign-in code. Please try again later.' });
@@ -1444,7 +1454,9 @@ async function start() {
       attempts: 0,
     });
 
-    await sendMail(email, 'HelzerX password reset code', `Your password reset code is: ${code}`);
+    const emailContent = buildSecurityEmail(code, 'Reset your HelzerX Cloud password', 'Use the code below to securely reset your password.', 'Password reset code');
+    const sent = await sendMail(email, 'HelzerX password reset code', emailContent.text, emailContent.html);
+    if (!sent) return res.status(502).json({ error: 'Unable to send the password reset code. Please try again later.' });
 
     res.json({
       ok: true,
@@ -1503,7 +1515,8 @@ async function start() {
     challenge.expiresAt = Date.now() + OTP_TTL_MS;
     challenge.attempts = 0;
 
-    const sent = await sendMail(challenge.email, 'HelzerX Cloud verification code (Resent)', `Your new verification code is: ${newCode}`);
+    const emailContent = buildSecurityEmail(newCode, 'Your new HelzerX Cloud verification code', 'Here is your newly requested code. Your previous code is no longer valid.', 'New verification code');
+    const sent = await sendMail(challenge.email, 'HelzerX Cloud verification code (Resent)', emailContent.text, emailContent.html);
     if (!sent) {
       return res.status(502).json({ error: 'Unable to resend the verification code. Please try again later.' });
     }
