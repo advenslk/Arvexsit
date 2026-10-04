@@ -182,15 +182,15 @@ function parseCookies(req: Request): Record<string, string> {
 
 function setSessionCookie(res: Response, sessionId: string) {
   res.setHeader('Set-Cookie', [
-    `arvex_secure_session=${encodeURIComponent(sessionId)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${Math.floor(SESSION_TTL_MS / 1000)}`,
-    `arvex_session=${encodeURIComponent(sessionId)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${Math.floor(SESSION_TTL_MS / 1000)}`,
+    `arvex_secure_session=${encodeURIComponent(sessionId)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${Math.floor(SESSION_TTL_MS / 1000)}`,
+    `arvex_session=${encodeURIComponent(sessionId)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${Math.floor(SESSION_TTL_MS / 1000)}`,
   ]);
 }
 
 function clearSessionCookie(res: Response) {
   res.setHeader('Set-Cookie', [
-    'arvex_secure_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0',
-    'arvex_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0',
+    'arvex_secure_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0',
+    'arvex_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0',
   ]);
 }
 
