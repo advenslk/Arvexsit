@@ -1647,7 +1647,7 @@ async function start() {
       .toUpperCase();
 
     const origin = PUBLIC_ORIGIN || `${req.protocol}://${req.get('host')}`;
-    const firstName = String(user.firstName || user.name || 'HelzerX').trim().split(/\\s+/)[0] || 'HelzerX';
+    const firstName = String(user.firstName || user.name || 'HelzerX').trim().split(/\s+/)[0] || 'HelzerX';
     const lastName = String(user.lastName || user.name || 'Customer').trim().split(/\\s+/).slice(1).join(' ') || 'Customer';
 
     res.json({
