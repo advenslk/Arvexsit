@@ -346,10 +346,9 @@ const ConnectModal: React.FC<{
   </div>
 );
 
-const ServerWorkspace: React.FC<{
-  server: ServerInfo; tab: Tab; setTab: (tab: Tab) => void; busy: string; setBusy: (v: string) => void;
-  onRefresh: () => Promise<void>; copied: string; copyText: (v: string) => void; error: string; setError: (v: string) => void;
-}> = ({ server, tab, setTab, busy, setBusy, onRefresh, copied, copyText, setError }) => {
+
+const ServerWorkspace = (props: any) => {
+  const { server, tab, setTab, busy, setBusy, onRefresh, copied, copyText, setError } = props;
   const [stats, setStats] = useState<Stats | null>(null);
   const [powerBusy, setPowerBusy] = useState('');
   const [consoleLines, setConsoleLines] = useState<string[]>([]);
@@ -366,73 +365,80 @@ const ServerWorkspace: React.FC<{
   const [backups, setBackups] = useState<Backup[]>([]);
   const [databases, setDatabases] = useState<Database[]>([]);
   const [activity, setActivity] = useState<any[]>([]);
-  const [notice, setNotice] = useState('');
-
-  const run = async (label: string, fn: () => Promise<void>) => {
-    setBusy(label);
-    setNotice('');
-    try { await fn(); } catch (err) { setError(err instanceof Error ? err.message : 'Action failed.'); }
-    finally { setBusy(''); }
-  };
 
   const refreshStats = useCallback(async () => {
-    try { const body = await api(`/api/client/server/${server.identifier}/resources`) as Stats; setStats(body); } catch {}
+    try {
+      const body = await api('/api/client/server/' + server.identifier + '/resources');
+      setStats(body as Stats);
+    } catch {}
   }, [server.identifier]);
 
   useEffect(() => {
-    setStats(null);
     void refreshStats();
-    const timer = window.setInterval(() => { void refreshStats(); }, 5000);
+    const timer = window.setInterval(() => void refreshStats(), 5000);
     return () => window.clearInterval(timer);
   }, [refreshStats]);
 
   useEffect(() => {
-    setConsoleLines([]);
-    setWsState('offline');
     wsRef.current?.close();
     wsRef.current = null;
+    setWsState('offline');
     if (tab !== 'console') return;
     let cancelled = false;
-    const connectWs = async () => {
+    const connect = async () => {
       try {
-        const data = await api(`/api/client/server/${server.identifier}/websocket`);
+        const data = await api('/api/client/server/' + server.identifier + '/websocket');
         if (cancelled) return;
         const socket = new WebSocket(data.data.socket);
         wsRef.current = socket;
         socket.onopen = () => {
           setWsState('connecting');
           socket.send(JSON.stringify({ event: 'auth', args: [data.data.token] }));
-          window.setTimeout(() => socket.readyState === WebSocket.OPEN && socket.send(JSON.stringify({ event: 'send logs', args: [null] })), 500);
-          window.setTimeout(() => socket.readyState === WebSocket.OPEN && socket.send(JSON.stringify({ event: 'send stats', args: [null] })), 700);
+          window.setTimeout(() => {
+            if (socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ event: 'send logs', args: [null] }));
+          }, 400);
+          window.setTimeout(() => {
+            if (socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ event: 'send stats', args: [null] }));
+          }, 700);
         };
         socket.onmessage = (event) => {
           try {
             const message = JSON.parse(event.data);
             if (message.event === 'auth success') setWsState('online');
-            if (message.event === 'console output') setConsoleLines((prev) => [...prev.slice(-499), String(message.args?.[0] || '')]);
-            if (message.event === 'status') setStats((prev) => ({ ...(prev || {}), current_state: String(message.args?.[0] || '') }));
+            if (message.event === 'console output') setConsoleLines((old) => old.concat(String(message.args?.[0] || '')).slice(-500));
+            if (message.event === 'status') setStats((old) => ({ ...(old || {}), current_state: String(message.args?.[0] || '') }));
             if (message.event === 'stats') setStats(message.args?.[0] || message.args?.[1] || message);
-            if (message.event === 'token expiring') {
-              void api(`/api/client/server/${server.identifier}/websocket`).then(() => {}).catch(() => {});
-            }
           } catch {}
         };
         socket.onerror = () => setWsState('error');
         socket.onclose = () => setWsState('offline');
-      } catch { setWsState('error'); }
+      } catch {
+        setWsState('error');
+      }
     };
-    void connectWs();
-    return () => { cancelled = true; wsRef.current?.close(); wsRef.current = null; };
+    void connect();
+    return () => {
+      cancelled = true;
+      wsRef.current?.close();
+      wsRef.current = null;
+    };
   }, [tab, server.identifier]);
 
-  const power = async (signal: 'start' | 'stop' | 'restart' | 'kill') => {
+  const power = async (signal: string) => {
     setPowerBusy(signal);
     try {
-      await api(`/api/client/server/${server.identifier}/power`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ signal }) });
+      await api('/api/client/server/' + server.identifier + '/power', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ signal })
+      });
       await refreshStats();
       await onRefresh();
-    } catch (err) { setError(err instanceof Error ? err.message : 'Power action failed.'); }
-    finally { setPowerBusy(''); }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Power action failed.');
+    } finally {
+      setPowerBusy('');
+    }
   };
 
   const sendCommand = async (event: React.FormEvent) => {
@@ -444,122 +450,168 @@ const ServerWorkspace: React.FC<{
       if (wsRef.current?.readyState === WebSocket.OPEN && wsState === 'online') {
         wsRef.current.send(JSON.stringify({ event: 'send command', args: [value] }));
       } else {
-        await api(`/api/client/server/${server.identifier}/command`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ command: value }) });
+        await api('/api/client/server/' + server.identifier + '/command', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command: value })
+        });
       }
-    } catch (err) { setError(err instanceof Error ? err.message : 'Command failed.'); }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Command failed.');
+    }
   };
 
-  const loadFiles = useCallback(async (dir = directory) => {
+  const loadFiles = useCallback(async (dir: string = directory) => {
     setFileLoading(true);
     try {
-      const data = await api(`/api/client/server/${server.identifier}/files?directory=${encodeURIComponent(dir)}`);
+      const data = await api('/api/client/server/' + server.identifier + '/files?directory=' + encodeURIComponent(dir));
       setFiles(Array.isArray(data?.data) ? data.data.map((x: any) => x.attributes || x) : []);
       setDirectory(dir);
-    } catch (err) { setError(err instanceof Error ? err.message : 'Unable to load files.'); }
-    finally { setFileLoading(false); }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to load files.');
+    } finally {
+      setFileLoading(false);
+    }
   }, [server.identifier, directory, setError]);
 
-  useEffect(() => { if (tab === 'files') void loadFiles('/'); }, [tab, server.identifier]);
+  useEffect(() => {
+    if (tab === 'files') void loadFiles('/');
+  }, [tab, server.identifier]);
 
   const openFile = async (entry: FileEntry) => {
-    const path = directory === '/' ? `/${entry.name}` : `${directory.replace(/\/$/, '')}/${entry.name}`;
-    if (!entry.is_file) return void loadFiles(path);
+    const path = directory === '/' ? '/' + entry.name : directory.replace(/\/$/, '') + '/' + entry.name;
+    if (!entry.is_file) {
+      await loadFiles(path);
+      return;
+    }
     setEditingFile(path);
     setFileLoading(true);
-    try { const text = await fetch(`/api/client/server/${server.identifier}/file?file=${encodeURIComponent(path)}`, { credentials: 'include', cache: 'no-store' }).then(async (r) => { if (!r.ok) throw new Error('Unable to read file.'); return r.text(); }); setFileContent(text); }
-    catch (err) { setError(err instanceof Error ? err.message : 'Unable to read file.'); }
-    finally { setFileLoading(false); }
+    try {
+      const response = await fetch('/api/client/server/' + server.identifier + '/file?file=' + encodeURIComponent(path), {
+        credentials: 'include',
+        cache: 'no-store'
+      });
+      if (!response.ok) throw new Error('Unable to read file.');
+      setFileContent(await response.text());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to read file.');
+    } finally {
+      setFileLoading(false);
+    }
   };
 
   const saveFile = async () => {
     if (!editingFile) return;
-    await run('save-file', async () => {
-      await api(`/api/client/server/${server.identifier}/file/write`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ file: editingFile, content: fileContent }) });
-      setNotice('File saved.');
-    });
+    setBusy('save-file');
+    try {
+      await api('/api/client/server/' + server.identifier + '/file/write', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: editingFile, content: fileContent })
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to save file.');
+    } finally {
+      setBusy('');
+    }
   };
 
-  const deleteEntry = async (entry: FileEntry) => {
-    if (!window.confirm(`Delete ${entry.name}? This cannot be undone.`)) return;
-    await run('delete-file', async () => {
-      await api(`/api/client/server/${server.identifier}/file/delete`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ root: directory, files: [entry.name] }) });
+  const deleteFile = async (entry: FileEntry) => {
+    if (!window.confirm('Delete ' + entry.name + '? This cannot be undone.')) return;
+    setBusy('delete-file');
+    try {
+      await api('/api/client/server/' + server.identifier + '/file/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ root: directory, files: [entry.name] })
+      });
       await loadFiles(directory);
-    });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to delete file.');
+    } finally {
+      setBusy('');
+    }
   };
 
   const createFolder = async () => {
-    if (!newFolder.trim()) return;
-    await run('folder', async () => {
-      await api(`/api/client/server/${server.identifier}/file/folder`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ root: directory, name: newFolder.trim() }) });
+    const name = newFolder.trim();
+    if (!name) return;
+    setBusy('folder');
+    try {
+      await api('/api/client/server/' + server.identifier + '/file/folder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ root: directory, name })
+      });
       setNewFolder('');
       await loadFiles(directory);
-    });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to create folder.');
+    } finally {
+      setBusy('');
+    }
   };
 
   const loadBackups = async () => {
-    const data = await api(`/api/client/server/${server.identifier}/backups`);
+    const data = await api('/api/client/server/' + server.identifier + '/backups');
     setBackups(Array.isArray(data?.data) ? data.data.map((x: any) => x.attributes || x) : []);
   };
-  useEffect(() => { if (tab === 'backups') void loadBackups().catch((e) => setError(e.message)); }, [tab, server.identifier]);
 
   const loadDatabases = async () => {
-    const data = await api(`/api/client/server/${server.identifier}/databases`);
+    const data = await api('/api/client/server/' + server.identifier + '/databases');
     setDatabases(Array.isArray(data?.data) ? data.data.map((x: any) => x.attributes || x) : []);
   };
-  useEffect(() => { if (tab === 'databases') void loadDatabases().catch((e) => setError(e.message)); }, [tab, server.identifier]);
 
   const loadActivity = async () => {
-    const data = await api(`/api/client/server/${server.identifier}/activity`);
+    const data = await api('/api/client/server/' + server.identifier + '/activity');
     setActivity(Array.isArray(data?.data) ? data.data.map((x: any) => x.attributes || x) : []);
   };
-  useEffect(() => { if (tab === 'activity') void loadActivity().catch((e) => setError(e.message)); }, [tab, server.identifier]);
 
-  const filteredFiles = useMemo(() => files.filter((entry) => entry.name.toLowerCase().includes(fileSearch.toLowerCase())), [files, fileSearch]);
+  useEffect(() => {
+    if (tab === 'backups') void loadBackups().catch((e) => setError(e.message));
+    if (tab === 'databases') void loadDatabases().catch((e) => setError(e.message));
+    if (tab === 'activity') void loadActivity().catch((e) => setError(e.message));
+  }, [tab, server.identifier]);
 
-  const address = server.allocation ? `${server.allocation.alias || server.allocation.ip}:${server.allocation.port}` : 'No allocation';
-  const currentState = stats?.current_state || server.status || 'unknown';
+  const state = stats?.current_state || server.status || 'unknown';
+  const address = server.allocation ? (server.allocation.alias || server.allocation.ip) + ':' + server.allocation.port : 'No allocation';
   const memory = Number(stats?.resources?.memory_bytes || 0);
   const disk = Number(stats?.resources?.disk_bytes || 0);
   const cpu = Number(stats?.resources?.cpu_absolute || 0);
 
-  const tabs: Array<[Tab, React.ElementType, string]> = [
-    ['overview', LayoutDashboard, 'Overview'],
-    ['console', Terminal, 'Console'],
-    ['files', Folder, 'Files'],
-    ['backups', HardDrive, 'Backups'],
-    ['databases', Database, 'Databases'],
-    ['activity', Activity, 'Activity'],
-    ['settings', Settings, 'Settings'],
-  ];
+  const tabs: Tab[] = ['overview', 'console', 'files', 'backups', 'databases', 'activity', 'settings'];
 
   return (
     <Card className="overflow-hidden">
-      <div className="border-b border-slate-100 bg-white p-5 sm:p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="min-w-0"><div className="flex items-center gap-2"><span className={`h-3 w-3 rounded-full ${currentState === 'running' ? 'bg-emerald-500' : currentState === 'offline' || currentState === 'stopped' ? 'bg-slate-300' : 'bg-amber-500'}`} /><h2 className="truncate text-2xl font-black">{server.name}</h2></div><p className="mt-1 font-mono text-[11px] text-slate-400">{server.identifier} · {server.node || 'Node unavailable'}</p></div>
-          <div className="flex flex-wrap gap-2">
-            <button disabled={Boolean(powerBusy) || server.suspended} onClick={() => void power('start')} className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"><Play className="h-3.5 w-3.5 fill-current" />Start</button>
-            <button disabled={Boolean(powerBusy) || server.suspended} onClick={() => void power('restart')} className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 px-3 py-2 text-xs font-black text-amber-700 hover:bg-amber-100 disabled:opacity-50"><RotateCw className={`h-3.5 w-3.5 ${powerBusy === 'restart' ? 'animate-spin' : ''}`} />Restart</button>
-            <button disabled={Boolean(powerBusy) || server.suspended} onClick={() => void power('stop')} className="inline-flex items-center gap-1.5 rounded-xl bg-rose-50 px-3 py-2 text-xs font-black text-rose-700 hover:bg-rose-100 disabled:opacity-50"><Square className="h-3.5 w-3.5 fill-current" />Stop</button>
+      <div className="border-b border-slate-100 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-black">{server.name}</h2>
+            <p className="font-mono text-xs text-slate-400">{server.identifier} · {server.node || 'Node unavailable'}</p>
+          </div>
+          <div className="flex gap-2">
+            <button disabled={Boolean(powerBusy) || server.suspended} onClick={() => void power('start')} className="rounded-xl bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700">Start</button>
+            <button disabled={Boolean(powerBusy) || server.suspended} onClick={() => void power('restart')} className="rounded-xl bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700">Restart</button>
+            <button disabled={Boolean(powerBusy) || server.suspended} onClick={() => void power('stop')} className="rounded-xl bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">Stop</button>
           </div>
         </div>
         <div className="mt-5 grid gap-3 sm:grid-cols-4">
-          <button onClick={() => copyText(address)} className="rounded-2xl bg-slate-50 p-3 text-left hover:bg-blue-50"><span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Address</span><strong className="mt-1 block truncate font-mono text-xs">{address}</strong>{copied === address && <span className="text-[10px] text-emerald-600">Copied</span>}</button>
-          <div className="rounded-2xl bg-slate-50 p-3"><span className="text-[10px] font-black uppercase tracking-wider text-slate-400">CPU</span><strong className="mt-1 block text-sm">{cpu.toFixed(1)}%</strong></div>
-          <div className="rounded-2xl bg-slate-50 p-3"><span className="text-[10px] font-black uppercase tracking-wider text-slate-400">RAM</span><strong className="mt-1 block text-sm">{fmtBytes(memory)} / {fmtBytes(server.limits.memory * 1024 * 1024)}</strong></div>
-          <div className="rounded-2xl bg-slate-50 p-3"><span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Disk</span><strong className="mt-1 block text-sm">{fmtBytes(disk)} / {fmtBytes(server.limits.disk * 1024 * 1024)}</strong></div>
+          <button onClick={() => copyText(address)} className="rounded-2xl bg-slate-50 p-3 text-left"><span className="text-[10px] font-black uppercase text-slate-400">Address</span><strong className="mt-1 block truncate font-mono text-xs">{address}</strong></button>
+          <div className="rounded-2xl bg-slate-50 p-3"><span className="text-[10px] font-black uppercase text-slate-400">CPU</span><strong className="mt-1 block">{cpu.toFixed(1)}%</strong></div>
+          <div className="rounded-2xl bg-slate-50 p-3"><span className="text-[10px] font-black uppercase text-slate-400">RAM</span><strong className="mt-1 block">{fmtBytes(memory)} / {fmtBytes(server.limits.memory * 1024 * 1024)}</strong></div>
+          <div className="rounded-2xl bg-slate-50 p-3"><span className="text-[10px] font-black uppercase text-slate-400">Disk</span><strong className="mt-1 block">{fmtBytes(disk)} / {fmtBytes(server.limits.disk * 1024 * 1024)}</strong></div>
         </div>
       </div>
 
-      <div className="overflow-x-auto border-b border-slate-100 bg-slate-50/70 px-3 py-2">
-        <div className="flex min-w-max gap-1">{tabs.map(([key, Icon, label]) => <button key={key} onClick={() => setTab(key)} className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-black transition ${tab === key ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:bg-white/70'}`}><Icon className="h-3.5 w-3.5" />{label}</button>)}</div>
+      <div className="flex gap-1 overflow-x-auto border-b border-slate-100 bg-slate-50 p-2">
+        {tabs.map((item) => <button key={item} onClick={() => setTab(item)} className={"rounded-xl px-3 py-2 text-xs font-black capitalize " + (tab === item ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500')}>{item}</button>)}
       </div>
 
-      <div className="min-h-[480px] p-5 sm:p-6">
-        {tab === 'overview' && <OverviewPanel server={server} stats={stats} state={currentState} onRefresh={refreshStats} />}
+      <div className="p-5">
+        {tab === 'overview' && <OverviewPanel server={server} stats={stats} state={state} onRefresh={refreshStats} />}
         {tab === 'console' && <ConsolePanel lines={consoleLines} command={command} setCommand={setCommand} onSubmit={sendCommand} state={wsState} />}
-        {tab === 'files' && <FilesPanel directory={directory} files={filteredFiles} loading={fileLoading} search={fileSearch} setSearch={setFileSearch} newFolder={newFolder} setNewFolder={setNewFolder} onFolder={createFolder} onOpen={openFile} onDelete={deleteEntry} onUp={() => loadFiles(directory === '/' ? '/' : directory.split('/').slice(0, -1).join('/') || '/')} editingFile={editingFile} content={fileContent} setContent={setFileContent} onSave={saveFile} onCloseEditor={() => setEditingFile(null)} busy={busy === 'save-file' || busy === 'delete-file' || busy === 'folder'} />}
-        {tab === 'backups' && <BackupsPanel backups={backups} busy={busy} run={run} reload={loadBackups} serverId={server.identifier} />}
+        {tab === 'files' && <FilesPanel directory={directory} files={files.filter((x) => x.name.toLowerCase().includes(fileSearch.toLowerCase()))} loading={fileLoading} search={fileSearch} setSearch={setFileSearch} newFolder={newFolder} setNewFolder={setNewFolder} onFolder={createFolder} onOpen={openFile} onDelete={deleteFile} onUp={() => void loadFiles(directory === '/' ? '/' : directory.split('/').slice(0, -1).join('/') || '/')} editingFile={editingFile} content={fileContent} setContent={setFileContent} onSave={saveFile} onCloseEditor={() => setEditingFile(null)} busy={Boolean(busy)} />}
+        {tab === 'backups' && <BackupsPanel backups={backups} busy={busy} reload={loadBackups} serverId={server.identifier} />}
         {tab === 'databases' && <DatabasesPanel databases={databases} onReload={loadDatabases} />}
         {tab === 'activity' && <ActivityPanel activity={activity} />}
         {tab === 'settings' && <SettingsPanel server={server} panelUrl={null} />}
@@ -568,92 +620,106 @@ const ServerWorkspace: React.FC<{
   );
 };
 
-const OverviewPanel: React.FC<{ server: ServerInfo; stats: Stats | null; state: string; onRefresh: () => Promise<void> }> = ({ server, stats, state, onRefresh }) => {
+const OverviewPanel = (props: any) => {
+  const { server, stats, state, onRefresh } = props;
   const r = stats?.resources;
-  return <div className="space-y-5">
-    <div className="grid gap-4 md:grid-cols-3">
-      <Metric title="CPU" value={`${Number(r?.cpu_absolute || 0).toFixed(1)}%`} note={`Limit ${server.limits.cpu || 'unlimited'}%`} />
-      <Metric title="Memory" value={fmtBytes(Number(r?.memory_bytes || 0))} note={`Limit ${fmtBytes(server.limits.memory * 1024 * 1024)}`} />
-      <Metric title="Disk" value={fmtBytes(Number(r?.disk_bytes || 0))} note={`Limit ${fmtBytes(server.limits.disk * 1024 * 1024)}`} />
-    </div>
-    <div className="grid gap-4 md:grid-cols-2">
-      <Card className="p-5 shadow-none"><div className="flex items-center justify-between"><h3 className="font-black">Live state</h3><button onClick={() => void onRefresh()} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100"><RefreshCw className="h-4 w-4" /></button></div><p className="mt-3 text-2xl font-black capitalize">{state}</p><p className="mt-1 text-xs text-slate-500">Uptime: {fmtUptime(Number(r?.uptime || 0))}</p></Card>
-      <Card className="p-5 shadow-none"><h3 className="font-black">Allocation</h3><p className="mt-3 font-mono text-sm">{server.allocation ? `${server.allocation.alias || server.allocation.ip}:${server.allocation.port}` : 'Not allocated'}</p><p className="mt-2 text-xs text-slate-500">SFTP: {server.sftp ? `${server.sftp.ip}:${server.sftp.port}` : 'Unavailable'}</p></Card>
-    </div>
-    <div className="grid gap-4 md:grid-cols-3">{[['Databases', server.featureLimits.databases], ['Backups', server.featureLimits.backups], ['Allocations', server.featureLimits.allocations]].map(([label, value]) => <div key={String(label)} className="rounded-2xl bg-slate-50 p-4"><p className="text-[10px] font-black uppercase tracking-wider text-slate-400">{label}</p><p className="mt-2 text-xl font-black">{value}</p></div>)}</div>
-  </div>;
-};
-
-const Metric: React.FC<{ title: string; value: string; note: string }> = ({ title, value, note }) => <Card className="p-5 shadow-none"><div className="flex items-center gap-2 text-xs font-black text-slate-500"><Activity className="h-4 w-4 text-blue-600" />{title}</div><p className="mt-4 text-3xl font-black">{value}</p><p className="mt-1 text-xs text-slate-400">{note}</p></Card>;
-
-const ConsolePanel: React.FC<{ lines: string[]; command: string; setCommand: (v: string) => void; onSubmit: (e: React.FormEvent) => void; state: string }> = ({ lines, command, setCommand, onSubmit, state }) => (
-  <div className="overflow-hidden rounded-2xl bg-[#070a12] text-slate-200">
-    <div className="flex items-center justify-between border-b border-white/10 px-4 py-3"><div className="flex items-center gap-2 text-xs font-black"><span className={`h-2 w-2 rounded-full ${state === 'online' ? 'bg-emerald-400' : state === 'error' ? 'bg-rose-400' : 'bg-amber-400'}`} />Live console · {state}</div><Terminal className="h-4 w-4 text-slate-500" /></div>
-    <pre className="h-[360px] overflow-auto p-4 font-mono text-[11px] leading-5 text-slate-300">{lines.length ? lines.join('\n') : 'Waiting for real server console output…'}</pre>
-    <form onSubmit={onSubmit} className="flex gap-2 border-t border-white/10 p-3"><span className="rounded-xl bg-white/5 px-3 py-2.5 font-mono text-xs text-emerald-400">$</span><input value={command} onChange={(e) => setCommand(e.target.value)} placeholder="Send a real server command…" className="min-w-0 flex-1 rounded-xl bg-white/5 px-3 py-2.5 font-mono text-xs text-white outline-none placeholder:text-slate-600" /><button className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-black text-white">Send</button></form>
-  </div>
-);
-
-const FilesPanel: React.FC<{
-  directory: string; files: FileEntry[]; loading: boolean; search: string; setSearch: (v: string) => void; newFolder: string; setNewFolder: (v: string) => void; onFolder: () => void; onOpen: (e: FileEntry) => void; onDelete: (e: FileEntry) => void; onUp: () => void; editingFile: string | null; content: string; setContent: (v: string) => void; onSave: () => void; onCloseEditor: () => void; busy: boolean;
-}> = ({ directory, files, loading, search, setSearch, newFolder, setNewFolder, onFolder, onOpen, onDelete, onUp, editingFile, content, setContent, onSave, onCloseEditor, busy }) => (
-  <div className="space-y-4">
-    {editingFile ? (
-      <div className="rounded-2xl border border-slate-200 overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50 px-4 py-3"><div className="min-w-0"><p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Editing</p><p className="truncate font-mono text-xs font-bold">{editingFile}</p></div><div className="flex gap-2"><button onClick={onCloseEditor} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold">Close</button><button onClick={onSave} disabled={busy} className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-2 text-xs font-black text-white disabled:opacity-50"><Save className="h-3.5 w-3.5" />Save</button></div></div>
-        <textarea value={content} onChange={(e) => setContent(e.target.value)} spellCheck={false} className="h-[420px] w-full resize-none bg-[#0b1020] p-4 font-mono text-xs leading-5 text-slate-200 outline-none" />
-      </div>
-    ) : (
-      <>
-        <div className="flex flex-wrap gap-2"><button onClick={onUp} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold">Up</button><div className="flex min-w-[180px] flex-1 items-center gap-2 rounded-xl border border-slate-200 px-3"><Search className="h-3.5 w-3.5 text-slate-400" /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search files" className="w-full py-2 text-xs outline-none" /></div><input value={newFolder} onChange={(e) => setNewFolder(e.target.value)} placeholder="New folder" className="rounded-xl border border-slate-200 px-3 py-2 text-xs outline-none" /><button onClick={onFolder} className="inline-flex items-center gap-1.5 rounded-xl bg-slate-950 px-3 py-2 text-xs font-black text-white"><FolderPlus className="h-3.5 w-3.5" />Create</button></div>
-        <div className="rounded-2xl border border-slate-200 overflow-hidden"><div className="border-b border-slate-100 bg-slate-50 px-4 py-3 font-mono text-xs font-bold">{directory}</div>{loading ? <div className="p-10 text-center"><Loader2 className="mx-auto h-5 w-5 animate-spin text-blue-600" /></div> : files.length === 0 ? <div className="p-10 text-center text-sm text-slate-400">No files returned by Pterodactyl.</div> : <div>{files.map((entry) => <div key={entry.name} className="flex items-center gap-3 border-b border-slate-100 px-4 py-3 last:border-0 hover:bg-slate-50"><button onClick={() => onOpen(entry)} className="flex min-w-0 flex-1 items-center gap-3 text-left">{entry.is_file ? <File className="h-4 w-4 text-slate-400" /> : <Folder className="h-4 w-4 text-blue-500" />}<span className="truncate text-xs font-bold">{entry.name}</span></button><span className="hidden w-24 text-right text-[10px] text-slate-400 sm:block">{entry.is_file ? fmtBytes(entry.size) : 'folder'}</span>{entry.is_file && <button onClick={() => void onDelete(entry)} className="rounded-lg p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"><Trash2 className="h-3.5 w-3.5" /></button>}</div>)}</div>}</div>
-      </>
-    )}
-  </div>
-);
-
-const BackupsPanel: React.FC<{ backups: Backup[]; busy: string; run: (l: string, fn: () => Promise<void>) => Promise<void>; reload: () => Promise<void>; serverId: string }> = ({ backups, busy, run, reload, serverId }) => (
-  <div className="space-y-4">
-    <div className="flex items-center justify-between"><div><h3 className="text-lg font-black">Backups</h3><p className="text-xs text-slate-500">Real backups from Pterodactyl.</p></div><button onClick={() => void run('backup-create', async () => { await api(`/api/client/server/${serverId}/backups`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: `HelzerX backup ${new Date().toISOString()}`, is_locked: false }) }); await reload(); })} disabled={Boolean(busy)} className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-black text-white disabled:opacity-50"><Save className="h-3.5 w-3.5" />Create backup</button></div>
-    <div className="divide-y divide-slate-100 rounded-2xl border border-slate-200">{backups.length ? backups.map((backup) => <div key={backup.uuid} className="flex flex-wrap items-center justify-between gap-3 p-4"><div><p className="text-sm font-black">{backup.name || backup.uuid}</p><p className="mt-1 text-[11px] text-slate-400">{fmtBytes(backup.bytes)} · {backup.completed_at ? new Date(backup.completed_at).toLocaleString() : 'Processing'} {backup.is_locked ? '· Locked' : ''}</p></div><div className="flex gap-2"><button onClick={() => void run('restore', async () => { if (!window.confirm('Restore this backup? This can replace current files.')) return; await api(`/api/client/server/${serverId}/backups/${backup.uuid}/restore`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ truncate: true }) }); })} className="rounded-xl bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700">Restore</button><button onClick={() => void run('delete-backup', async () => { if (!window.confirm('Delete this backup permanently?')) return; await api(`/api/client/server/${serverId}/backups/${backup.uuid}`, { method: 'DELETE' }); await reload(); })} className="rounded-xl bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">Delete</button></div></div>) : <div className="p-10 text-center text-sm text-slate-400">No backups returned by Pterodactyl.</div>}</div>
-  </div>
-);
-
-const DatabasesPanel: React.FC<{ databases: Database[]; onReload: () => Promise<void> }> = ({ databases, onReload }) => (
-  <div className="space-y-4"><div className="flex items-center justify-between"><div><h3 className="text-lg font-black">Databases</h3><p className="text-xs text-slate-500">Database access is read from your real Pterodactyl account.</p></div><button onClick={() => void onReload()} className="rounded-xl border border-slate-200 p-2 text-slate-500 hover:bg-slate-50"><RefreshCw className="h-4 w-4" /></button></div><div className="grid gap-3 md:grid-cols-2">{databases.length ? databases.map((db) => <Card key={db.id} className="p-5 shadow-none"><div className="flex items-center gap-3"><Database className="h-5 w-5 text-blue-600" /><div><p className="font-black">{db.name}</p><p className="text-xs text-slate-400">{db.username}</p></div></div><p className="mt-4 rounded-xl bg-slate-50 p-3 font-mono text-[11px]">{db.connection_string || 'Connection details supplied by panel'}</p></Card>) : <div className="md:col-span-2 rounded-2xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-400">No databases returned by Pterodactyl.</div>}</div></div>
-);
-
-const ActivityPanel: React.FC<{ activity: any[] }> = ({ activity }) => (
-  <div><div className="mb-4"><h3 className="text-lg font-black">Activity</h3><p className="text-xs text-slate-500">Real Pterodactyl activity records.</p></div><div className="space-y-2">{activity.length ? activity.map((item, i) => <div key={item.id || i} className="rounded-2xl border border-slate-100 bg-slate-50 p-4"><div className="flex items-center justify-between gap-3"><p className="text-xs font-black">{item.event || item.action || 'Activity'}</p><span className="text-[10px] text-slate-400">{item.timestamp || item.created_at ? new Date(item.timestamp || item.created_at).toLocaleString() : ''}</span></div><p className="mt-2 text-xs leading-5 text-slate-500">{item.description || item.actor || 'Pterodactyl activity record'}</p></div>) : <div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-400">No activity returned.</div>}</div>
-);
-
-const SettingsPanel = (props: any) => {
-  const { server, panelUrl } = props;
   return (
     <div className="space-y-5">
-      <div>
-        <h3 className="text-lg font-black">Server settings</h3>
-        <p className="text-xs leading-6 text-slate-500">This area only exposes information the connected Client API account can safely read. Administrative build/egg changes stay in Pterodactyl and are never faked here.</p>
+      <div className="grid gap-4 md:grid-cols-3">
+        <Metric title="CPU" value={Number(r?.cpu_absolute || 0).toFixed(1) + '%'} note={'Limit ' + (server.limits.cpu || 'unlimited') + '%'} />
+        <Metric title="Memory" value={fmtBytes(Number(r?.memory_bytes || 0))} note={'Limit ' + fmtBytes(server.limits.memory * 1024 * 1024)} />
+        <Metric title="Disk" value={fmtBytes(Number(r?.disk_bytes || 0))} note={'Limit ' + fmtBytes(server.limits.disk * 1024 * 1024)} />
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card className="p-5 shadow-none">
-          <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Identifier</p>
-          <p className="mt-2 font-mono text-xs">{server.identifier}</p>
-          <p className="mt-4 text-[10px] font-black uppercase tracking-wider text-slate-400">UUID</p>
-          <p className="mt-2 break-all font-mono text-xs">{server.uuid}</p>
-        </Card>
-        <Card className="p-5 shadow-none">
-          <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Resource limits</p>
-          <p className="mt-2 text-sm font-bold">CPU {server.limits.cpu || 'Unlimited'}% · RAM {fmtBytes(server.limits.memory * 1024 * 1024)} · Disk {fmtBytes(server.limits.disk * 1024 * 1024)}</p>
-          <p className="mt-4 text-[10px] font-black uppercase tracking-wider text-slate-400">Permissions</p>
-          <p className="mt-2 text-xs text-slate-500">{server.permissions.length ? server.permissions.join(', ') : 'Panel did not return permission details.'}</p>
-        </Card>
-      </div>
-      {panelUrl && (
-        <a href={panelUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-xs font-black text-white">
-          Open full Pterodactyl panel <ChevronRight className="h-4 w-4" />
-        </a>
-      )}
+      <Card className="p-5 shadow-none">
+        <div className="flex items-center justify-between"><h3 className="font-black">Live state</h3><button onClick={() => void onRefresh()}><RefreshCw className="h-4 w-4" /></button></div>
+        <p className="mt-3 text-2xl font-black capitalize">{state}</p>
+        <p className="mt-1 text-xs text-slate-500">Uptime: {fmtUptime(Number(r?.uptime || 0))}</p>
+      </Card>
     </div>
   );
 };
+
+const Metric = (props: any) => (
+  <Card className="p-5 shadow-none">
+    <div className="flex items-center gap-2 text-xs font-black text-slate-500"><Activity className="h-4 w-4 text-blue-600" />{props.title}</div>
+    <p className="mt-4 text-3xl font-black">{props.value}</p>
+    <p className="mt-1 text-xs text-slate-400">{props.note}</p>
+  </Card>
+);
+
+const ConsolePanel = (props: any) => (
+  <div className="overflow-hidden rounded-2xl bg-slate-950 text-slate-200">
+    <div className="border-b border-white/10 px-4 py-3 text-xs font-black">Live console · {props.state}</div>
+    <pre className="h-[360px] overflow-auto p-4 font-mono text-xs">{props.lines.length ? props.lines.join('\n') : 'Waiting for real server console output…'}</pre>
+    <form onSubmit={props.onSubmit} className="flex gap-2 border-t border-white/10 p-3">
+      <input value={props.command} onChange={(e) => props.setCommand(e.target.value)} className="min-w-0 flex-1 rounded-xl bg-white/10 px-3 py-2 text-xs text-white outline-none" placeholder="Send a real server command…" />
+      <button className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-black text-white">Send</button>
+    </form>
+  </div>
+);
+
+const FilesPanel = (props: any) => {
+  if (props.editingFile) {
+    return (
+      <div className="overflow-hidden rounded-2xl border border-slate-200">
+        <div className="flex items-center justify-between border-b border-slate-100 p-3"><span className="font-mono text-xs">{props.editingFile}</span><div className="flex gap-2"><button onClick={props.onCloseEditor} className="rounded-xl border px-3 py-2 text-xs">Close</button><button onClick={props.onSave} disabled={props.busy} className="rounded-xl bg-blue-600 px-3 py-2 text-xs font-bold text-white">Save</button></div></div>
+        <textarea value={props.content} onChange={(e) => props.setContent(e.target.value)} className="h-[420px] w-full resize-none bg-slate-950 p-4 font-mono text-xs text-white outline-none" />
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2">
+        <button onClick={props.onUp} className="rounded-xl border px-3 py-2 text-xs font-bold">Up</button>
+        <input value={props.search} onChange={(e) => props.setSearch(e.target.value)} placeholder="Search files" className="min-w-[180px] flex-1 rounded-xl border px-3 py-2 text-xs" />
+        <input value={props.newFolder} onChange={(e) => props.setNewFolder(e.target.value)} placeholder="New folder" className="rounded-xl border px-3 py-2 text-xs" />
+        <button onClick={props.onFolder} className="rounded-xl bg-slate-950 px-3 py-2 text-xs font-bold text-white">Create</button>
+      </div>
+      <div className="overflow-hidden rounded-2xl border">
+        <div className="bg-slate-50 p-3 font-mono text-xs">{props.directory}</div>
+        {props.loading ? <div className="p-10 text-center"><Loader2 className="mx-auto h-5 w-5 animate-spin" /></div> : props.files.length === 0 ? <div className="p-10 text-center text-sm text-slate-400">No files returned by Pterodactyl.</div> : props.files.map((entry: FileEntry) => (
+          <div key={entry.name} className="flex items-center gap-3 border-t p-3">
+            <button onClick={() => props.onOpen(entry)} className="flex min-w-0 flex-1 items-center gap-2 text-left"><span>{entry.is_file ? '📄' : '📁'}</span><span className="truncate text-xs font-bold">{entry.name}</span></button>
+            {entry.is_file && <button onClick={() => void props.onDelete(entry)} className="rounded-lg p-2 text-rose-600"><Trash2 className="h-4 w-4" /></button>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const BackupsPanel = (props: any) => {
+  const create = async () => {
+    props.setBusy?.('backup');
+    try {
+      await api('/api/client/server/' + props.serverId + '/backups', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'HelzerX backup ' + new Date().toISOString(), is_locked: false }) });
+      await props.reload();
+    } finally {
+      props.setBusy?.('');
+    }
+  };
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between"><div><h3 className="text-lg font-black">Backups</h3><p className="text-xs text-slate-500">Real Pterodactyl backups.</p></div><button onClick={() => void create()} className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white">Create backup</button></div>
+      <div className="divide-y rounded-2xl border">{props.backups.length ? props.backups.map((b: Backup) => <div key={b.uuid} className="flex flex-wrap items-center justify-between gap-3 p-4"><div><p className="text-sm font-bold">{b.name || b.uuid}</p><p className="text-xs text-slate-400">{fmtBytes(b.bytes)} · {b.completed_at ? new Date(b.completed_at).toLocaleString() : 'Processing'}</p></div><div className="flex gap-2"><button onClick={() => void api('/api/client/server/' + props.serverId + '/backups/' + b.uuid + '/restore', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ truncate: true }) })} className="rounded-xl bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700">Restore</button><button onClick={() => void api('/api/client/server/' + props.serverId + '/backups/' + b.uuid, { method: 'DELETE' }).then(props.reload)} className="rounded-xl bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">Delete</button></div></div>) : <div className="p-10 text-center text-sm text-slate-400">No backups returned.</div>}</div>
+    </div>
+  );
+};
+
+const DatabasesPanel = (props: any) => (
+  <div className="space-y-4"><div className="flex items-center justify-between"><div><h3 className="text-lg font-black">Databases</h3><p className="text-xs text-slate-500">Real Pterodactyl database records.</p></div><button onClick={() => void props.onReload()} className="rounded-xl border p-2"><RefreshCw className="h-4 w-4" /></button></div><div className="grid gap-3 md:grid-cols-2">{props.databases.length ? props.databases.map((db: Database) => <Card key={db.id} className="p-5 shadow-none"><p className="font-black">{db.name}</p><p className="mt-1 text-xs text-slate-500">{db.username}</p><p className="mt-3 break-all rounded-xl bg-slate-50 p-3 font-mono text-xs">{db.connection_string}</p></Card>) : <div className="md:col-span-2 rounded-2xl border border-dashed p-10 text-center text-sm text-slate-400">No databases returned.</div>}</div></div>
+);
+
+const ActivityPanel = (props: any) => (
+  <div className="space-y-3">{props.activity.length ? props.activity.map((item: any, index: number) => <div key={item.id || index} className="rounded-2xl border bg-slate-50 p-4"><p className="text-xs font-black">{item.event || item.action || 'Activity'}</p><p className="mt-1 text-xs text-slate-500">{item.description || item.actor || 'Pterodactyl activity record'}</p></div>) : <div className="rounded-2xl border border-dashed p-10 text-center text-sm text-slate-400">No activity returned.</div>}</div>
+);
+
+const SettingsPanel = (props: any) => (
+  <div className="space-y-5">
+    <div><h3 className="text-lg font-black">Server settings</h3><p className="text-sm leading-6 text-slate-500">Read-only information from your real Pterodactyl account.</p></div>
+    <div className="grid gap-4 md:grid-cols-2">
+      <Card className="p-5 shadow-none"><p className="text-[10px] font-black uppercase text-slate-400">Identifier</p><p className="mt-2 font-mono text-xs">{props.server.identifier}</p><p className="mt-4 text-[10px] font-black uppercase text-slate-400">UUID</p><p className="mt-2 break-all font-mono text-xs">{props.server.uuid}</p></Card>
+      <Card className="p-5 shadow-none"><p className="text-[10px] font-black uppercase text-slate-400">Limits</p><p className="mt-2 text-sm font-bold">CPU {props.server.limits.cpu || 'Unlimited'}% · RAM {fmtBytes(props.server.limits.memory * 1024 * 1024)} · Disk {fmtBytes(props.server.limits.disk * 1024 * 1024)}</p><p className="mt-4 text-[10px] font-black uppercase text-slate-400">Permissions</p><p className="mt-2 text-xs text-slate-500">{props.server.permissions.length ? props.server.permissions.join(', ') : 'Not returned by panel.'}</p></Card>
+    </div>
+  </div>
+);
