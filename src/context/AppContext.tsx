@@ -382,12 +382,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const initialRouteInput = typeof window !== 'undefined'
     ? (window.location.hash.replace(/^#\/?/, '') || window.location.pathname.replace(/^\/+|\/+$/g, '') || 'home')
     : 'home';
-  const initialResolvedRoute = resolveRoute(initialRouteInput);
-  const [activePage, setActivePage] = useState<PageRoute>(initialResolvedRoute.page);
+  const initialIsClientDashboard = initialRouteInput.split('/')[0] === 'client-dashboard';
+  const [activePage, setActivePage] = useState<PageRoute>(initialIsClientDashboard ? 'client-dashboard' : 'home');
   const [currentRoute, setCurrentRoute] = useState<AppRouteLocation>({
-    path: `/${initialResolvedRoute.cleanPath}`,
-    page: initialResolvedRoute.page,
-    params: initialResolvedRoute.params,
+    path: initialIsClientDashboard ? '/client-dashboard' : '/',
+    page: initialIsClientDashboard ? 'client-dashboard' : 'home',
+    params: {},
   });
 
   // Dynamic Selected Items for Detailed Pages
