@@ -781,7 +781,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     const handleHash = () => {
       const rawHash = window.location.hash.replace(/^#\/?/, '');
-      const { page, params, cleanPath } = resolveRoute(rawHash || 'home');
+      const rawPathname = window.location.pathname.replace(/^\/+|\/+$/g, '');
+      const routeInput = rawHash || rawPathname || 'home';
+      const { page, params, cleanPath } = resolveRoute(routeInput);
 
       setActivePage(page);
       setCurrentRoute({
