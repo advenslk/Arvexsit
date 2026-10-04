@@ -7,7 +7,8 @@ const makeOrderId = () => `ARX-${Date.now().toString(36).toUpperCase()}-${Math.r
 export const PayHerePaymentPage: React.FC = () => {
   const { currentRoute, plans, currentUser, navigateTo, showNotification } = useApp();
   const params = currentRoute.params;
-  const plan = plans.find((item) => item.id === params.planId) || plans[0];
+  const [resolvedPlanId, setResolvedPlanId] = useState(params.planId || '');
+  const plan = plans.find((item) => item.id === resolvedPlanId) || plans[0];
   const [amountUsd, setAmountUsd] = useState(Number(params.amount || plan?.monthlyPrice || 0));
   const [amountLkr, setAmountLkr] = useState(Math.max(0, amountUsd * 300));
   const customerEmail = currentUser?.email || '';
@@ -44,6 +45,9 @@ export const PayHerePaymentPage: React.FC = () => {
         const response = await fetch(`/api/payments/payhere/status?orderId=${encodeURIComponent(paymentOrderId)}`, { credentials: 'same-origin' });
         const data = await response.json();
         if (!active) return;
+        if (data.planId) setResolvedPlanId(String(data.planId));
+        if (data.amountUsd) setAmountUsd(Number(data.amountUsd));
+        if (data.amountLkr) setAmountLkr(Number(data.amountLkr));
         if (data.status === 'paid') { setStatus('paid'); showNotification('PayHere payment verified successfully.', 'success'); return; }
         if (data.status === 'failed') { setStatus('failed'); setError(data.statusMessage || 'PayHere reported a failed payment.'); return; }
       } catch {}
