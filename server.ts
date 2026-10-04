@@ -1553,76 +1553,143 @@ async function start() {
 
   app.post('/api/payments/payhere/create', async (req, res) => {
     const session = getSession(req);
-    const planId = String(req.body?.planId || '');
+    if (!session || session.role !== 'customer') {
+      return res.status(401).json({ error: 'Sign in before starting payment.' });
+    }
+
+    const users = await readJson<any[]>(USERS_FILE, []);
+    const user = users.find((candidate) => candidate.id === session.userId && !candidate.banned);
+    if (!user) {
+      clearSessionCookie(res);
+      return res.status(401).json({ error: 'Session is no longer valid.' });
+    }
+
+    const planId = String(req.body?.planId || '').trim();
     const cycle = String(req.body?.cycle || 'monthly');
-    const phone = String(req.body?.phone || '0771234567');
-    const address = String(req.body?.address || 'HelzerX Client Address');
-    const city = String(req.body?.city || 'Colombo');
+    const couponCode = String(req.body?.couponCode || '').trim().toUpperCase();
+    const phone = String(req.body?.phone || user.phone || '').trim();
+    const address = String(req.body?.address || user.address || '').trim();
+    const city = String(req.body?.city || user.city || '').trim();
+    const configuration = req.body?.configuration && typeof req.body.configuration === 'object'
+      ? {
+          location: String(req.body.configuration.location || '').trim().slice(0, 120),
+          hostname: String(req.body.configuration.hostname || '').trim().slice(0, 80),
+          osOrVersion: String(req.body.configuration.osOrVersion || '').trim().slice(0, 120),
+          dedicatedIp: Boolean(req.body.configuration.dedicatedIp),
+          dailyBackups: Boolean(req.body.configuration.dailyBackups),
+          customNotes: String(req.body.configuration.customNotes || '').trim().slice(0, 500),
+        }
+      : null;
+
+    if (!['monthly', 'quarterly', 'yearly'].includes(cycle)) {
+      return res.status(400).json({ error: 'Invalid billing cycle.' });
+    }
+    if (!configuration?.hostname || !configuration.location || !configuration.osOrVersion) {
+      return res.status(400).json({ error: 'Complete the service configuration before payment.' });
+    }
+    if (!phone || !address || !city) {
+      return res.status(400).json({ error: 'Phone, address and city are required for PayHere.' });
+    }
 
     const config = await readJson<Record<string, unknown>>(CMS_FILE, {});
     const plans = (config.plans as any[]) || INITIAL_PLANS;
-    const plan = plans.find((p) => String(p.id) === planId);
-    if (!plan) return res.status(404).json({ error: 'Plan not found.' });
+    const plan = plans.find((item) => String(item.id) === planId && item.status !== 'inactive');
+    if (!plan) return res.status(404).json({ error: 'Plan not found or unavailable.' });
 
-    let usd = Number(plan.monthlyPrice);
-    if (cycle === 'quarterly' && Number(plan.quarterlyPrice)) usd = Number(plan.quarterlyPrice);
-    if (cycle === 'yearly' && Number(plan.yearlyPrice)) usd = Number(plan.yearlyPrice);
-    const lkr = Math.round(usd * USD_TO_LKR * 100) / 100;
+    let usd = Number(plan.monthlyPrice || 0);
+    if (cycle === 'quarterly') usd = Number(plan.quarterlyPrice || usd * 3 * 0.9);
+    if (cycle === 'yearly') usd = Number(plan.yearlyPrice || usd * 12 * 0.8);
 
-    const orderId = `ARX-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+    let discountUsd = 0;
+    if (couponCode) {
+      const coupons = (config.coupons as any[]) || INITIAL_COUPONS;
+      const coupon = coupons.find((item) =>
+        String(item.code || '').toUpperCase() === couponCode &&
+        item.active !== false &&
+        (!item.expiresAt || new Date(item.expiresAt).getTime() > Date.now())
+      );
+      if (!coupon) return res.status(400).json({ error: 'Invalid or expired coupon code.' });
+      discountUsd = usd * (Number(coupon.discountPercentage || 0) / 100);
+    }
+
+    const finalUsd = Math.max(0, usd - discountUsd);
+    const lkr = Math.round(finalUsd * USD_TO_LKR * 100) / 100;
+    if (!PAYHERE_MERCHANT_ID || !PAYHERE_MERCHANT_SECRET || !lkr) {
+      return res.status(503).json({ error: 'PayHere is not currently configured for live payments.' });
+    }
+
+    const orderId = `ARX-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(5).toString('hex').toUpperCase()}`;
     const orders = await readJson<any[]>(ORDERS_FILE, []);
     orders.unshift({
       orderId,
-      userId: session?.userId || 'guest',
-      userEmail: session?.email || 'customer@helzerx.cloud',
+      userId: user.id,
+      userEmail: user.email,
+      userName: user.name,
       planId: plan.id,
-      planName: plan.name,
+      planName: String(plan.name || plan.id),
       cycle,
-      amountUsd: usd,
+      configuration,
+      amountUsd: finalUsd,
       amountLkr: lkr,
       currency: 'LKR',
+      couponCode: couponCode || null,
+      discountUsd,
       status: 'pending',
       createdAt: new Date().toISOString(),
     });
     await atomicWrite(ORDERS_FILE, orders);
 
     const md5Secret = crypto.createHash('md5').update(PAYHERE_MERCHANT_SECRET).digest('hex').toUpperCase();
-    const hash = crypto.createHash('md5').update(PAYHERE_MERCHANT_ID + orderId + lkr.toFixed(2) + 'LKR' + md5Secret).digest('hex').toUpperCase();
+    const amount = lkr.toFixed(2);
+    const hash = crypto.createHash('md5')
+      .update(PAYHERE_MERCHANT_ID + orderId + amount + 'LKR' + md5Secret)
+      .digest('hex')
+      .toUpperCase();
+
+    const origin = PUBLIC_ORIGIN || `${req.protocol}://${req.get('host')}`;
+    const firstName = String(user.firstName || user.name || 'HelzerX').trim().split(/\\s+/)[0] || 'HelzerX';
+    const lastName = String(user.lastName || user.name || 'Customer').trim().split(/\\s+/).slice(1).join(' ') || 'Customer';
 
     res.json({
       ok: true,
       action: PAYHERE_SANDBOX ? 'https://sandbox.payhere.lk/pay/checkout' : 'https://www.payhere.lk/pay/checkout',
       orderId,
-      amountUsd: usd,
+      amountUsd: finalUsd,
       amountLkr: lkr,
       currency: 'LKR',
       fields: {
         merchant_id: PAYHERE_MERCHANT_ID,
-        return_url: `/#/payment?orderId=${encodeURIComponent(orderId)}&status=return`,
-        cancel_url: `/#/payment?orderId=${encodeURIComponent(orderId)}&status=cancelled`,
-        notify_url: '/api/payments/payhere/notify',
-        first_name: 'HelzerX',
-        last_name: 'Customer',
-        email: session?.email || 'customer@helzerx.cloud',
+        return_url: `${origin}/#/payment?orderId=${encodeURIComponent(orderId)}&status=return`,
+        cancel_url: `${origin}/#/payment?orderId=${encodeURIComponent(orderId)}&status=cancelled`,
+        notify_url: `${origin}/api/payments/payhere/notify`,
+        first_name: firstName,
+        last_name: lastName,
+        email: user.email,
         phone,
         address,
         city,
-        country: 'Sri Lanka',
+        country: String(user.country || 'Sri Lanka'),
         order_id: orderId,
-        items: `${plan.name} - ${cycle}`,
+        items: `${String(plan.name || plan.id)} - ${cycle}`,
         currency: 'LKR',
-        amount: lkr.toFixed(2),
+        amount,
         hash,
+        custom_1: String(plan.id),
+        custom_2: String(user.id),
       },
     });
   });
 
   app.get('/api/payments/payhere/status', async (req, res) => {
+    const session = getSession(req);
+    if (!session || session.role !== 'customer') return res.status(401).json({ error: 'Authentication required.' });
+
     const orderId = String(req.query.orderId || '');
     const orders = await readJson<any[]>(ORDERS_FILE, []);
-    const order = orders.find((o) => o.orderId === orderId);
+    const order = orders.find((item) => item.orderId === orderId && item.userId === session.userId);
     if (!order) return res.status(404).json({ error: 'Order not found.' });
 
+    res.set('Cache-Control', 'no-store');
     res.json({
       status: order.status === 'paid' ? 'paid' : order.status === 'failed' ? 'failed' : 'pending',
       statusMessage: order.status,
@@ -1635,18 +1702,51 @@ async function start() {
 
   app.post('/api/payments/payhere/notify', async (req, res) => {
     const body = req.body || {};
+    const merchantId = String(body.merchant_id || '');
     const orderId = String(body.order_id || '');
+    const payhereAmount = String(body.payhere_amount || '');
+    const payhereCurrency = String(body.payhere_currency || '');
     const statusCode = String(body.status_code || '');
+    const md5sig = String(body.md5sig || '').toUpperCase();
     const paymentId = String(body.payment_id || `pay-${Date.now()}`);
 
-    const orders = await readJson<any[]>(ORDERS_FILE, []);
-    const order = orders.find((o) => o.orderId === orderId);
-    if (order) {
-      order.status = statusCode === '2' ? 'paid' : 'failed';
-      order.transactionId = paymentId;
-      order.paidAt = new Date().toISOString();
-      await atomicWrite(ORDERS_FILE, orders);
+    if (!PAYHERE_MERCHANT_ID || !PAYHERE_MERCHANT_SECRET || merchantId !== PAYHERE_MERCHANT_ID) {
+      return res.status(400).send('INVALID');
     }
+
+    const orders = await readJson<any[]>(ORDERS_FILE, []);
+    const order = orders.find((item) => item.orderId === orderId);
+    if (!order) return res.status(404).send('NOT_FOUND');
+
+    const secretHash = crypto.createHash('md5').update(PAYHERE_MERCHANT_SECRET).digest('hex').toUpperCase();
+    const expected = crypto.createHash('md5')
+      .update(merchantId + orderId + payhereAmount + payhereCurrency + statusCode + secretHash)
+      .digest('hex')
+      .toUpperCase();
+
+    if (!md5sig || !safeEqual(expected, md5sig)) {
+      console.error(`[PayHere] Rejected invalid signature for order ${orderId}`);
+      return res.status(400).send('INVALID_SIGNATURE');
+    }
+
+    if (payhereCurrency !== String(order.currency || 'LKR')) return res.status(400).send('INVALID_CURRENCY');
+    if (Number(payhereAmount).toFixed(2) !== Number(order.amountLkr).toFixed(2)) return res.status(400).send('INVALID_AMOUNT');
+
+    order.transactionId = paymentId;
+    order.payhereMethod = String(body.method || '');
+    order.payhereStatusMessage = String(body.status_message || '');
+    order.updatedAt = new Date().toISOString();
+
+    if (statusCode === '2') {
+      order.status = 'paid';
+      order.paidAt = new Date().toISOString();
+    } else if (['-1', '-2', '-3'].includes(statusCode)) {
+      order.status = 'failed';
+    } else {
+      order.status = 'pending';
+    }
+
+    await atomicWrite(ORDERS_FILE, orders);
     res.send('OK');
   });
 
