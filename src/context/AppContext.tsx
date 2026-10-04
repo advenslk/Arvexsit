@@ -379,11 +379,15 @@ function setStored<T>(key: string, value: T) {
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Navigation Route & Hash State
-  const [activePage, setActivePage] = useState<PageRoute>('home');
+  const initialRouteInput = typeof window !== 'undefined'
+    ? (window.location.hash.replace(/^#\/?/, '') || window.location.pathname.replace(/^\/+|\/+$/g, '') || 'home')
+    : 'home';
+  const initialResolvedRoute = resolveRoute(initialRouteInput);
+  const [activePage, setActivePage] = useState<PageRoute>(initialResolvedRoute.page);
   const [currentRoute, setCurrentRoute] = useState<AppRouteLocation>({
-    path: '/',
-    page: 'home',
-    params: {},
+    path: `/${initialResolvedRoute.cleanPath}`,
+    page: initialResolvedRoute.page,
+    params: initialResolvedRoute.params,
   });
 
   // Dynamic Selected Items for Detailed Pages
