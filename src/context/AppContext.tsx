@@ -363,7 +363,9 @@ function touchAuthSession() {
 function getStored<T>(key: string, defaultValue: T): T {
   try {
     const item = localStorage.getItem(LOCAL_STORAGE_PREFIX + key);
-    return item ? JSON.parse(item) : defaultValue;
+    if (!item) return defaultValue;
+    const parsed = JSON.parse(item);
+    return parsed ?? defaultValue;
   } catch {
     return defaultValue;
   }
