@@ -433,7 +433,7 @@ async function requireClientPortalSession(req: Request, res: Response): Promise<
   return { session, user, token };
 }
 
-async function sendMail(to: string, subject: string, text: string): Promise<boolean> {
+async function sendMail(to: string, subject: string, text: string, html?: string): Promise<boolean> {
   if (!RESEND_API_KEY || !RESEND_FROM) {
     console.error('[HelzerX Email] Resend is not configured. Set RESEND_API_KEY and RESEND_FROM.');
     return false;
@@ -450,7 +450,7 @@ async function sendMail(to: string, subject: string, text: string): Promise<bool
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: JSON.stringify({ from: RESEND_FROM, to: [to], subject, text }),
+        body: JSON.stringify({ from: RESEND_FROM, to: [to], subject, text, ...(html ? { html } : {}) }),
         signal: AbortSignal.timeout(20000),
       });
 
