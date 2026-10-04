@@ -40,6 +40,7 @@ const SESSIONS_FILE = path.join(DATA_DIR, 'auth-sessions.json');
 const ORDERS_FILE = path.join(DATA_DIR, 'payment-orders.json');
 const PAYMENTS_FILE = path.join(DATA_DIR, 'payments.json');
 const SECURITY_LOGS_FILE = path.join(DATA_DIR, 'security-logs.json');
+const PTERODACTYL_TOKENS_FILE = path.join(DATA_DIR, 'pterodactyl-client-tokens.json');
 
 async function appendSecurityLog(entry: {
   actor: string;
@@ -243,6 +244,146 @@ function publicUser(user: any) {
     createdAt: user.createdAt,
     emailVerified: Boolean(user.emailVerified),
   };
+}
+
+
+function pterodactylSecretKey(): Buffer {
+  return crypto.createHash('sha256').update(TOKEN_SECRET || 'development-only-secret').digest();
+}
+
+function encryptPterodactylToken(token: string): string {
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', pterodactylSecretKey(), iv);
+  const ciphertext = Buffer.concat([cipher.update(token, 'utf8'), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return [iv, tag, ciphertext].map((part) => part.toString('base64url')).join('.');
+}
+
+function decryptPterodactylToken(value: string): string | null {
+  try {
+    const [ivRaw, tagRaw, dataRaw] = String(value || '').split('.');
+    if (!ivRaw || !tagRaw || !dataRaw) return null;
+    const decipher = crypto.createDecipheriv(
+      'aes-256-gcm',
+      pterodactylSecretKey(),
+      Buffer.from(ivRaw, 'base64url')
+    );
+    decipher.setAuthTag(Buffer.from(tagRaw, 'base64url'));
+    return Buffer.concat([
+      decipher.update(Buffer.from(dataRaw, 'base64url')),
+      decipher.final(),
+    ]).toString('utf8');
+  } catch {
+    return null;
+  }
+}
+
+async function getPterodactylClientToken(userId: string): Promise<string | null> {
+  const store = await readJson<Record<string, string>>(PTERODACTYL_TOKENS_FILE, {});
+  const encrypted = store[String(userId || '')];
+  return encrypted ? decryptPterodactylToken(encrypted) : null;
+}
+
+async function savePterodactylClientToken(userId: string, token: string): Promise<void> {
+  const store = await readJson<Record<string, string>>(PTERODACTYL_TOKENS_FILE, {});
+  store[String(userId)] = encryptPterodactylToken(token);
+  await atomicWrite(PTERODACTYL_TOKENS_FILE, store);
+}
+
+async function removePterodactylClientToken(userId: string): Promise<void> {
+  const store = await readJson<Record<string, string>>(PTERODACTYL_TOKENS_FILE, {});
+  delete store[String(userId)];
+  await atomicWrite(PTERODACTYL_TOKENS_FILE, store);
+}
+
+function pterodactylClientHeaders(token: string, contentType = 'application/json') {
+  return {
+    Authorization: \`Bearer \${token}\`,
+    Accept: 'Application/vnd.pterodactyl.v1+json',
+    ...(contentType ? { 'Content-Type': contentType } : {}),
+  };
+}
+
+async function pterodactylClientRequest(
+  token: string,
+  pathname: string,
+  init: RequestInit = {}
+): Promise<{ response: globalThis.Response; payload: any }> {
+  if (!PTERODACTYL_URL) throw new Error('Pterodactyl URL is not configured.');
+  const url = new URL(pathname, PTERODACTYL_URL);
+  const response = await fetch(url, {
+    ...init,
+    headers: {
+      ...pterodactylClientHeaders(token, String(init.body ? 'application/json' : 'application/json')),
+      ...(init.headers || {}),
+    },
+    signal: init.signal || AbortSignal.timeout(15000),
+  });
+  const text = await response.text().catch(() => '');
+  let payload: any = null;
+  try { payload = text ? JSON.parse(text) : null; } catch { payload = text; }
+  return { response, payload };
+}
+
+function pterodactylPublicServer(attrs: any) {
+  const allocation = Array.isArray(attrs?.relationships?.allocations?.data)
+    ? attrs.relationships.allocations.data.find((item: any) => item?.attributes?.is_default)
+      || attrs.relationships.allocations.data[0]
+    : null;
+  const a = allocation?.attributes || {};
+  return {
+    identifier: String(attrs?.identifier || ''),
+    uuid: String(attrs?.uuid || ''),
+    name: String(attrs?.name || 'Unnamed server'),
+    description: String(attrs?.description || ''),
+    node: String(attrs?.node || ''),
+    status: String(attrs?.status || 'unknown'),
+    suspended: Boolean(attrs?.is_suspended ?? attrs?.suspended),
+    installing: Boolean(attrs?.is_installing),
+    transferring: Boolean(attrs?.is_transferring),
+    limits: {
+      memory: Number(attrs?.limits?.memory || 0),
+      disk: Number(attrs?.limits?.disk || 0),
+      cpu: Number(attrs?.limits?.cpu || 0),
+      swap: Number(attrs?.limits?.swap || 0),
+    },
+    featureLimits: {
+      databases: Number(attrs?.feature_limits?.databases || 0),
+      allocations: Number(attrs?.feature_limits?.allocations || 0),
+      backups: Number(attrs?.feature_limits?.backups || 0),
+    },
+    permissions: Array.isArray(attrs?.user_permissions) ? attrs.user_permissions.map(String) : [],
+    allocation: a?.ip ? {
+      ip: String(a.ip),
+      alias: a.ip_alias ? String(a.ip_alias) : null,
+      port: Number(a.port || 0),
+    } : null,
+    sftp: attrs?.sftp_details ? {
+      ip: String(attrs.sftp_details.ip || ''),
+      port: Number(attrs.sftp_details.port || 0),
+    } : null,
+  };
+}
+
+async function requireClientPortalSession(req: Request, res: Response): Promise<{ session: SessionData; user: any; token: string } | null> {
+  const session = getSession(req);
+  if (!session || session.role !== 'customer') {
+    res.status(401).json({ error: 'Authentication required.' });
+    return null;
+  }
+  const users = await readJson<any[]>(USERS_FILE, []);
+  const user = users.find((candidate) => candidate.id === session.userId && !candidate.banned);
+  if (!user) {
+    clearSessionCookie(res);
+    res.status(401).json({ error: 'Session is no longer valid.' });
+    return null;
+  }
+  const token = await getPterodactylClientToken(user.id);
+  if (!PTERODACTYL_URL || !token) {
+    res.status(409).json({ error: 'Connect your Pterodactyl client API key to use live controls.' });
+    return null;
+  }
+  return { session, user, token };
 }
 
 async function sendMail(to: string, subject: string, text: string): Promise<boolean> {
@@ -498,6 +639,318 @@ async function start() {
       console.error('[Pterodactyl] Dashboard integration error:', error instanceof Error ? error.message : 'unknown');
       return res.status(502).json({ error: 'Hosting control plane is temporarily unavailable.' });
     }
+  });
+
+
+  // Full client control plane. The Pterodactyl client token is encrypted at rest and never returned.
+  app.post('/api/client/pterodactyl/connect', async (req, res) => {
+    const session = getSession(req);
+    if (!session || session.role !== 'customer') return res.status(401).json({ error: 'Authentication required.' });
+    if (!PTERODACTYL_URL) return res.status(503).json({ error: 'Pterodactyl is not configured.' });
+
+    const token = String(req.body?.token || '').trim();
+    if (!/^ptlc_[A-Za-z0-9._-]+$/.test(token)) {
+      return res.status(400).json({ error: 'Enter a valid Pterodactyl Client API key.' });
+    }
+
+    const users = await readJson<any[]>(USERS_FILE, []);
+    const user = users.find((candidate) => candidate.id === session.userId && !candidate.banned);
+    if (!user) return res.status(401).json({ error: 'Session is no longer valid.' });
+
+    try {
+      const accountResult = await pterodactylClientRequest(token, '/api/client/account');
+      if (!accountResult.response.ok) return res.status(401).json({ error: 'Pterodactyl rejected that API key.' });
+
+      const remoteEmail = String(accountResult.payload?.attributes?.email || '').trim().toLowerCase();
+      if (!remoteEmail || remoteEmail !== String(user.email || '').trim().toLowerCase()) {
+        return res.status(403).json({ error: 'That Pterodactyl key does not belong to this account email.' });
+      }
+
+      await savePterodactylClientToken(user.id, token);
+      await appendSecurityLog({
+        actor: user.email,
+        type: 'pterodactyl_client_key_connected',
+        ip: req.ip || '127.0.0.1',
+        userAgent: req.headers['user-agent'] || 'Browser',
+        details: 'Customer connected a Pterodactyl Client API key.',
+        severity: 'info',
+      });
+      res.json({ ok: true, connected: true });
+    } catch {
+      res.status(502).json({ error: 'Unable to validate the Pterodactyl connection.' });
+    }
+  });
+
+  app.delete('/api/client/pterodactyl/connect', async (req, res) => {
+    const session = getSession(req);
+    if (!session || session.role !== 'customer') return res.status(401).json({ error: 'Authentication required.' });
+    await removePterodactylClientToken(session.userId);
+    res.json({ ok: true, connected: false });
+  });
+
+  app.get('/api/client/portal', async (req, res) => {
+    const session = getSession(req);
+    if (!session || session.role !== 'customer') return res.status(401).json({ error: 'Authentication required.' });
+    const users = await readJson<any[]>(USERS_FILE, []);
+    const user = users.find((candidate) => candidate.id === session.userId && !candidate.banned);
+    if (!user) return res.status(401).json({ error: 'Session is no longer valid.' });
+
+    res.set('Cache-Control', 'no-store');
+    const token = await getPterodactylClientToken(user.id);
+    if (!PTERODACTYL_URL || !token) {
+      return res.json({ connected: false, user: publicUser(user), panelUrl: PTERODACTYL_URL || null, servers: [] });
+    }
+
+    try {
+      const accountResult = await pterodactylClientRequest(token, '/api/client/account');
+      if (!accountResult.response.ok) {
+        await removePterodactylClientToken(user.id);
+        return res.json({ connected: false, user: publicUser(user), panelUrl: PTERODACTYL_URL, servers: [] });
+      }
+      const remoteEmail = String(accountResult.payload?.attributes?.email || '').trim().toLowerCase();
+      if (remoteEmail !== String(user.email || '').trim().toLowerCase()) {
+        await removePterodactylClientToken(user.id);
+        return res.status(403).json({ error: 'Pterodactyl account no longer matches this customer account.' });
+      }
+
+      const all: any[] = [];
+      let page = 1;
+      let totalPages = 1;
+      while (page <= totalPages && page <= 20) {
+        const result = await pterodactylClientRequest(token, \`/api/client?type=owner&per_page=100&page=\${page}\`);
+        if (!result.response.ok) throw new Error('server-list-failed');
+        all.push(...(Array.isArray(result.payload?.data) ? result.payload.data : []));
+        totalPages = Number(result.payload?.meta?.pagination?.total_pages || 1);
+        page += 1;
+      }
+
+      return res.json({
+        connected: true,
+        user: publicUser(user),
+        panelUrl: PTERODACTYL_URL,
+        servers: all.map((entry) => pterodactylPublicServer(entry?.attributes || {})),
+      });
+    } catch {
+      return res.status(502).json({ error: 'Hosting control plane is temporarily unavailable.' });
+    }
+  });
+
+  app.get('/api/client/server/:identifier/resources', async (req, res) => {
+    const auth = await requireClientPortalSession(req, res);
+    if (!auth) return;
+    try {
+      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/resources\`);
+      if (!result.response.ok) return res.status(result.response.status === 404 ? 404 : 502).json({ error: 'Unable to read live resources.' });
+      res.set('Cache-Control', 'no-store');
+      res.json(result.payload);
+    } catch { res.status(502).json({ error: 'Unable to read live resources.' }); }
+  });
+
+  app.post('/api/client/server/:identifier/power', async (req, res) => {
+    const auth = await requireClientPortalSession(req, res);
+    if (!auth) return;
+    const signal = String(req.body?.signal || '');
+    if (!['start', 'stop', 'restart', 'kill'].includes(signal)) return res.status(400).json({ error: 'Invalid power action.' });
+    try {
+      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/power\`, {
+        method: 'POST',
+        body: JSON.stringify({ signal }),
+      });
+      if (!result.response.ok) return res.status(result.response.status === 404 ? 404 : 502).json({ error: 'Power action was rejected by Pterodactyl.' });
+      res.status(204).end();
+    } catch { res.status(502).json({ error: 'Power control is temporarily unavailable.' }); }
+  });
+
+  app.post('/api/client/server/:identifier/command', async (req, res) => {
+    const auth = await requireClientPortalSession(req, res);
+    if (!auth) return;
+    const command = String(req.body?.command || '').trim();
+    if (!command || command.length > 2000) return res.status(400).json({ error: 'Enter a valid command.' });
+    try {
+      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/command\`, {
+        method: 'POST',
+        body: JSON.stringify({ command }),
+      });
+      if (!result.response.ok) return res.status(result.response.status === 404 ? 404 : 502).json({ error: 'Command was rejected by Pterodactyl.' });
+      res.status(204).end();
+    } catch { res.status(502).json({ error: 'Console command is temporarily unavailable.' }); }
+  });
+
+  app.get('/api/client/server/:identifier/websocket', async (req, res) => {
+    const auth = await requireClientPortalSession(req, res);
+    if (!auth) return;
+    try {
+      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/websocket\`);
+      if (!result.response.ok) return res.status(result.response.status === 404 ? 404 : 502).json({ error: 'Unable to open console.' });
+      res.json(result.payload);
+    } catch { res.status(502).json({ error: 'Console is temporarily unavailable.' }); }
+  });
+
+  app.get('/api/client/server/:identifier/activity', async (req, res) => {
+    const auth = await requireClientPortalSession(req, res);
+    if (!auth) return;
+    try {
+      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/activity?per_page=100\`);
+      if (!result.response.ok) return res.status(result.response.status === 404 ? 404 : 502).json({ error: 'Unable to read activity.' });
+      res.json(result.payload);
+    } catch { res.status(502).json({ error: 'Activity is temporarily unavailable.' }); }
+  });
+
+  app.get('/api/client/server/:identifier/files', async (req, res) => {
+    const auth = await requireClientPortalSession(req, res);
+    if (!auth) return;
+    const directory = String(req.query.directory || '/');
+    if (directory.length > 1024) return res.status(400).json({ error: 'Invalid directory.' });
+    try {
+      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/files/list?directory=\${encodeURIComponent(directory)}\`);
+      if (!result.response.ok) return res.status(result.response.status === 404 ? 404 : 502).json({ error: 'Unable to list files.' });
+      res.json(result.payload);
+    } catch { res.status(502).json({ error: 'File manager is temporarily unavailable.' }); }
+  });
+
+  app.get('/api/client/server/:identifier/file', async (req, res) => {
+    const auth = await requireClientPortalSession(req, res);
+    if (!auth) return;
+    const file = String(req.query.file || '');
+    if (!file || file.length > 4096) return res.status(400).json({ error: 'Invalid file path.' });
+    try {
+      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/files/contents?file=\${encodeURIComponent(file)}\`);
+      if (!result.response.ok) return res.status(result.response.status === 404 ? 404 : 502).json({ error: 'Unable to read file.' });
+      res.type('text/plain').send(typeof result.payload === 'string' ? result.payload : JSON.stringify(result.payload, null, 2));
+    } catch { res.status(502).json({ error: 'File read is temporarily unavailable.' }); }
+  });
+
+  app.post('/api/client/server/:identifier/file/write', async (req, res) => {
+    const auth = await requireClientPortalSession(req, res);
+    if (!auth) return;
+    const file = String(req.body?.file || '');
+    const content = String(req.body?.content ?? '');
+    if (!file || file.length > 4096 || content.length > 2_000_000) return res.status(400).json({ error: 'Invalid file write request.' });
+    try {
+      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/files/write?file=\${encodeURIComponent(file)}\`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: content,
+      });
+      if (!result.response.ok) return res.status(result.response.status === 404 ? 404 : 502).json({ error: 'File write was rejected.' });
+      res.status(204).end();
+    } catch { res.status(502).json({ error: 'File write is temporarily unavailable.' }); }
+  });
+
+  app.post('/api/client/server/:identifier/file/folder', async (req, res) => {
+    const auth = await requireClientPortalSession(req, res);
+    if (!auth) return;
+    const root = String(req.body?.root || '/');
+    const name = String(req.body?.name || '').trim();
+    if (root.length > 4096 || !name || name.length > 255) return res.status(400).json({ error: 'Invalid folder request.' });
+    try {
+      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/files/create-folder\`, { method: 'POST', body: JSON.stringify({ root, name }) });
+      if (!result.response.ok) return res.status(502).json({ error: 'Folder creation was rejected.' });
+      res.status(204).end();
+    } catch { res.status(502).json({ error: 'Folder creation is temporarily unavailable.' }); }
+  });
+
+  app.post('/api/client/server/:identifier/file/delete', async (req, res) => {
+    const auth = await requireClientPortalSession(req, res);
+    if (!auth) return;
+    const root = String(req.body?.root || '/');
+    const files = Array.isArray(req.body?.files) ? req.body.files.map(String).filter(Boolean).slice(0, 100) : [];
+    if (root.length > 4096 || !files.length) return res.status(400).json({ error: 'Invalid delete request.' });
+    try {
+      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/files/delete\`, { method: 'POST', body: JSON.stringify({ root, files }) });
+      if (!result.response.ok) return res.status(502).json({ error: 'File deletion was rejected.' });
+      res.status(204).end();
+    } catch { res.status(502).json({ error: 'File deletion is temporarily unavailable.' }); }
+  });
+
+  app.put('/api/client/server/:identifier/file/rename', async (req, res) => {
+    const auth = await requireClientPortalSession(req, res);
+    if (!auth) return;
+    const root = String(req.body?.root || '/');
+    const files = Array.isArray(req.body?.files) ? req.body.files.slice(0, 50) : [];
+    if (root.length > 4096 || !files.length) return res.status(400).json({ error: 'Invalid rename request.' });
+    try {
+      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/files/rename\`, { method: 'PUT', body: JSON.stringify({ root, files }) });
+      if (!result.response.ok) return res.status(502).json({ error: 'Rename was rejected.' });
+      res.status(204).end();
+    } catch { res.status(502).json({ error: 'Rename is temporarily unavailable.' }); }
+  });
+
+  app.get('/api/client/server/:identifier/backups', async (req, res) => {
+    const auth = await requireClientPortalSession(req, res);
+    if (!auth) return;
+    try {
+      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/backups?per_page=100\`);
+      if (!result.response.ok) return res.status(502).json({ error: 'Unable to list backups.' });
+      res.json(result.payload);
+    } catch { res.status(502).json({ error: 'Backup service is temporarily unavailable.' }); }
+  });
+
+  app.post('/api/client/server/:identifier/backups', async (req, res) => {
+    const auth = await requireClientPortalSession(req, res);
+    if (!auth) return;
+    const body = {
+      name: String(req.body?.name || '').trim().slice(0, 255) || undefined,
+      ignored: String(req.body?.ignored || '').slice(0, 10000) || undefined,
+      is_locked: Boolean(req.body?.is_locked),
+    };
+    try {
+      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/backups\`, { method: 'POST', body: JSON.stringify(body) });
+      if (!result.response.ok) return res.status(502).json({ error: 'Backup creation was rejected.' });
+      res.status(result.response.status).json(result.payload);
+    } catch { res.status(502).json({ error: 'Backup creation is temporarily unavailable.' }); }
+  });
+
+  app.post('/api/client/server/:identifier/backups/:backup/restore', async (req, res) => {
+    const auth = await requireClientPortalSession(req, res);
+    if (!auth) return;
+    try {
+      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/backups/\${encodeURIComponent(req.params.backup)}/restore\`, { method: 'POST', body: JSON.stringify({ truncate: req.body?.truncate !== false }) });
+      if (!result.response.ok) return res.status(502).json({ error: 'Backup restore was rejected.' });
+      res.status(result.response.status).json(result.payload || { ok: true });
+    } catch { res.status(502).json({ error: 'Backup restore is temporarily unavailable.' }); }
+  });
+
+  app.delete('/api/client/server/:identifier/backups/:backup', async (req, res) => {
+    const auth = await requireClientPortalSession(req, res);
+    if (!auth) return;
+    try {
+      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/backups/\${encodeURIComponent(req.params.backup)}\`, { method: 'DELETE' });
+      if (!result.response.ok) return res.status(502).json({ error: 'Backup deletion was rejected.' });
+      res.status(204).end();
+    } catch { res.status(502).json({ error: 'Backup deletion is temporarily unavailable.' }); }
+  });
+
+  app.get('/api/client/server/:identifier/databases', async (req, res) => {
+    const auth = await requireClientPortalSession(req, res);
+    if (!auth) return;
+    try {
+      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/databases\`);
+      if (!result.response.ok) return res.status(502).json({ error: 'Unable to list databases.' });
+      res.json(result.payload);
+    } catch { res.status(502).json({ error: 'Database service is temporarily unavailable.' }); }
+  });
+
+  app.get('/api/client/server/:identifier/startup', async (req, res) => {
+    const auth = await requireClientPortalSession(req, res);
+    if (!auth) return;
+    try {
+      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/startup\`);
+      if (!result.response.ok) return res.status(502).json({ error: 'Unable to load startup configuration.' });
+      res.json(result.payload);
+    } catch { res.status(502).json({ error: 'Startup configuration is temporarily unavailable.' }); }
+  });
+
+  app.get('/api/client/server/:identifier/download', async (req, res) => {
+    const auth = await requireClientPortalSession(req, res);
+    if (!auth) return;
+    const file = String(req.query.file || '');
+    if (!file || file.length > 4096) return res.status(400).json({ error: 'Invalid file path.' });
+    try {
+      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/files/download?file=\${encodeURIComponent(file)}\`);
+      if (!result.response.ok) return res.status(502).json({ error: 'Unable to create a download link.' });
+      res.json(result.payload);
+    } catch { res.status(502).json({ error: 'Download service is temporarily unavailable.' }); }
   });
 
   // Admin login
