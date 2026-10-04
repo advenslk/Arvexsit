@@ -236,9 +236,9 @@ function publicUser(user: any) {
 }
 
 async function sendMail(to: string, subject: string, text: string): Promise<boolean> {
-  if (!RESEND_API_KEY) {
-    console.log(`[HelzerX Email Delivery Simulation] To: ${to} | Subject: ${subject}\n${text}`);
-    return true;
+  if (!RESEND_API_KEY || !RESEND_FROM) {
+    console.error('[HelzerX Email] Resend is not configured. Set RESEND_API_KEY and RESEND_FROM.');
+    return false;
   }
   try {
     const res = await fetch('https://api.resend.com/emails', {
@@ -249,7 +249,12 @@ async function sendMail(to: string, subject: string, text: string): Promise<bool
       },
       body: JSON.stringify({ from: RESEND_FROM, to: [to], subject, text }),
     });
-    return res.ok;
+    if (!res.ok) {
+      const details = await res.text().catch(() => '');
+      console.error(`[HelzerX Email] Resend rejected email (${res.status}): ${details}`);
+      return false;
+    }
+    return true;
   } catch (err) {
     console.error('Failed to send email via Resend:', err);
     return false;
@@ -530,7 +535,11 @@ async function start() {
       attempts: 0,
     });
 
-    await sendMail(email, 'HelzerX Cloud email verification', `Your HelzerX verification code is: ${code}`);
+    const sent = await sendMail(email, 'HelzerX Cloud email verification', `Your HelzerX verification code is: ${code}`);
+    if (!sent) {
+      otpChallenges.delete(challengeId);
+      return res.status(502).json({ error: 'Unable to send the verification code. Please try again later.' });
+    }
     await appendSecurityLog({
       actor: email,
       type: 'register_otp_dispatched',
