@@ -705,6 +705,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { page: 'dashboard', params: { section: second || 'overview', id: third || '' }, cleanPath: raw };
     }
 
+    // Dedicated real client control plane
+    if (first === 'client-dashboard') {
+      return { page: 'client-dashboard', params: {}, cleanPath: 'client-dashboard' };
+    }
+
     // Support
     if (first === 'support' || first === 'tickets') {
       return { page: 'support', params: { subView: second || 'list', ticketId: third || (second !== 'new' && second !== 'tickets' ? second : '') }, cleanPath: raw };
