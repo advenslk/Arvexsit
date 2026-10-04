@@ -548,7 +548,7 @@ export const AuthModal: React.FC = () => {
                 </div>
                 <div>
                   <span className="font-extrabold tracking-tight text-slate-900 text-base font-display">
-                    {siteSettings.brandName || 'System logo'}
+                    {siteSettings?.brandName || 'HelzerX Cloud'}
                   </span>
                   <div className="flex items-center gap-1.5 text-[10px] font-bold text-purple-600">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
