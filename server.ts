@@ -458,7 +458,7 @@ async function sendMail(to: string, subject: string, text: string, html?: string
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: JSON.stringify({ from: RESEND_FROM, to: [to], subject, text, ...(html ? { html } : {}) }),
+        body: JSON.stringify({ from: RESEND_FROM, to: [to], subject, text, ...(html ? { html } : {}), headers: { 'X-Entity-Ref-ID': `helzerx-otp-${crypto.randomUUID()}` } }),
         signal: AbortSignal.timeout(20000),
       });
 
