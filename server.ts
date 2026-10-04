@@ -74,6 +74,8 @@ const PAYHERE_MERCHANT_ID = String(process.env.PAYHERE_MERCHANT_ID || '1226999')
 const PAYHERE_MERCHANT_SECRET = String(process.env.PAYHERE_MERCHANT_SECRET || 'arvex-payhere-secret-dev').trim();
 const PAYHERE_SANDBOX = String(process.env.PAYHERE_SANDBOX || 'true').toLowerCase() === 'true';
 const USD_TO_LKR = Number(process.env.PAYHERE_USD_TO_LKR || 300);
+const PTERODACTYL_URL = String(process.env.PTERODACTYL_URL || '').trim().replace(/\/+$/, '');
+const PTERODACTYL_APPLICATION_TOKEN = String(process.env.PTERODACTYL_APPLICATION_TOKEN || '').trim();
 
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const TOKEN_TTL_MS = 8 * 60 * 60 * 1000;
@@ -389,6 +391,105 @@ async function start() {
     const bearer = req.headers.authorization?.replace(/^Bearer\s+/i, '');
     const isAdmin = session?.role === 'admin' || verifyAdminToken(bearer || '');
     res.json({ authenticated: Boolean(session || isAdmin), role: isAdmin ? 'admin' : session?.role || null });
+  });
+
+  // Authenticated client dashboard data. Secrets never leave this server.
+  app.get('/api/client/dashboard', async (req, res) => {
+    const session = getSession(req);
+    if (!session || session.role !== 'customer') {
+      return res.status(401).json({ error: 'Authentication required.' });
+    }
+
+    const users = await readJson<any[]>(USERS_FILE, []);
+    const user = users.find((candidate) => candidate.id === session.userId && !candidate.banned);
+    if (!user) {
+      clearSessionCookie(res);
+      return res.status(401).json({ error: 'Session is no longer valid.' });
+    }
+
+    res.set('Cache-Control', 'no-store');
+
+    if (!PTERODACTYL_URL || !PTERODACTYL_APPLICATION_TOKEN) {
+      return res.json({
+        configured: false,
+        user: publicUser(user),
+        servers: [],
+        panelUrl: null,
+      });
+    }
+
+    const headers = {
+      Authorization: `Bearer ${PTERODACTYL_APPLICATION_TOKEN}`,
+      Accept: 'Application/vnd.pterodactyl.v1+json',
+      'Content-Type': 'application/json',
+    };
+
+    try {
+      const allServers: any[] = [];
+      let page = 1;
+      let totalPages = 1;
+
+      while (page <= totalPages && page <= 20) {
+        const url = new URL('/api/application/servers', PTERODACTYL_URL);
+        url.searchParams.set('page', String(page));
+        url.searchParams.set('per_page', '100');
+        url.searchParams.set('include', 'user,node,allocations');
+        const response = await fetch(url, { headers, signal: AbortSignal.timeout(10000) });
+        if (!response.ok) {
+          console.error(`[Pterodactyl] Dashboard request failed with status ${response.status}`);
+          return res.status(502).json({ error: 'Hosting control plane is temporarily unavailable.' });
+        }
+        const payload = await response.json();
+        allServers.push(...(Array.isArray(payload?.data) ? payload.data : []));
+        totalPages = Number(payload?.meta?.pagination?.total_pages || 1);
+        page += 1;
+      }
+
+      const email = String(user.email || '').trim().toLowerCase();
+      const ownedServers = allServers
+        .filter((entry) => {
+          const attrs = entry?.attributes || {};
+          const owner = entry?.relationships?.user?.attributes || {};
+          return String(owner.email || '').trim().toLowerCase() === email || String(attrs.user || '') === String(user.pterodactylUserId || '');
+        })
+        .map((entry) => {
+          const attrs = entry?.attributes || {};
+          const allocations = entry?.relationships?.allocations?.data || [];
+          const primary = allocations.find((allocation: any) => allocation?.attributes?.is_default) || allocations.find((allocation: any) => String(allocation?.attributes?.id) === String(attrs.allocation)) || allocations[0];
+          const allocation = primary?.attributes || null;
+          const node = entry?.relationships?.node?.attributes || null;
+          return {
+            id: Number(attrs.id),
+            identifier: String(attrs.identifier || attrs.uuid || ''),
+            name: String(attrs.name || 'Unnamed server'),
+            suspended: Boolean(attrs.suspended),
+            installed: attrs.container?.installed !== false,
+            limits: {
+              memoryMb: Number(attrs.limits?.memory || 0),
+              diskMb: Number(attrs.limits?.disk || 0),
+              cpu: Number(attrs.limits?.cpu || 0),
+            },
+            allocation: allocation ? {
+              ip: String(allocation.ip || ''),
+              alias: allocation.ip_alias ? String(allocation.ip_alias) : null,
+              port: Number(allocation.port || 0),
+            } : null,
+            node: node ? String(node.name || node.fqdn || '') : null,
+            createdAt: attrs.created_at || null,
+            updatedAt: attrs.updated_at || null,
+          };
+        });
+
+      return res.json({
+        configured: true,
+        user: publicUser(user),
+        servers: ownedServers,
+        panelUrl: PTERODACTYL_URL,
+      });
+    } catch (error) {
+      console.error('[Pterodactyl] Dashboard integration error:', error instanceof Error ? error.message : 'unknown');
+      return res.status(502).json({ error: 'Hosting control plane is temporarily unavailable.' });
+    }
   });
 
   // Admin login
