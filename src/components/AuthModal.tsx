@@ -43,7 +43,7 @@ const COUNTRY_OPTIONS = [
   { code: 'NZ', name: 'New Zealand', dial: '+64' },
 ];
 
-export const AuthModal: React.FC = () => {
+const AuthModalContent: React.FC = () => {
   const {
     isAuthModalOpen,
     setIsAuthModalOpen,
@@ -1479,3 +1479,49 @@ export const AuthModal: React.FC = () => {
     </div>
   );
 };
+
+
+class AuthModalErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error) {
+    console.error('[HelzerX AuthModal] Render error:', error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-md">
+          <div className="w-full max-w-md rounded-3xl bg-white p-7 shadow-2xl text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+            <h2 className="text-lg font-extrabold text-slate-900">Authentication panel could not load</h2>
+            <p className="mt-2 text-sm text-slate-500">The main website is still running. Please reload the page and try again.</p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="mt-5 rounded-xl bg-purple-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-purple-700"
+            >
+              Reload page
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export const AuthModal: React.FC = () => (
+  <AuthModalErrorBoundary>
+    <AuthModalContent />
+  </AuthModalErrorBoundary>
+);
