@@ -298,7 +298,7 @@ async function removePterodactylClientToken(userId: string): Promise<void> {
 
 function pterodactylClientHeaders(token: string, contentType = 'application/json') {
   return {
-    Authorization: \`Bearer \${token}\`,
+    Authorization: `Bearer ${token}`,
     Accept: 'Application/vnd.pterodactyl.v1+json',
     ...(contentType ? { 'Content-Type': contentType } : {}),
   };
@@ -717,7 +717,7 @@ async function start() {
       let page = 1;
       let totalPages = 1;
       while (page <= totalPages && page <= 20) {
-        const result = await pterodactylClientRequest(token, \`/api/client?type=owner&per_page=100&page=\${page}\`);
+        const result = await pterodactylClientRequest(token, `/api/client?type=owner&per_page=100&page=${page}`);
         if (!result.response.ok) throw new Error('server-list-failed');
         all.push(...(Array.isArray(result.payload?.data) ? result.payload.data : []));
         totalPages = Number(result.payload?.meta?.pagination?.total_pages || 1);
@@ -739,7 +739,7 @@ async function start() {
     const auth = await requireClientPortalSession(req, res);
     if (!auth) return;
     try {
-      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/resources\`);
+      const result = await pterodactylClientRequest(auth.token, `/api/client/servers/${encodeURIComponent(req.params.identifier)}/resources`);
       if (!result.response.ok) return res.status(result.response.status === 404 ? 404 : 502).json({ error: 'Unable to read live resources.' });
       res.set('Cache-Control', 'no-store');
       res.json(result.payload);
@@ -752,7 +752,7 @@ async function start() {
     const signal = String(req.body?.signal || '');
     if (!['start', 'stop', 'restart', 'kill'].includes(signal)) return res.status(400).json({ error: 'Invalid power action.' });
     try {
-      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/power\`, {
+      const result = await pterodactylClientRequest(auth.token, `/api/client/servers/${encodeURIComponent(req.params.identifier)}/power`, {
         method: 'POST',
         body: JSON.stringify({ signal }),
       });
@@ -767,7 +767,7 @@ async function start() {
     const command = String(req.body?.command || '').trim();
     if (!command || command.length > 2000) return res.status(400).json({ error: 'Enter a valid command.' });
     try {
-      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/command\`, {
+      const result = await pterodactylClientRequest(auth.token, `/api/client/servers/${encodeURIComponent(req.params.identifier)}/command`, {
         method: 'POST',
         body: JSON.stringify({ command }),
       });
@@ -780,7 +780,7 @@ async function start() {
     const auth = await requireClientPortalSession(req, res);
     if (!auth) return;
     try {
-      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/websocket\`);
+      const result = await pterodactylClientRequest(auth.token, `/api/client/servers/${encodeURIComponent(req.params.identifier)}/websocket`);
       if (!result.response.ok) return res.status(result.response.status === 404 ? 404 : 502).json({ error: 'Unable to open console.' });
       res.json(result.payload);
     } catch { res.status(502).json({ error: 'Console is temporarily unavailable.' }); }
@@ -790,7 +790,7 @@ async function start() {
     const auth = await requireClientPortalSession(req, res);
     if (!auth) return;
     try {
-      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/activity?per_page=100\`);
+      const result = await pterodactylClientRequest(auth.token, `/api/client/servers/${encodeURIComponent(req.params.identifier)}/activity?per_page=100`);
       if (!result.response.ok) return res.status(result.response.status === 404 ? 404 : 502).json({ error: 'Unable to read activity.' });
       res.json(result.payload);
     } catch { res.status(502).json({ error: 'Activity is temporarily unavailable.' }); }
@@ -802,7 +802,7 @@ async function start() {
     const directory = String(req.query.directory || '/');
     if (directory.length > 1024) return res.status(400).json({ error: 'Invalid directory.' });
     try {
-      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/files/list?directory=\${encodeURIComponent(directory)}\`);
+      const result = await pterodactylClientRequest(auth.token, `/api/client/servers/${encodeURIComponent(req.params.identifier)}/files/list?directory=${encodeURIComponent(directory)}`);
       if (!result.response.ok) return res.status(result.response.status === 404 ? 404 : 502).json({ error: 'Unable to list files.' });
       res.json(result.payload);
     } catch { res.status(502).json({ error: 'File manager is temporarily unavailable.' }); }
@@ -814,7 +814,7 @@ async function start() {
     const file = String(req.query.file || '');
     if (!file || file.length > 4096) return res.status(400).json({ error: 'Invalid file path.' });
     try {
-      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/files/contents?file=\${encodeURIComponent(file)}\`);
+      const result = await pterodactylClientRequest(auth.token, `/api/client/servers/${encodeURIComponent(req.params.identifier)}/files/contents?file=${encodeURIComponent(file)}`);
       if (!result.response.ok) return res.status(result.response.status === 404 ? 404 : 502).json({ error: 'Unable to read file.' });
       res.type('text/plain').send(typeof result.payload === 'string' ? result.payload : JSON.stringify(result.payload, null, 2));
     } catch { res.status(502).json({ error: 'File read is temporarily unavailable.' }); }
@@ -827,7 +827,7 @@ async function start() {
     const content = String(req.body?.content ?? '');
     if (!file || file.length > 4096 || content.length > 2_000_000) return res.status(400).json({ error: 'Invalid file write request.' });
     try {
-      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/files/write?file=\${encodeURIComponent(file)}\`, {
+      const result = await pterodactylClientRequest(auth.token, `/api/client/servers/${encodeURIComponent(req.params.identifier)}/files/write?file=${encodeURIComponent(file)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
         body: content,
@@ -844,7 +844,7 @@ async function start() {
     const name = String(req.body?.name || '').trim();
     if (root.length > 4096 || !name || name.length > 255) return res.status(400).json({ error: 'Invalid folder request.' });
     try {
-      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/files/create-folder\`, { method: 'POST', body: JSON.stringify({ root, name }) });
+      const result = await pterodactylClientRequest(auth.token, `/api/client/servers/${encodeURIComponent(req.params.identifier)}/files/create-folder`, { method: 'POST', body: JSON.stringify({ root, name }) });
       if (!result.response.ok) return res.status(502).json({ error: 'Folder creation was rejected.' });
       res.status(204).end();
     } catch { res.status(502).json({ error: 'Folder creation is temporarily unavailable.' }); }
@@ -857,7 +857,7 @@ async function start() {
     const files = Array.isArray(req.body?.files) ? req.body.files.map(String).filter(Boolean).slice(0, 100) : [];
     if (root.length > 4096 || !files.length) return res.status(400).json({ error: 'Invalid delete request.' });
     try {
-      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/files/delete\`, { method: 'POST', body: JSON.stringify({ root, files }) });
+      const result = await pterodactylClientRequest(auth.token, `/api/client/servers/${encodeURIComponent(req.params.identifier)}/files/delete`, { method: 'POST', body: JSON.stringify({ root, files }) });
       if (!result.response.ok) return res.status(502).json({ error: 'File deletion was rejected.' });
       res.status(204).end();
     } catch { res.status(502).json({ error: 'File deletion is temporarily unavailable.' }); }
@@ -870,7 +870,7 @@ async function start() {
     const files = Array.isArray(req.body?.files) ? req.body.files.slice(0, 50) : [];
     if (root.length > 4096 || !files.length) return res.status(400).json({ error: 'Invalid rename request.' });
     try {
-      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/files/rename\`, { method: 'PUT', body: JSON.stringify({ root, files }) });
+      const result = await pterodactylClientRequest(auth.token, `/api/client/servers/${encodeURIComponent(req.params.identifier)}/files/rename`, { method: 'PUT', body: JSON.stringify({ root, files }) });
       if (!result.response.ok) return res.status(502).json({ error: 'Rename was rejected.' });
       res.status(204).end();
     } catch { res.status(502).json({ error: 'Rename is temporarily unavailable.' }); }
@@ -880,7 +880,7 @@ async function start() {
     const auth = await requireClientPortalSession(req, res);
     if (!auth) return;
     try {
-      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/backups?per_page=100\`);
+      const result = await pterodactylClientRequest(auth.token, `/api/client/servers/${encodeURIComponent(req.params.identifier)}/backups?per_page=100`);
       if (!result.response.ok) return res.status(502).json({ error: 'Unable to list backups.' });
       res.json(result.payload);
     } catch { res.status(502).json({ error: 'Backup service is temporarily unavailable.' }); }
@@ -895,7 +895,7 @@ async function start() {
       is_locked: Boolean(req.body?.is_locked),
     };
     try {
-      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/backups\`, { method: 'POST', body: JSON.stringify(body) });
+      const result = await pterodactylClientRequest(auth.token, `/api/client/servers/${encodeURIComponent(req.params.identifier)}/backups`, { method: 'POST', body: JSON.stringify(body) });
       if (!result.response.ok) return res.status(502).json({ error: 'Backup creation was rejected.' });
       res.status(result.response.status).json(result.payload);
     } catch { res.status(502).json({ error: 'Backup creation is temporarily unavailable.' }); }
@@ -905,7 +905,7 @@ async function start() {
     const auth = await requireClientPortalSession(req, res);
     if (!auth) return;
     try {
-      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/backups/\${encodeURIComponent(req.params.backup)}/restore\`, { method: 'POST', body: JSON.stringify({ truncate: req.body?.truncate !== false }) });
+      const result = await pterodactylClientRequest(auth.token, `/api/client/servers/${encodeURIComponent(req.params.identifier)}/backups/${encodeURIComponent(req.params.backup)}/restore`, { method: 'POST', body: JSON.stringify({ truncate: req.body?.truncate !== false }) });
       if (!result.response.ok) return res.status(502).json({ error: 'Backup restore was rejected.' });
       res.status(result.response.status).json(result.payload || { ok: true });
     } catch { res.status(502).json({ error: 'Backup restore is temporarily unavailable.' }); }
@@ -915,7 +915,7 @@ async function start() {
     const auth = await requireClientPortalSession(req, res);
     if (!auth) return;
     try {
-      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/backups/\${encodeURIComponent(req.params.backup)}\`, { method: 'DELETE' });
+      const result = await pterodactylClientRequest(auth.token, `/api/client/servers/${encodeURIComponent(req.params.identifier)}/backups/${encodeURIComponent(req.params.backup)}`, { method: 'DELETE' });
       if (!result.response.ok) return res.status(502).json({ error: 'Backup deletion was rejected.' });
       res.status(204).end();
     } catch { res.status(502).json({ error: 'Backup deletion is temporarily unavailable.' }); }
@@ -925,7 +925,7 @@ async function start() {
     const auth = await requireClientPortalSession(req, res);
     if (!auth) return;
     try {
-      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/databases\`);
+      const result = await pterodactylClientRequest(auth.token, `/api/client/servers/${encodeURIComponent(req.params.identifier)}/databases`);
       if (!result.response.ok) return res.status(502).json({ error: 'Unable to list databases.' });
       res.json(result.payload);
     } catch { res.status(502).json({ error: 'Database service is temporarily unavailable.' }); }
@@ -935,7 +935,7 @@ async function start() {
     const auth = await requireClientPortalSession(req, res);
     if (!auth) return;
     try {
-      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/startup\`);
+      const result = await pterodactylClientRequest(auth.token, `/api/client/servers/${encodeURIComponent(req.params.identifier)}/startup`);
       if (!result.response.ok) return res.status(502).json({ error: 'Unable to load startup configuration.' });
       res.json(result.payload);
     } catch { res.status(502).json({ error: 'Startup configuration is temporarily unavailable.' }); }
@@ -947,7 +947,7 @@ async function start() {
     const file = String(req.query.file || '');
     if (!file || file.length > 4096) return res.status(400).json({ error: 'Invalid file path.' });
     try {
-      const result = await pterodactylClientRequest(auth.token, \`/api/client/servers/\${encodeURIComponent(req.params.identifier)}/files/download?file=\${encodeURIComponent(file)}\`);
+      const result = await pterodactylClientRequest(auth.token, `/api/client/servers/${encodeURIComponent(req.params.identifier)}/files/download?file=${encodeURIComponent(file)}`);
       if (!result.response.ok) return res.status(502).json({ error: 'Unable to create a download link.' });
       res.json(result.payload);
     } catch { res.status(502).json({ error: 'Download service is temporarily unavailable.' }); }
