@@ -197,7 +197,6 @@ function clearSessionCookie(res: Response) {
 }
 
 function createSession(user: { id: string; role: 'admin' | 'customer'; email: string; provider?: string }): string {
-  const id = crypto.randomBytes(32).toString('base64url');
   const now = Date.now();
   const session: SessionData = {
     userId: user.id,
@@ -207,20 +206,29 @@ function createSession(user: { id: string; role: 'admin' | 'customer'; email: st
     createdAt: now,
     expiresAt: now + SESSION_TTL_MS,
   };
-  inMemorySessions.set(id, session);
-  return id;
+  const body = Buffer.from(JSON.stringify(session)).toString('base64url');
+  const signature = crypto.createHmac('sha256', TOKEN_SECRET).update(`session.${body}`).digest('base64url');
+  return `${body}.${signature}`;
 }
 
 function getSession(req: Request): SessionData | null {
   const cookies = parseCookies(req);
-  const id = cookies.arvex_secure_session || cookies.arvex_session;
-  if (!id) return null;
-  const session = inMemorySessions.get(id);
-  if (!session || session.expiresAt <= Date.now()) {
-    if (id) inMemorySessions.delete(id);
+  const token = cookies.arvex_secure_session || cookies.arvex_session;
+  if (!token) return null;
+
+  try {
+    const [body, signature] = token.split('.');
+    if (!body || !signature || !TOKEN_SECRET) return null;
+    const expected = crypto.createHmac('sha256', TOKEN_SECRET).update(`session.${body}`).digest('base64url');
+    if (!safeEqual(signature, expected)) return null;
+
+    const session = JSON.parse(Buffer.from(body, 'base64url').toString('utf8')) as SessionData;
+    if (!session?.userId || !['admin', 'customer'].includes(session.role)) return null;
+    if (!session.expiresAt || Number(session.expiresAt) <= Date.now()) return null;
+    return session;
+  } catch {
     return null;
   }
-  return session;
 }
 
 function publicUser(user: any) {
@@ -1649,7 +1657,7 @@ async function start() {
 
     const origin = PUBLIC_ORIGIN || `${req.protocol}://${req.get('host')}`;
     const firstName = String(user.firstName || user.name || 'HelzerX').trim().split(/\s+/)[0] || 'HelzerX';
-    const lastName = String(user.lastName || user.name || 'Customer').trim().split(/\\s+/).slice(1).join(' ') || 'Customer';
+    const lastName = String(user.lastName || user.name || 'Customer').trim().split(/\s+/).slice(1).join(' ') || 'Customer';
 
     res.json({
       ok: true,
