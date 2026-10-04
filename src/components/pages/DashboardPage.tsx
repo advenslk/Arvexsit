@@ -1,602 +1,357 @@
-import React, { useState } from 'react';
-import { useApp } from '../../context/AppContext';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
-  Server,
-  Power,
-  RefreshCw,
-  Terminal,
   Activity,
-  HardDrive,
-  Cpu,
-  Copy,
+  ArrowRight,
   Check,
-  Plus,
-  Play,
-  Square,
-  ShieldCheck,
+  Copy,
   ExternalLink,
-  LifeBuoy,
-  FileCode,
-  FolderOpen,
-  Database,
-  Users,
-  Settings,
-  Receipt,
-  Download,
-  Upload,
-  Layers,
-  Sparkles,
-  Zap,
-  Globe,
-  Radio,
-  FileText,
-  AlertTriangle,
+  Globe2,
+  HardDrive,
+  LockKeyhole,
+  RefreshCw,
+  Server,
+  ShieldCheck,
+  ShoppingCart,
 } from 'lucide-react';
-import { DeployedServer } from '../../types';
+import { useApp } from '../../context/AppContext';
+
+interface ClientServer {
+  id: number;
+  identifier: string;
+  name: string;
+  suspended: boolean;
+  installed: boolean;
+  limits: {
+    memoryMb: number;
+    diskMb: number;
+    cpu: number;
+  };
+  allocation: {
+    ip: string;
+    alias: string | null;
+    port: number;
+  } | null;
+  node: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+interface DashboardPayload {
+  configured: boolean;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    provider?: string;
+    emailVerified?: boolean;
+  };
+  servers: ClientServer[];
+  panelUrl: string | null;
+}
 
 export const DashboardPage: React.FC = () => {
   const {
-    deployedServers,
-    toggleServerPower,
-    updateServerPowerState,
-    addServerLog,
-    deleteServer,
     navigateTo,
-    user,
-    orders,
-    formatPrice,
-    currency,
+    setIsAuthModalOpen,
+    setAuthModalTab,
     showNotification,
   } = useApp();
 
-  const [selectedServerId, setSelectedServerId] = useState<string>(
-    deployedServers[0]?.id || ''
-  );
-  const [activeTab, setActiveTab] = useState<'console' | 'files' | 'backups' | 'plugins' | 'billing' | 'settings'>('console');
-  const [commandInput, setCommandInput] = useState('');
-  const [copiedIp, setCopiedIp] = useState<string | null>(null);
+  const [data, setData] = useState<DashboardPayload | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
+  const [error, setError] = useState('');
 
-  // File Manager Mock State
-  const [files, setFiles] = useState([
-    { name: 'server.properties', size: '1.4 KB', type: 'config', modified: '2 mins ago' },
-    { name: 'paper.yml', size: '8.2 KB', type: 'config', modified: '10 mins ago' },
-    { name: 'spigot.yml', size: '3.1 KB', type: 'config', modified: '10 mins ago' },
-    { name: 'plugins/', size: '48.5 MB', type: 'folder', modified: '1 hour ago' },
-    { name: 'world/', size: '342.1 MB', type: 'folder', modified: 'Just now' },
-    { name: 'world_nether/', size: '84.0 MB', type: 'folder', modified: '4 hours ago' },
-    { name: 'eula.txt', size: '42 B', type: 'text', modified: '1 day ago' },
-  ]);
+  const loadDashboard = useCallback(async (manual = false) => {
+    if (manual) setRefreshing(true);
+    else setLoading(true);
+    setError('');
 
-  // Plugins catalog
-  const [installedPlugins, setInstalledPlugins] = useState([
-    { name: 'EssentialsX', version: '2.20.1', desc: 'Core server commands, economy & warps', status: 'active' },
-    { name: 'LuckPerms', version: '5.4.102', desc: 'Advanced permissions manager & Web editor', status: 'active' },
-    { name: 'WorldEdit', version: '7.3.0', desc: 'In-game voxel map editor & clipboard tool', status: 'active' },
-    { name: 'Vault', version: '1.7.3', desc: 'Economy & chat bridge framework', status: 'active' },
-    { name: 'GeyserMC', version: '2.2.0', desc: 'Bedrock & Java crossplay bridge', status: 'active' },
-  ]);
+    try {
+      const response = await fetch('/api/client/dashboard', {
+        method: 'GET',
+        credentials: 'include',
+        headers: { Accept: 'application/json' },
+        cache: 'no-store',
+      });
+      const payload = await response.json().catch(() => ({}));
 
-  const activeServer =
-    (deployedServers || []).find((s) => s.id === selectedServerId) ||
-    deployedServers[0];
-
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedIp(text);
-    setTimeout(() => setCopiedIp(null), 2000);
-  };
-
-  const handleSendCommand = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!commandInput.trim() || !activeServer) return;
-
-    addServerLog(activeServer.id, commandInput.trim());
-
-    // Realistic server console responses
-    const cmd = commandInput.trim().toLowerCase();
-    setTimeout(() => {
-      if (cmd === 'list' || cmd === 'players') {
-        addServerLog(activeServer.id, `[SERVER CONSOLE]: 14/80 players online: Kasun_LK, Steve, Alex, Notch, VoidGamer, Dino`);
-      } else if (cmd === 'tps' || cmd === 'status') {
-        addServerLog(activeServer.id, `[SERVER CONSOLE]: TPS: 20.0 (100% stable) • Tick Duration: 4.1ms • Allocated RAM: 3.8GB / 8.0GB`);
-      } else if (cmd === 'help') {
-        addServerLog(activeServer.id, `[SERVER CONSOLE]: Commands: tps, list, reload, op, ban, say, stop, restart, spark`);
-      } else if (cmd.startsWith('say ')) {
-        addServerLog(activeServer.id, `[Server] ${commandInput.trim().slice(4)}`);
-      } else {
-        addServerLog(activeServer.id, `[SERVER CONSOLE]: Command '${cmd}' executed on thread #1.`);
+      if (response.status === 401) {
+        setData(null);
+        setError('Your secure session has expired. Please sign in again.');
+        return;
       }
-    }, 300);
 
-    setCommandInput('');
+      if (!response.ok) {
+        throw new Error(String(payload?.error || 'Unable to load your dashboard.'));
+      }
+
+      setData(payload as DashboardPayload);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to load your dashboard.');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadDashboard();
+  }, [loadDashboard]);
+
+  const copy = async (value: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(value);
+      window.setTimeout(() => setCopied(null), 1600);
+    } catch {
+      showNotification('Could not copy the address.', 'error');
+    }
   };
 
-  const handleInstallPlugin = (pluginName: string) => {
-    showNotification(`Installed ${pluginName}! Restart server to load classes.`, 'success');
+  const openLogin = () => {
+    setAuthModalTab('login');
+    setIsAuthModalOpen(true);
   };
 
-  return (
-    <div className="gabrun-light-canvas min-h-screen text-slate-800 font-sans pb-24">
-      {/* Top Hero Banner matching HomePage Gabrun style */}
-      <section className="gabrun-hero-gradient relative isolate overflow-hidden pt-10 pb-16">
-        <div className="gabrun-grid-pattern absolute inset-0 pointer-events-none opacity-40" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex items-center gap-2 text-xs text-blue-200 mb-6 overflow-x-auto whitespace-nowrap">
-            <button onClick={() => navigateTo('home')} className="hover:text-white transition-colors cursor-pointer">Home</button>
-            <span>/</span>
-            <span className="text-white font-semibold">Client Dashboard</span>
-          </nav>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-10 w-10 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+          <p className="text-sm text-slate-400">Loading your secure client area…</p>
+        </div>
+      </div>
+    );
+  }
 
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-blue-100 text-xs font-semibold mb-3">
-                <Server className="w-3.5 h-3.5 text-blue-200" />
-                <span>HelzerX Pterodactyl Node Manager</span>
-              </div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight">
-                Client Server Control Panel
+  if (!data) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white">
+        <section className="relative overflow-hidden border-b border-white/10">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.30),_transparent_45%),radial-gradient(circle_at_bottom_right,_rgba(168,85,247,0.18),_transparent_40%)]" />
+          <div className="relative mx-auto max-w-7xl px-5 py-24 sm:px-8">
+            <div className="max-w-2xl">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-300">
+                <LockKeyhole className="h-3.5 w-3.5" />
+                Secure Client Area
+              </span>
+              <h1 className="mt-5 text-4xl font-black tracking-tight sm:text-6xl">
+                Your infrastructure,
+                <span className="block text-indigo-300">under your control.</span>
               </h1>
-              <p className="text-sm sm:text-base text-blue-100/90 mt-2 max-w-2xl leading-relaxed">
-                Real-time server telemetry, AMD Ryzen thread performance, live console terminal, and automated billing.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3">
+              <p className="mt-5 text-base leading-7 text-slate-400">{error}</p>
               <button
-                onClick={() => navigateTo('services-minecraft')}
-                className="bg-white hover:bg-slate-100 text-blue-900 text-xs font-bold px-5 py-3 rounded-xl transition-all shadow-lg shadow-black/10 flex items-center gap-2 active:scale-95 shrink-0 cursor-pointer"
+                onClick={openLogin}
+                className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-slate-200"
               >
-                <Plus className="w-4 h-4 text-blue-600" />
-                <span>Deploy Another Node</span>
+                Sign in securely
+                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  const servers = data.servers || [];
+  const totalMemory = servers.reduce((sum, server) => sum + server.limits.memoryMb, 0);
+  const totalDisk = servers.reduce((sum, server) => sum + server.limits.diskMb, 0);
+
+  return (
+    <div className="min-h-screen bg-[#f7f8fc] text-slate-900">
+      <section className="relative isolate overflow-hidden bg-slate-950 text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,_rgba(99,102,241,0.35),_transparent_32%),radial-gradient(circle_at_85%_10%,_rgba(168,85,247,0.25),_transparent_28%)]" />
+        <div className="relative mx-auto max-w-7xl px-5 pb-20 pt-10 sm:px-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <button onClick={() => navigateTo('home')} className="text-sm text-slate-400 transition hover:text-white">
+              HelzerX Cloud
+            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => void loadDashboard(true)}
+                disabled={refreshing}
+                className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/10 disabled:opacity-50"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+                Refresh
+              </button>
+              {data.panelUrl && (
+                <a
+                  href={data.panelUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-xl bg-white px-3.5 py-2 text-xs font-bold text-slate-950 transition hover:bg-slate-200"
+                >
+                  Panel
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-14 max-w-3xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              Authenticated client session
+            </div>
+            <h1 className="mt-5 text-4xl font-black tracking-tight sm:text-6xl">
+              Welcome, {data.user.name.split(' ')[0] || 'Customer'}.
+            </h1>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-400">
+              One place for your HelzerX services, infrastructure allocations and account access.
+              This dashboard displays only data returned for your authenticated account.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Main Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6">
-        {deployedServers.length > 0 && activeServer ? (
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Left Sidebar: Servers List */}
-            <div className="space-y-3 lg:col-span-1">
-              <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-2 px-1">
-                Your Active Nodes ({deployedServers.length})
-              </span>
-              {deployedServers.map((srv) => (
-                <button
-                  key={srv.id}
-                  onClick={() => setSelectedServerId(srv.id)}
-                  className={`w-full text-left p-4 rounded-2xl border transition-all cursor-pointer ${
-                    activeServer.id === srv.id
-                      ? 'bg-blue-50/80 border-blue-500 shadow-sm'
-                      : 'bg-white border-slate-200 hover:border-blue-300 shadow-sm'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <h4 className="text-xs font-bold text-slate-900 truncate max-w-[130px]">
-                      {srv.serverName}
-                    </h4>
-                    <span
-                      className={`w-2 h-2 rounded-full ${
-                        srv.status === 'running'
-                          ? 'bg-emerald-500 animate-pulse'
-                          : 'bg-rose-500'
-                      }`}
-                    />
-                  </div>
-                  <p className="text-[11px] text-blue-600 font-mono font-medium">
-                    {srv.ipAddress}:{srv.port}
-                  </p>
-                  <span className="text-[10px] text-slate-500 block mt-1">
-                    {srv.planName} • {srv.location}
-                  </span>
-                </button>
-              ))}
-
-              {/* Quick Support Ticket */}
-              <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm text-xs mt-4">
-                <span className="font-bold text-slate-900 block mb-1">Need Pterodactyl Support?</span>
-                <p className="text-slate-600 text-[11px] mb-3 leading-relaxed">
-                  Our Sri Lankan engineering team is active 24/7 on WhatsApp &amp; Discord.
-                </p>
-                <a
-                  href="https://wa.me/94770000000"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-full py-2.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 font-bold flex items-center justify-center gap-1.5 transition-colors"
-                >
-                  <span>WhatsApp Support</span>
-                </a>
-              </div>
-            </div>
-
-            {/* Main Content: Server Telemetry & Tabs */}
-            <div className="lg:col-span-3 space-y-6">
-              {/* Top Bar: Server Details & Power Controls */}
-              <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h2 className="text-xl font-bold text-slate-900">
-                      {activeServer.serverName}
-                    </h2>
-                    <span
-                      className={`text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full border ${
-                        activeServer.status === 'running'
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                          : 'bg-rose-50 text-rose-700 border-rose-200'
-                      }`}
-                    >
-                      {activeServer.status}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
-                    <span>
-                      IP: {activeServer.ipAddress}:{activeServer.port}
-                    </span>
-                    <button
-                      onClick={() =>
-                        handleCopy(`${activeServer.ipAddress}:${activeServer.port}`)
-                      }
-                      className="text-blue-600 hover:text-blue-700"
-                      title="Copy Address"
-                    >
-                      {copiedIp ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-600" />
-                      ) : (
-                        <Copy className="w-3.5 h-3.5" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Power Actions */}
-                <div className="flex items-center gap-2">
-                  {activeServer.status === 'running' ? (
-                    <>
-                      <button
-                        onClick={() => {
-                          updateServerPowerState(activeServer.id, 'restarting');
-                          showNotification('Server restart signal sent.', 'info');
-                        }}
-                        className="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
-                      >
-                        <RefreshCw className="w-3.5 h-3.5" />
-                        <span>Restart</span>
-                      </button>
-                      <button
-                        onClick={() => {
-                          toggleServerPower(activeServer.id, 'offline');
-                          showNotification('Stopping server gracefully...', 'info');
-                        }}
-                        className="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
-                      >
-                        <Square className="w-3.5 h-3.5 fill-rose-600 text-rose-600" />
-                        <span>Stop</span>
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        toggleServerPower(activeServer.id, 'running');
-                        showNotification('Booting server node...', 'success');
-                      }}
-                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-emerald-600/20 cursor-pointer"
-                    >
-                      <Play className="w-3.5 h-3.5 fill-white" />
-                      <span>Start Node</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Resource Telemetry Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
-                  <div className="flex justify-between items-center mb-2 text-xs">
-                    <span className="text-slate-600 font-medium flex items-center gap-1.5">
-                      <Server className="w-3.5 h-3.5 text-blue-600" />
-                      <span>Memory Usage</span>
-                    </span>
-                    <span className="font-mono text-blue-600 font-bold">
-                      {activeServer.ramUsagePercent || 38}%
-                    </span>
-                  </div>
-                  <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-blue-600 rounded-full transition-all duration-500"
-                      style={{ width: `${activeServer.ramUsagePercent || 38}%` }}
-                    />
-                  </div>
-                  <span className="text-[10px] text-slate-500 mt-2 block font-mono">
-                    {((activeServer.ramMb * (activeServer.ramUsagePercent || 38)) / 102400).toFixed(1)} GB / {(activeServer.ramMb / 1024).toFixed(0)} GB DDR5
-                  </span>
-                </div>
-
-                <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
-                  <div className="flex justify-between items-center mb-2 text-xs">
-                    <span className="text-slate-600 font-medium flex items-center gap-1.5">
-                      <Cpu className="w-3.5 h-3.5 text-indigo-600" />
-                      <span>CPU Thread Load</span>
-                    </span>
-                    <span className="font-mono text-indigo-600 font-bold">
-                      {activeServer.cpuUsagePercent || 14}%
-                    </span>
-                  </div>
-                  <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-indigo-600 rounded-full transition-all duration-500"
-                      style={{ width: `${activeServer.cpuUsagePercent || 14}%` }}
-                    />
-                  </div>
-                  <span className="text-[10px] text-slate-500 mt-2 block font-mono">
-                    Ryzen 9 7950X ({activeServer.cpuCores} Allocated Cores)
-                  </span>
-                </div>
-
-                <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
-                  <div className="flex justify-between items-center mb-2 text-xs">
-                    <span className="text-slate-600 font-medium flex items-center gap-1.5">
-                      <HardDrive className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>NVMe PCIe 5.0 Disk</span>
-                    </span>
-                    <span className="font-mono text-emerald-600 font-bold">
-                      {activeServer.diskUsagePercent || 22}%
-                    </span>
-                  </div>
-                  <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-emerald-600 rounded-full transition-all duration-500"
-                      style={{ width: `${activeServer.diskUsagePercent || 22}%` }}
-                    />
-                  </div>
-                  <span className="text-[10px] text-slate-500 mt-2 block font-mono">
-                    {((activeServer.diskGb * (activeServer.diskUsagePercent || 22)) / 100).toFixed(1)} GB / {activeServer.diskGb} GB Total
-                  </span>
-                </div>
-              </div>
-
-              {/* Navigation Tabs for Dashboard */}
-              <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-2xl overflow-x-auto scrollbar-none">
-                <button
-                  onClick={() => setActiveTab('console')}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                    activeTab === 'console'
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                  }`}
-                >
-                  <Terminal className="w-3.5 h-3.5" />
-                  <span>Live Console</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('files')}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                    activeTab === 'files'
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                  }`}
-                >
-                  <FolderOpen className="w-3.5 h-3.5" />
-                  <span>File Manager &amp; SFTP</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('plugins')}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                    activeTab === 'plugins'
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                  }`}
-                >
-                  <Layers className="w-3.5 h-3.5" />
-                  <span>Plugins &amp; Modpacks</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('billing')}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                    activeTab === 'billing'
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                  }`}
-                >
-                  <Receipt className="w-3.5 h-3.5" />
-                  <span>Invoices &amp; Receipts</span>
-                </button>
-              </div>
-
-              {/* TAB 1: Console */}
-              {activeTab === 'console' && (
-                <div className="bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
-                  <div className="bg-slate-900 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Terminal className="w-4 h-4 text-blue-400" />
-                      <span className="text-xs font-bold text-slate-200 font-mono">
-                        pterodactyl@helzerx-node-sg01:~$
-                      </span>
-                    </div>
-                    <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-mono">
-                      TPS: 20.0 (100%)
-                    </span>
-                  </div>
-
-                  <div className="p-4 h-72 overflow-y-auto font-mono text-xs text-slate-300 space-y-1.5 scrollbar-none bg-slate-950">
-                    {(activeServer.logs || []).map((log, idx) => (
-                      <div key={idx} className="flex gap-2">
-                        <span className="text-slate-600 select-none">
-                          [{new Date().toLocaleTimeString()}]
-                        </span>
-                        <span
-                          className={
-                            log.includes('WARN')
-                              ? 'text-amber-400'
-                              : log.includes('ERROR')
-                              ? 'text-rose-400'
-                              : log.includes('Done') || log.includes('online') || log.includes('TPS')
-                              ? 'text-emerald-400'
-                              : 'text-blue-200'
-                          }
-                        >
-                          {log}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <form onSubmit={handleSendCommand} className="p-3 bg-slate-900 border-t border-slate-800 flex gap-2">
-                    <input
-                      type="text"
-                      value={commandInput}
-                      onChange={(e) => setCommandInput(e.target.value)}
-                      placeholder="Type server command (e.g., list, tps, op player, save-all)..."
-                      className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-blue-500"
-                    />
-                    <button
-                      type="submit"
-                      className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs cursor-pointer shadow-md shadow-blue-600/30 transition-all"
-                    >
-                      Execute
-                    </button>
-                  </form>
-                </div>
-              )}
-
-              {/* TAB 2: File Manager */}
-              {activeTab === 'files' && (
-                <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                    <div className="flex items-center gap-2">
-                      <FolderOpen className="w-4 h-4 text-blue-600" />
-                      <span className="text-xs font-bold text-slate-900">SFTP Root: /home/container</span>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => showNotification('File uploaded to server root.', 'success')}
-                        className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                      >
-                        <Upload className="w-3 h-3" />
-                        <span>Upload</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5 text-xs">
-                    {files.map((f, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/60 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-base">{f.type === 'folder' ? '📁' : '📄'}</span>
-                          <span className="font-mono text-slate-800 font-medium">{f.name}</span>
-                        </div>
-                        <div className="flex items-center gap-4 text-slate-500 font-mono text-[11px]">
-                          <span>{f.size}</span>
-                          <span>{f.modified}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 3: Plugins */}
-              {activeTab === 'plugins' && (
-                <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                    <h3 className="text-sm font-bold text-slate-900">
-                      Installed 1-Click Spigot / Paper Plugins
-                    </h3>
-                    <span className="text-xs text-blue-700 font-semibold bg-blue-50 px-2 py-0.5 rounded-md">{installedPlugins.length} Active</span>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {installedPlugins.map((pl, i) => (
-                      <div key={i} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-xs font-bold text-slate-900">{pl.name}</h4>
-                          <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                            v{pl.version}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-600">{pl.desc}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 4: Billing & Invoices */}
-              {activeTab === 'billing' && (
-                <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                    <h3 className="text-sm font-bold text-slate-900">
-                      Sri Lankan &amp; Global Invoices
-                    </h3>
-                    <span className="text-xs text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md">All Invoices Paid</span>
-                  </div>
-
-                  <div className="space-y-2 text-xs">
-                    {orders.length > 0 ? (
-                      orders.map((o) => (
-                        <div
-                          key={o.id}
-                          className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between"
-                        >
-                          <div>
-                            <span className="font-mono font-bold text-blue-700">{o.id}</span>
-                            <h4 className="text-slate-900 font-semibold mt-0.5">{o.planName}</h4>
-                            <span className="text-[10px] text-slate-500">{o.hostname} • {o.billingCycle}</span>
-                          </div>
-                          <div className="text-right">
-                            <span className="font-mono font-bold text-slate-900 block">
-                              {formatPrice(o.amount)}
-                            </span>
-                            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 inline-block mt-1">
-                              {o.status}
-                            </span>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-                        <div>
-                          <span className="font-mono font-bold text-blue-700">INV-84920</span>
-                          <h4 className="text-slate-900 font-semibold mt-0.5">Minecraft 1GB Node (Monthly)</h4>
-                          <span className="text-[10px] text-slate-500">PayHere LKR Verified</span>
-                        </div>
-                        <div className="text-right">
-                          <span className="font-mono font-bold text-slate-900 block">Rs. 350.00</span>
-                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 inline-block mt-1">
-                            PAID
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="text-center py-20 bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
-            <Server className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-slate-900 mb-2">No Active Nodes Found</h2>
-            <p className="text-xs text-slate-600 max-w-sm mx-auto mb-6">
-              You don&apos;t have any active servers yet. Choose a plan starting at Rs. 350/mo.
-            </p>
-            <button
-              onClick={() => navigateTo('services-minecraft')}
-              className="px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-blue-600/30 cursor-pointer"
-            >
-              Deploy Minecraft Server
-            </button>
+      <main className="mx-auto max-w-7xl px-5 py-8 sm:px-8">
+        {error && (
+          <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            {error}
           </div>
         )}
-      </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { label: 'Active services', value: servers.length, icon: Server },
+            { label: 'Allocated memory', value: totalMemory ? `${(totalMemory / 1024).toFixed(1)} GB` : '—', icon: Activity },
+            { label: 'Allocated storage', value: totalDisk ? `${(totalDisk / 1024).toFixed(1)} GB` : '—', icon: HardDrive },
+            { label: 'Account security', value: data.user.emailVerified ? 'Verified' : 'Review', icon: ShieldCheck },
+          ].map(({ label, value, icon: Icon }) => (
+            <div key={label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{label}</span>
+                <Icon className="h-4 w-4 text-indigo-600" />
+              </div>
+              <div className="mt-4 text-2xl font-black text-slate-950">{value}</div>
+            </div>
+          ))}
+        </div>
+
+        <section className="mt-8 rounded-3xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 px-6 py-5">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-indigo-600">Infrastructure</p>
+              <h2 className="mt-1 text-2xl font-black">Your services</h2>
+            </div>
+            <button
+              onClick={() => navigateTo('services-minecraft')}
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800"
+            >
+              <ShoppingCart className="h-4 w-4" />
+              Order a service
+            </button>
+          </div>
+
+          <div className="p-6">
+            {!data.configured ? (
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
+                <Globe2 className="mx-auto h-8 w-8 text-slate-400" />
+                <h3 className="mt-4 text-lg font-bold">Control plane is being connected</h3>
+                <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-500">
+                  No placeholder servers are shown. Once the Pterodactyl integration is configured on the server,
+                  your real services will appear here automatically.
+                </p>
+              </div>
+            ) : servers.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
+                <Server className="mx-auto h-8 w-8 text-slate-400" />
+                <h3 className="mt-4 text-lg font-bold">No active services</h3>
+                <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-500">
+                  There are no Pterodactyl services assigned to this account. We will never display demo or fake
+                  infrastructure here.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-4 lg:grid-cols-2">
+                {servers.map((server) => {
+                  const address = server.allocation
+                    ? `${server.allocation.alias || server.allocation.ip}:${server.allocation.port}`
+                    : null;
+                  const state = server.suspended
+                    ? 'Suspended'
+                    : server.installed
+                    ? 'Provisioned'
+                    : 'Installing';
+
+                  return (
+                    <article key={server.identifier} className="rounded-2xl border border-slate-200 p-5 transition hover:border-indigo-300 hover:shadow-md">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className={`h-2.5 w-2.5 rounded-full ${server.suspended ? 'bg-rose-500' : server.installed ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                            <h3 className="truncate text-base font-bold">{server.name}</h3>
+                          </div>
+                          <p className="mt-1 font-mono text-[11px] text-slate-400">{server.identifier}</p>
+                        </div>
+                        <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-600">
+                          {state}
+                        </span>
+                      </div>
+
+                      <div className="mt-5 grid grid-cols-2 gap-3 text-xs">
+                        <div className="rounded-xl bg-slate-50 p-3">
+                          <span className="text-slate-500">Memory</span>
+                          <strong className="mt-1 block text-slate-900">{server.limits.memoryMb ? `${(server.limits.memoryMb / 1024).toFixed(1)} GB` : '—'}</strong>
+                        </div>
+                        <div className="rounded-xl bg-slate-50 p-3">
+                          <span className="text-slate-500">Storage</span>
+                          <strong className="mt-1 block text-slate-900">{server.limits.diskMb ? `${(server.limits.diskMb / 1024).toFixed(1)} GB` : '—'}</strong>
+                        </div>
+                        <div className="rounded-xl bg-slate-50 p-3">
+                          <span className="text-slate-500">CPU allocation</span>
+                          <strong className="mt-1 block text-slate-900">{server.limits.cpu ? `${server.limits.cpu}%` : '—'}</strong>
+                        </div>
+                        <div className="rounded-xl bg-slate-50 p-3">
+                          <span className="text-slate-500">Node</span>
+                          <strong className="mt-1 block truncate text-slate-900">{server.node || '—'}</strong>
+                        </div>
+                      </div>
+
+                      {address && (
+                        <button
+                          onClick={() => void copy(address)}
+                          className="mt-4 flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-left transition hover:border-indigo-300"
+                        >
+                          <span>
+                            <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Primary address</span>
+                            <span className="mt-1 block font-mono text-xs font-semibold text-slate-800">{address}</span>
+                          </span>
+                          {copied === address ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4 text-slate-400" />}
+                        </button>
+                      )}
+
+                      <div className="mt-4 flex items-center justify-between text-[11px] text-slate-400">
+                        <span>{server.createdAt ? new Date(server.createdAt).toLocaleDateString() : 'Date unavailable'}</span>
+                        <span>Server data from Pterodactyl</span>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="mt-6 grid gap-4 md:grid-cols-3">
+          {[
+            { title: 'Security', text: 'Secrets stay server-side. Dashboard responses contain only account-scoped data.', icon: LockKeyhole },
+            { title: 'Real infrastructure', text: 'No generated IPs, fake telemetry, fake console output or demo servers are rendered.', icon: Server },
+            { title: 'Need a service?', text: 'Use the hosting catalog to place a real order and provision infrastructure.', icon: ShoppingCart },
+          ].map(({ title, text, icon: Icon }) => (
+            <div key={title} className="rounded-2xl border border-slate-200 bg-white p-5">
+              <Icon className="h-5 w-5 text-indigo-600" />
+              <h3 className="mt-4 font-bold">{title}</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-500">{text}</p>
+            </div>
+          ))}
+        </section>
+      </main>
     </div>
-  );
   );
 };
