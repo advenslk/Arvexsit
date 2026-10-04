@@ -258,30 +258,76 @@ export const ClientDashboardPage: React.FC = () => {
       <main className="mx-auto max-w-7xl px-5 py-7 sm:px-8">
         {error && <div className="mb-5 flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"><AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />{error}</div>}
 
-        {!portal.connected ? (
-          <Card className="overflow-hidden">
-            <div className="grid gap-0 lg:grid-cols-[1.2fr_0.8fr]">
-              <div className="p-7 sm:p-10">
-                <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-700"><KeyRound className="h-3.5 w-3.5" />Connect live infrastructure</span>
-                <h2 className="mt-4 text-3xl font-black tracking-tight">Your Pterodactyl services are ready to connect.</h2>
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500">Create a Client API key in your Pterodactyl account and connect it here. The key is encrypted on the HelzerX server and is never sent back to your browser after connection.</p>
-                <button onClick={() => setConnectOpen(true)} className="mt-7 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700"><KeyRound className="h-4 w-4" />Connect Pterodactyl</button>
-                {portal.panelUrl && <a href={`${portal.panelUrl}/account/api`} target="_blank" rel="noreferrer" className="ml-3 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50">Open API Keys</a>}
+        {!portal.connected && (
+          <Card className="mb-6 overflow-hidden border-blue-100">
+            <div className="grid gap-0 lg:grid-cols-[1.25fr_0.75fr]">
+              <div className="p-7 sm:p-9">
+                <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-700"><ShieldCheck className="h-3.5 w-3.5" />Signed-in account scope</span>
+                <h2 className="mt-3 text-2xl font-black tracking-tight">Your real services are loaded from this account.</h2>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">These services are matched to <b className="text-slate-700">{portal.user.email}</b>. Connect a matching Pterodactyl Client API key only when you need console, files, backups, databases or power controls.</p>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <button onClick={() => setConnectOpen(true)} className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700"><KeyRound className="h-4 w-4" />Unlock live controls</button>
+                  {portal.panelUrl && <a href={`${portal.panelUrl}/account/api`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50">Pterodactyl API Keys</a>}
+                </div>
               </div>
-              <div className="bg-slate-950 p-7 text-white sm:p-10">
+              <div className="bg-slate-950 p-7 text-white sm:p-9">
                 <Lock className="h-6 w-6 text-blue-300" />
-                <h3 className="mt-4 text-lg font-black">Security boundary</h3>
-                <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-300">
-                  <li>• Key encrypted at rest with the server secret.</li>
-                  <li>• Account email is verified against Pterodactyl before storing.</li>
-                  <li>• Browser never receives the Client API key.</li>
-                  <li>• API responses are scoped to your authenticated session.</li>
-                </ul>
+                <h3 className="mt-3 text-lg font-black">Protected controls</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-300">The Client API key is encrypted server-side and never exposed to the browser after connection.</p>
               </div>
             </div>
           </Card>
-        ) : (
+        )}
+
+        {portal.servers.length > 0 ? (
           <>
+            {portal.connected ? null : <div className="mb-4 text-xs font-bold text-slate-500">Read-only service view · connect Pterodactyl to manage services</div>}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                ['Services', String(portal.servers.length), Server],
+                ['Allocated RAM', `${(portal.servers.reduce((n, s) => n + s.limits.memory, 0) / 1024).toFixed(1)} GB`, Activity],
+                ['Storage', `${(portal.servers.reduce((n, s) => n + s.limits.disk, 0) / 1024).toFixed(1)} GB`, HardDrive],
+                ['Account', portal.user.emailVerified ? 'Verified' : 'Review', ShieldCheck],
+              ].map(([label, value, Icon]: any) => (
+                <Card key={String(label)} className="p-5">
+                  <div className="flex items-center justify-between"><span className="text-[11px] font-black uppercase tracking-[0.15em] text-slate-400">{label}</span><Icon className="h-4 w-4 text-blue-600" /></div>
+                  <div className="mt-3 text-2xl font-black">{value}</div>
+                </Card>
+              ))}
+            </div>
+
+            <div className="mt-6 grid gap-6 lg:grid-cols-[270px_minmax(0,1fr)]">
+              <Card className="h-fit p-3">
+                <div className="px-3 pb-3 pt-2"><p className="text-[10px] font-black uppercase tracking-[0.16em] text-blue-600">Infrastructure</p><p className="mt-1 text-sm font-black">{portal.servers.length} service{portal.servers.length === 1 ? '' : 's'}</p></div>
+                {portal.servers.map((server) => (
+                  <button key={server.identifier} onClick={() => { setSelectedId(server.identifier); setTab('overview'); }} className={`mb-2 w-full rounded-2xl border p-3 text-left transition ${selected?.identifier === server.identifier ? 'border-blue-300 bg-blue-50' : 'border-slate-100 hover:border-slate-200 hover:bg-slate-50'}`}>
+                    <div className="flex items-center gap-2"><span className={`h-2 w-2 rounded-full ${server.suspended ? 'bg-rose-500' : server.installing ? 'bg-amber-500' : 'bg-emerald-500'}`} /><span className="truncate text-xs font-black">{server.name}</span></div>
+                    <p className="mt-1 font-mono text-[10px] text-slate-400">{server.identifier}</p>
+                  </button>
+                ))}
+                <button onClick={() => setConnectOpen(true)} className="mt-1 flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 px-3 py-3 text-xs font-bold text-slate-500 hover:border-blue-300 hover:text-blue-600"><KeyRound className="h-3.5 w-3.5" />Connection</button>
+              </Card>
+
+              <div className="min-w-0">
+                {portal.connected && selected ? <ServerWorkspace server={selected} tab={tab} setTab={setTab} busy={busy} setBusy={setBusy} onRefresh={loadPortal} copied={copied} copyText={copyText} error={error} setError={setError} /> : (
+                  <Card className="p-10 text-center">
+                    <Server className="mx-auto h-10 w-10 text-blue-300" />
+                    <h2 className="mt-4 text-xl font-black">{portal.connected ? 'No services assigned' : 'Service selected'}</h2>
+                    <p className="mt-2 text-sm text-slate-500">{portal.connected ? 'There is no real Pterodactyl service assigned to this account.' : 'Connect your matching Pterodactyl Client API key to open live console, files, backups, databases and power controls.'}</p>
+                    {!portal.connected && <button onClick={() => setConnectOpen(true)} className="mt-5 rounded-xl bg-blue-600 px-5 py-3 text-xs font-black text-white">Unlock controls</button>}
+                  </Card>
+                )}
+              </div>
+            </div>
+          </>
+        ) : (
+          <Card className="p-10 text-center">
+            <Server className="mx-auto h-10 w-10 text-slate-300" />
+            <h2 className="mt-4 text-xl font-black">No services assigned</h2>
+            <p className="mt-2 text-sm text-slate-500">There is no real Pterodactyl service assigned to this account.</p>
+            <button onClick={() => navigateTo('services')} className="mt-5 rounded-xl bg-blue-600 px-5 py-3 text-xs font-black text-white">Browse hosting</button>
+          </Card>
+        )}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 ['Services', String(portal.servers.length), Server],
@@ -321,8 +367,6 @@ export const ClientDashboardPage: React.FC = () => {
               <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-emerald-600" />Pterodactyl Client API connected securely</span>
               <button onClick={disconnect} disabled={busy === 'disconnect'} className="inline-flex items-center gap-2 font-bold text-rose-600 hover:text-rose-700 disabled:opacity-50">{busy === 'disconnect' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <LogOut className="h-3.5 w-3.5" />}Disconnect</button>
             </div>
-          </>
-        )}
       </main>
 
       {connectOpen && <ConnectModal panelUrl={portal.panelUrl} value={clientKey} show={showKey} busy={busy === 'connect'} setValue={setClientKey} setShow={setShowKey} onClose={() => setConnectOpen(false)} onConnect={connect} />}
