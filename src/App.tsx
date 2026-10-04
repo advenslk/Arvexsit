@@ -37,7 +37,6 @@ import { CheckoutModal } from './components/CheckoutModal';
 import { InvoiceModal } from './components/InvoiceModal';
 import { TicketModal } from './components/TicketModal';
 import { BlogPostModal } from './components/BlogPostModal';
-import { ClientAreaModal } from './components/ClientAreaModal';
 import { AdminPanelModal } from './components/AdminPanelModal';
 
 function MaintenancePage({ openAdminLogin }: { openAdminLogin: () => void }) {
@@ -120,7 +119,7 @@ function MainWebsite() {
   if(!authReady)return <div className="flex min-h-screen items-center justify-center bg-[#07080c] text-slate-400"><div className="text-center"><div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-purple-500/20 border-t-purple-400"/><p className="text-xs font-semibold uppercase tracking-[0.2em]">Loading HelzerX</p></div></div>;
   if(maintenanceMode&&currentUser?.role!=='admin')return <><MaintenancePage openAdminLogin={openAdminLogin}/><AuthModal/></>;
   return <div className="relative min-h-screen overflow-x-hidden bg-[#f8fafc] text-slate-900 font-sans selection:bg-blue-600 selection:text-white antialiased flex flex-col justify-between">
-    {currentUser?.role==='admin'&&<MaintenanceAdminControl enabled={maintenanceMode} busy={maintenanceBusy} onToggle={toggleMaintenance}/>}<Navbar/><main className="relative flex-1">{renderActivePage()}</main><Footer/><AuthModal/><CheckoutModal/><InvoiceModal/><TicketModal/><BlogPostModal/><ClientAreaModal/><AdminPanelModal/>
+    {currentUser?.role==='admin'&&<MaintenanceAdminControl enabled={maintenanceMode} busy={maintenanceBusy} onToggle={toggleMaintenance}/>}<Navbar/><main className="relative flex-1">{renderActivePage()}</main><Footer/><AuthModal/><CheckoutModal/><InvoiceModal/><TicketModal/><BlogPostModal/><AdminPanelModal/>
   </div>;
 }
 
