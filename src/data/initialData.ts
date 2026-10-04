@@ -174,23 +174,33 @@ export const CURRENCIES: CurrencyConfig[] = [
   { code: 'JPY', symbol: '¥', rateToUsd: 154.0, label: '¥ JPY (Japanese Yen)' },
 ];
 
-export const INITIAL_DEPLOYED_SERVERS: DeployedServer[] = [
-  { id: 'srv-mc-01', userId: 'usr-admin-1', serverName: 'HelzerX SMP Realm', gameId: 'minecraft', gameName: 'Minecraft Java 1.21', planName: 'Extreme Diamond Plan', status: 'running', ipAddress: '198.51.100.42', port: 25565, ramUsagePercent: 42, ramUsageGb: 6.7, cpuUsage: 18.2, cpuUsagePercent: 18, diskUsagePercent: 31, location: 'United States (Dallas)', createdAt: '2026-02-10T14:30:00Z', logs: ['[14:10:02 INFO]: Loading properties...', '[14:10:03 INFO]: Default game type: SURVIVAL'] },
-  { id: 'srv-rust-01', userId: 'usr-admin-1', serverName: 'HelzerX 2x Main Wipe', gameId: 'rust', gameName: 'Rust High-Tick Server', planName: 'Clan Warlord', status: 'running', ipAddress: '198.51.100.89', port: 28015, ramUsagePercent: 58, ramUsageGb: 11.6, cpuUsage: 24.5, cpuUsagePercent: 24, diskUsagePercent: 45, location: 'Singapore', createdAt: '2026-02-18T10:15:00Z', logs: ['[10:15:00 SYSTEM]: Carbon framework injected successfully.'] },
-];
+export const INITIAL_DEPLOYED_SERVERS: DeployedServer[] = [];
 
-export const INITIAL_SAVED_CARDS: SavedCard[] = [
-  { id: 'card-1', userId: 'usr-admin-1', cardholderName: 'Nethum Menura', brand: 'visa', last4: '4242', expMonth: '08', expYear: '28', isDefault: true, createdAt: '2026-01-15T10:00:00Z' },
-  { id: 'card-2', userId: 'usr-admin-1', cardholderName: 'Nethum Menura', brand: 'mastercard', last4: '8812', expMonth: '11', expYear: '29', isDefault: false, createdAt: '2026-02-01T12:00:00Z' },
-];
+export const INITIAL_SAVED_CARDS: SavedCard[] = [];
 
-export const INITIAL_INVOICES: Invoice[] = [
-  { id: 'inv-10042', invoiceNumber: 'INV-2026-10042', userId: 'usr-admin-1', userEmail: 'nethummenura198@gmail.com', userName: 'Nethum Menura', amountUsd: 24.0, amountLocal: 7320.0, currency: 'USD', status: 'paid', paymentMethod: 'card', transactionId: 'TXN-9842104-VISA', items: [{ description: 'Extreme Diamond Plan', period: 'Feb 10, 2026 - Mar 10, 2026', amountUsd: 24.0, quantity: 1 }], subtotalUsd: 24.0, taxUsd: 0.0, discountUsd: 0.0, dueDate: '2026-02-10T14:30:00Z', paidAt: '2026-02-10T14:31:22Z', createdAt: '2026-02-10T14:30:00Z', notes: 'Paid via Visa ending in 4242.' },
-  { id: 'inv-10043', invoiceNumber: 'INV-2026-10043', userId: 'usr-admin-1', userEmail: 'nethummenura198@gmail.com', userName: 'Nethum Menura', amountUsd: 29.0, amountLocal: 8845.0, currency: 'USD', status: 'paid', paymentMethod: 'payhere', transactionId: 'PH-LK-84729103', items: [{ description: 'Clan Warlord Rust Plan', period: 'Feb 18, 2026 - Mar 18, 2026', amountUsd: 29.0, quantity: 1 }], subtotalUsd: 29.0, taxUsd: 0.0, discountUsd: 0.0, dueDate: '2026-02-18T10:15:00Z', paidAt: '2026-02-18T10:16:04Z', createdAt: '2026-02-18T10:15:00Z', notes: 'Processed via PayHere Sri Lanka Gateway.' },
-  { id: 'inv-10044', invoiceNumber: 'INV-2026-10044', userId: 'usr-admin-1', userEmail: 'nethummenura198@gmail.com', userName: 'Nethum Menura', amountUsd: 14.0, amountLocal: 4270.0, currency: 'USD', status: 'unpaid', items: [{ description: 'Standard Gold Minecraft Renewal', period: 'Mar 10, 2026 - Apr 10, 2026', amountUsd: 14.0, quantity: 1 }], subtotalUsd: 14.0, taxUsd: 0.0, discountUsd: 0.0, dueDate: '2026-03-10T14:30:00Z', createdAt: '2026-02-24T00:00:00Z', notes: 'Upcoming monthly service renewal.' },
-];
+export const INITIAL_INVOICES: Invoice[] = [];
 
-export const INITIAL_PAYMENT_SETTINGS: PaymentGatewaySettings = { payhereEnabled: true, payhereMerchantId: '1224892', payhereMerchantSecret: '4x99281a8c9e0d1f77a83b4291', payhereSandbox: false, paypalEnabled: true, paypalClientId: 'sb-client-id-helzerx-cloud-live', paypalSandbox: false, cardEnabled: true, cardAutoBilling: true, cryptoEnabled: true, cryptoUsdtAddress: 'TQn9Y2khEsLJW1ChVWFMSMeRDow5KMNPcq', cryptoBtcAddress: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh', bankEnabled: true, bankName: 'Commercial Bank of Ceylon / Bank of Ceylon', bankAccountName: 'HelzerX Cloud Pvt Ltd', bankAccountNumber: '8004928190', bankBranch: 'Colombo Main Branch (001)', bankSwiftCode: 'CCEYLKLYXXX', bankInstructions: 'Please include your Invoice Number in the payment reference / deposit slip memo.' };
+export const INITIAL_PAYMENT_SETTINGS: PaymentGatewaySettings = {
+  payhereEnabled: false,
+  payhereMerchantId: '',
+  payhereMerchantSecret: '',
+  payhereSandbox: true,
+  paypalEnabled: false,
+  paypalClientId: '',
+  paypalSandbox: true,
+  cardEnabled: false,
+  cardAutoBilling: false,
+  cryptoEnabled: false,
+  cryptoUsdtAddress: '',
+  cryptoBtcAddress: '',
+  bankEnabled: false,
+  bankName: '',
+  bankAccountName: '',
+  bankAccountNumber: '',
+  bankBranch: '',
+  bankSwiftCode: '',
+  bankInstructions: '',
+};
 
 export const INITIAL_SUPPORT_TICKETS: SupportTicket[] = [];
 export const INITIAL_TLDS: DomainTld[] = [
@@ -206,11 +216,7 @@ export const INITIAL_TLDS: DomainTld[] = [
 
 export const INITIAL_ORDERS: HostingOrder[] = [];
 export const INITIAL_PAYMENT_RECORDS: PaymentRecord[] = [];
-export const INITIAL_CUSTOMERS: CustomerRecord[] = [
-  { id: 'usr-admin-1', name: 'Nethum Menura', email: 'nethummenura198@gmail.com', phone: '+94 77 123 4567', country: 'Sri Lanka', address: 'World Trade Center, Colombo 01', role: 'admin', status: 'active', createdAt: '2025-01-01T00:00:00Z', lastLogin: '2026-02-26T18:30:00Z', totalSpendUsd: 148.5, activeServicesCount: 2, openTicketsCount: 1, notes: 'Superadmin & Primary System Owner' },
-  { id: 'usr-cust-2', name: 'Kasun Bandara', email: 'kasun.b@gamerzone.lk', phone: '+94 71 892 1199', country: 'Sri Lanka', address: 'Kandy Road, Colombo', role: 'customer', status: 'active', createdAt: '2025-08-15T10:00:00Z', lastLogin: '2026-02-25T14:20:00Z', totalSpendUsd: 284.0, activeServicesCount: 3, openTicketsCount: 0 },
-  { id: 'usr-cust-3', name: 'Marcus Vance', email: 'marcus.vance@clanwarlord.gg', phone: '+1 (214) 555-0192', country: 'United States', address: 'Dallas, TX', role: 'customer', status: 'active', createdAt: '2025-11-20T08:00:00Z', lastLogin: '2026-02-24T22:10:00Z', totalSpendUsd: 195.0, activeServicesCount: 1, openTicketsCount: 0 },
-];
+export const INITIAL_CUSTOMERS: CustomerRecord[] = [];
 
 export const INITIAL_STATUS_COMPONENTS: StatusComponent[] = [
   { id: 'cmp-dal-nodes', name: 'Dallas Ryzen 9 9950X Game Nodes (US-East)', category: 'Game Nodes', status: 'Operational', description: 'Hardware clusters in Tier 4 Equinix DA11 Dallas data center.', uptimePercent30d: 99.99, updatedAt: '2026-02-26T18:00:00Z' },
