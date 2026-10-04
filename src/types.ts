@@ -31,6 +31,7 @@ export type PageRoute =
   | 'status'
   | 'blog'
   | 'dashboard'
+  | 'client-dashboard'
   | 'admin'
   | 'admin-login'
   | 'datacenter'
