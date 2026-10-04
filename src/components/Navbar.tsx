@@ -32,7 +32,6 @@ export const Navbar: React.FC = () => {
     dismissAnnouncement,
     currentPage,
     navigateTo,
-    setIsClientAreaOpen,
   } = useApp();
 
   const [isCurrencyDropdownOpen, setIsCurrencyDropdownOpen] = useState(false);
