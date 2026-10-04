@@ -33,7 +33,11 @@ dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 3000);
-const DATA_DIR = path.resolve(__dirname, 'data');
+const LEGACY_DATA_DIR = path.resolve(__dirname, 'data');
+const DATA_DIR = path.resolve(
+  process.env.ARVEX_DATA_DIR
+    || (String(process.env.NODE_ENV || '').toLowerCase() === 'production' ? '/var/lib/helzerx/data' : LEGACY_DATA_DIR)
+);
 const CMS_FILE = path.join(DATA_DIR, 'cms.json');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const SESSIONS_FILE = path.join(DATA_DIR, 'auth-sessions.json');
@@ -115,6 +119,40 @@ const otpChallenges = new Map<string, OtpChallenge>();
 const inMemorySessions = new Map<string, SessionData>();
 
 // Helpers
+async function ensurePersistentDataStore(): Promise<void> {
+  await fs.mkdir(DATA_DIR, { recursive: true, mode: 0o700 });
+
+  // One-time migration from the old repository-local data directory.
+  // Runtime/auth data is no longer read from tracked files, so git pull/reset
+  // cannot replace customer accounts or payment records.
+  if (DATA_DIR === LEGACY_DATA_DIR) return;
+
+  const filesToMigrate = [
+    'users.json',
+    'auth-sessions.json',
+    'payment-orders.json',
+    'payments.json',
+    'security-logs.json',
+    'pterodactyl-client-tokens.json',
+    'cms.json',
+  ];
+
+  for (const name of filesToMigrate) {
+    const source = path.join(LEGACY_DATA_DIR, name);
+    const target = path.join(DATA_DIR, name);
+    try {
+      await fs.access(target);
+      continue;
+    } catch {}
+
+    try {
+      const raw = await fs.readFile(source);
+      await fs.writeFile(target, raw, { mode: 0o600 });
+      console.log(`[HelzerX Data] Migrated ${name} to persistent storage.`);
+    } catch {}
+  }
+}
+
 async function readJson<T>(file: string, fallback: T): Promise<T> {
   try {
     const raw = await fs.readFile(file, 'utf8');
@@ -457,6 +495,7 @@ async function ensureCmsConfigInitialized() {
 }
 
 async function start() {
+  await ensurePersistentDataStore();
   await ensureCmsConfigInitialized();
 
   const app = express();
