@@ -197,6 +197,22 @@ export const AuthModal: React.FC = () => {
     }
   };
 
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (!pasted) return;
+
+    const digits = pasted.padEnd(6, '').slice(0, 6).split('');
+    setOtpDigits(Array.from({ length: 6 }, (_, i) => digits[i] || ''));
+    otpInputRefs.current[Math.min(pasted.length, 5)]?.focus();
+  };
+
+  useEffect(() => {
+    if (!challengeId) return;
+    const timer = window.setTimeout(() => otpInputRefs.current[0]?.focus(), 50);
+    return () => window.clearTimeout(timer);
+  }, [challengeId]);
+
   const fillTestOtp = (codeToUse?: string) => {
     const target = (codeToUse || devOtpCode || '123456').replace(/\D/g, '').slice(0, 6);
     const digits = target.padEnd(6, '0').split('');
@@ -277,22 +293,6 @@ export const AuthModal: React.FC = () => {
         const data = await res.json().catch(() => ({}));
 
         if (!res.ok) {
-          if (fullOtp === '123456' || (devOtpCode && fullOtp === devOtpCode)) {
-            if (authModalTab === 'admin') {
-              login('admin@helzerx.cloud', 'admin', 'Root Administrator');
-              setSuccessMsg('2FA Identity Verified. Entering Root Admin Panel...');
-              setTimeout(() => {
-                close();
-                setIsAdminOpen(true);
-              }, 500);
-              return;
-            } else {
-              login(email || 'alex@helzerx.cloud', 'customer', `${firstName} ${lastName}`.trim() || 'Alex Perera');
-              setSuccessMsg('Account verified & saved to database. Welcome!');
-              setTimeout(close, 500);
-              return;
-            }
-          }
           throw new Error(data.error || 'Invalid 6-digit verification code.');
         }
 
@@ -345,9 +345,7 @@ export const AuthModal: React.FC = () => {
         if (data.devCode) setDevOtpCode(data.devCode);
         setSuccessMsg(data.message || 'A 6-digit recovery code has been sent to your email.');
       } catch (err: any) {
-        setChallengeId('demo-forgot-challenge');
-        setDevOtpCode('123456');
-        setSuccessMsg('Security reset code generated: Use 123456 to reset.');
+        setErrorMsg(err.message || 'Unable to send the password reset code. Please try again.');
       } finally {
         setBusy(false);
       }
@@ -644,6 +642,9 @@ export const AuthModal: React.FC = () => {
                         value={digit}
                         onChange={(e) => handleOtpChange(i, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                        onPaste={handleOtpPaste}
+                        autoComplete={i === 0 ? 'one-time-code' : 'off'}
+                        aria-label={`Verification code digit ${i + 1}`}
                         className="h-13 w-11 sm:w-13 text-center text-xl font-mono font-black rounded-2xl bg-[#f4f5fa] border border-[#e4e7f2] text-purple-900 focus:bg-white focus:border-[#7934f5] focus:ring-4 focus:ring-purple-500/10 focus:outline-none transition shadow-inner"
                       />
                     ))}
@@ -668,7 +669,7 @@ export const AuthModal: React.FC = () => {
 
                   {/* Resend timer */}
                   <div className="flex items-center justify-between text-xs text-[#8e92a4] pt-1 font-medium">
-                    <span>Didn&apos;t receive code?</span>
+                    <span>Didn&apos;t receive code? Check Spam/Promotions too.</span>
                     {resendTimer > 0 ? (
                       <span className="font-mono text-purple-600">Resend in {resendTimer}s</span>
                     ) : (
