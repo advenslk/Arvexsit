@@ -134,6 +134,17 @@ const AuthModalContent: React.FC = () => {
     return () => clearInterval(interval);
   }, [challengeId, resendTimer]);
 
+  const focusOtpInput = () => {
+    if (!challengeId) return;
+    const timer = window.setTimeout(() => otpInputRefs.current[0]?.focus(), 50);
+    return () => window.clearTimeout(timer);
+  };
+
+  useEffect(() => {
+    if (!isAuthModalOpen || !challengeId) return;
+    return focusOtpInput();
+  }, [isAuthModalOpen, challengeId]);
+
   if (!isAuthModalOpen) return null;
 
   const close = () => {
@@ -206,12 +217,6 @@ const AuthModalContent: React.FC = () => {
     setOtpDigits(Array.from({ length: 6 }, (_, i) => digits[i] || ''));
     otpInputRefs.current[Math.min(pasted.length, 5)]?.focus();
   };
-
-  useEffect(() => {
-    if (!challengeId) return;
-    const timer = window.setTimeout(() => otpInputRefs.current[0]?.focus(), 50);
-    return () => window.clearTimeout(timer);
-  }, [challengeId]);
 
   const fillTestOtp = (codeToUse?: string) => {
     const target = (codeToUse || devOtpCode || '123456').replace(/\D/g, '').slice(0, 6);
