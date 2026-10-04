@@ -87,7 +87,7 @@ export const CheckoutPage: React.FC = () => {
       showNotification('Enter a server name.', 'error');
       return;
     }
-    if (!phone.trim() || !/^\\+?[0-9 ()-]{7,20}$/.test(phone.trim())) {
+    if (!phone.trim() || !/^\+?[0-9 ()-]{7,20}$/.test(phone.trim())) {
       showNotification('Enter a valid phone number.', 'error');
       return;
     }
