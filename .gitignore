@@ -9,3 +9,11 @@ coverage/
 data/cms.json
 data/cms.json.tmp
 data/automation/
+
+# Runtime/persistent application data (kept outside the Git working tree in production)
+data/users.json
+data/auth-sessions.json
+data/payment-orders.json
+data/payments.json
+data/security-logs.json
+data/pterodactyl-client-tokens.json
