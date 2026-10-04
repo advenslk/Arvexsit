@@ -438,25 +438,54 @@ async function sendMail(to: string, subject: string, text: string): Promise<bool
     console.error('[HelzerX Email] Resend is not configured. Set RESEND_API_KEY and RESEND_FROM.');
     return false;
   }
-  try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ from: RESEND_FROM, to: [to], subject, text }),
-    });
-    if (!res.ok) {
+
+  const maxAttempts = 3;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ from: RESEND_FROM, to: [to], subject, text }),
+        signal: AbortSignal.timeout(20000),
+      });
+
       const details = await res.text().catch(() => '');
-      console.error(`[HelzerX Email] Resend rejected email (${res.status}): ${details}`);
-      return false;
+
+      if (res.ok) {
+        let messageId = '';
+        try {
+          messageId = String(JSON.parse(details)?.id || '');
+        } catch {}
+
+        console.log(
+          `[HelzerX Email] Resend accepted email to ${to} (attempt ${attempt})${messageId ? ` id=${messageId}` : ''}`
+        );
+        return true;
+      }
+
+      const transient = res.status === 408 || res.status === 429 || res.status >= 500;
+      console.error(
+        `[HelzerX Email] Resend rejected email (${res.status}, attempt ${attempt}): ${details}`
+      );
+
+      if (!transient || attempt === maxAttempts) return false;
+    } catch (err) {
+      console.error(
+        `[HelzerX Email] Resend request failed (attempt ${attempt}/${maxAttempts}):`,
+        err
+      );
+      if (attempt === maxAttempts) return false;
     }
-    return true;
-  } catch (err) {
-    console.error('Failed to send email via Resend:', err);
-    return false;
+
+    await new Promise((resolve) => setTimeout(resolve, attempt * 1500));
   }
+
+  return false;
 }
 
 // Seed initial CMS config if empty or not found
