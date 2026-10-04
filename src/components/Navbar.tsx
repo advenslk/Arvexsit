@@ -267,7 +267,7 @@ export const Navbar: React.FC = () => {
               )}
               <button
                 type="button"
-                onClick={() => navigateTo('client-dashboard')}
+                onClick={() => { window.location.assign('/client-dashboard'); }}
                 className="flex items-center gap-2 rounded-full bg-[#0b0f19] px-4 py-2 text-xs font-bold text-white hover:bg-slate-900 shadow-md transition"
               >
                 <UserIcon className="w-3.5 h-3.5 text-blue-400" />
@@ -374,8 +374,7 @@ export const Navbar: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    navigateTo('client-dashboard');
-                    setIsMobileMenuOpen(false);
+                    window.location.assign('/client-dashboard');
                   }}
                   className="flex-1 rounded-full bg-[#0b0f19] py-3 text-center text-xs font-bold text-white shadow-md flex items-center justify-center gap-2"
                 >
