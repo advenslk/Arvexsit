@@ -1695,7 +1695,10 @@ async function start() {
       statusMessage: order.status,
       orderId: order.orderId,
       amountLkr: order.amountLkr,
+      amountUsd: order.amountUsd,
       currency: order.currency,
+      planId: order.planId,
+      planName: order.planName,
       transactionId: order.transactionId || null,
     });
   });
