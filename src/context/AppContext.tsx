@@ -1529,7 +1529,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const openCheckout = (plan: HostingPlan) => {
     setSelectedPlanForCheckout(plan);
-    setIsCheckoutModalOpen(true);
+    setIsCheckoutModalOpen(false);
+    navigateTo('checkout', { planId: plan.id });
   };
 
   const dismissAnnouncement = () => {
