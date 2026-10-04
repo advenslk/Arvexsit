@@ -453,24 +453,37 @@ function buildSecurityEmail(code: string, title: string, intro: string, label: s
 
   const html = `<!doctype html>
 <html>
-  <body style="margin:0;background:#f7f7f8;font-family:Arial,Helvetica,sans-serif;color:#202124">
-    <div style="max-width:560px;margin:0 auto;padding:28px 16px">
-      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:28px">
-        <div style="font-size:14px;font-weight:700;color:#202124;margin-bottom:24px">HelzerX Cloud</div>
-        <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:#202124">${title}</h1>
-        <p style="margin:0 0 22px;font-size:14px;line-height:1.6;color:#5f6368">${intro}</p>
-        <div style="padding:18px;text-align:center;border:1px solid #dadce0;border-radius:10px;background:#f8f9fa">
-          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#5f6368">${label}</div>
-          <div style="margin-top:8px;font-size:32px;line-height:1.1;font-weight:700;letter-spacing:8px;color:#202124">${code}</div>
+  <body style="margin:0;padding:0;background:#f5f3ff;font-family:Arial,Helvetica,sans-serif;color:#211936">
+    <div style="max-width:600px;margin:0 auto;padding:32px 16px">
+      <div style="background:#ffffff;border:1px solid #e7e0f7;border-radius:18px;overflow:hidden">
+        <div style="padding:22px 28px;background:#6d28d9">
+          <div style="font-size:18px;line-height:1;font-weight:800;color:#ffffff;letter-spacing:.2px">HelzerX Cloud</div>
+          <div style="margin-top:7px;font-size:11px;line-height:1.4;color:#e9ddff;letter-spacing:1.2px;text-transform:uppercase">Secure account verification</div>
         </div>
-        <p style="margin:20px 0 0;font-size:13px;line-height:1.6;color:#5f6368">
-          This code expires in 10 minutes.<br>
-          If you did not request this email, you can safely ignore it.
-        </p>
-        <p style="margin:20px 0 0;padding-top:16px;border-top:1px solid #eee;font-size:12px;line-height:1.6;color:#80868b">
-          HelzerX Cloud · <a href="https://helzerx.cyou" style="color:#5f6368">helzerx.cyou</a><br>
-          ${year} HelzerX Cloud. All rights reserved.
-        </p>
+
+        <div style="padding:30px 28px">
+          <h1 style="margin:0 0 10px;font-size:24px;line-height:1.3;color:#24134f">${title}</h1>
+          <p style="margin:0 0 24px;font-size:14px;line-height:1.7;color:#625c72">${intro}</p>
+
+          <div style="border:1px solid #e5def5;border-radius:14px;background:#faf8ff;padding:20px;text-align:center">
+            <div style="font-size:10px;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:#7656a8">${label}</div>
+            <div style="margin-top:10px;font-size:36px;line-height:1.1;font-weight:800;letter-spacing:8px;color:#5b21b6">${code}</div>
+          </div>
+
+          <div style="margin-top:20px;padding:14px 16px;border-radius:10px;background:#f8f7fb;color:#6b6575;font-size:12px;line-height:1.7">
+            <strong style="color:#40394d">Valid for 10 minutes.</strong><br>
+            If you did not request this email, you can safely ignore it.
+          </div>
+
+          <div style="margin-top:24px;padding-top:18px;border-top:1px solid #eeeaf4;font-size:11px;line-height:1.7;color:#817a90">
+            This is an automated security email from HelzerX Cloud.<br>
+            <a href="https://helzerx.cyou" style="color:#6d28d9;text-decoration:none;font-weight:600">helzerx.cyou</a>
+          </div>
+        </div>
+
+        <div style="padding:16px 28px;background:#211936;text-align:center;color:#cfc7df;font-size:10px;line-height:1.6">
+          © ${year} HelzerX Cloud. All rights reserved.
+        </div>
       </div>
     </div>
   </body>
