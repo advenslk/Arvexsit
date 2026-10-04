@@ -13,6 +13,7 @@ import {
   Sliders,
   Layers,
   HelpCircle,
+  ChevronRight,
 } from 'lucide-react';
 import { HostingPlan } from '../../types';
 
@@ -25,6 +26,7 @@ export const PlansPage: React.FC = () => {
     formatPrice,
     openCheckout,
     currency,
+    navigateTo,
   } = useApp();
 
   const [selectedGameId, setSelectedGameId] = useState<string>('minecraft');
