@@ -1485,7 +1485,7 @@ class AuthModalErrorBoundary extends React.Component<
   { children: React.ReactNode },
   { hasError: boolean }
 > {
-  state = { hasError: false };
+  state: { hasError: boolean; errorMessage: string } = { hasError: false, errorMessage: '' };
   private readonly childContent: React.ReactNode;
 
   constructor(props: { children: React.ReactNode }) {
@@ -1493,12 +1493,15 @@ class AuthModalErrorBoundary extends React.Component<
     this.childContent = props.children;
   }
 
-  static getDerivedStateFromError() {
-    return { hasError: true };
+  static getDerivedStateFromError(error: unknown) {
+    return {
+      hasError: true,
+      errorMessage: error instanceof Error ? error.message : String(error),
+    };
   }
 
-  componentDidCatch(error: Error) {
-    console.error('[HelzerX AuthModal] Render error:', error);
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error('[HelzerX AuthModal] Render error:', error, info.componentStack);
   }
 
   render() {
@@ -1511,6 +1514,11 @@ class AuthModalErrorBoundary extends React.Component<
             </div>
             <h2 className="text-lg font-extrabold text-slate-900">Authentication panel could not load</h2>
             <p className="mt-2 text-sm text-slate-500">The main website is still running. Please reload the page and try again.</p>
+            {this.state.errorMessage && (
+              <pre className="mt-4 max-h-28 overflow-auto rounded-xl bg-slate-100 p-3 text-left text-[10px] leading-4 text-rose-700 whitespace-pre-wrap">
+                {this.state.errorMessage}
+              </pre>
+            )}
             <button
               type="button"
               onClick={() => window.location.reload()}
