@@ -77,6 +77,7 @@ function requiredProductionSecret(name: string, value: string): string {
 const ADMIN_EMAIL = String(process.env.ADMIN_EMAIL || 'admin@helzerx.cloud').trim().toLowerCase();
 const ADMIN_PASSWORD = requiredProductionSecret('ADMIN_PASSWORD', String(process.env.ADMIN_PASSWORD || ''));
 const TOKEN_SECRET = requiredProductionSecret('ADMIN_TOKEN_SECRET', String(process.env.ADMIN_TOKEN_SECRET || ''));
+const PUBLIC_ORIGIN = String(process.env.PUBLIC_ORIGIN || '').trim().replace(/\/+$/, '');
 const RESEND_API_KEY = String(process.env.RESEND_API_KEY || '').trim();
 const RESEND_FROM = String(process.env.RESEND_FROM || '').trim();
 const PAYHERE_MERCHANT_ID = String(process.env.PAYHERE_MERCHANT_ID || '').trim();
