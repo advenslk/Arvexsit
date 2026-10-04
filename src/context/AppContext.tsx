@@ -464,6 +464,46 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return null;
   });
 
+  // Reconcile the browser auth state with the real server session on startup.
+  // localStorage is only a UI cache; authenticated API routes remain authoritative.
+  useEffect(() => {
+    let cancelled = false;
+
+    const syncServerSession = async () => {
+      try {
+        const response = await fetch('/api/auth/me', {
+          method: 'GET',
+          credentials: 'same-origin',
+          cache: 'no-store',
+        });
+
+        if (cancelled) return;
+
+        if (response.ok) {
+          const data = await response.json().catch(() => null);
+          if (data?.authenticated && data?.user) {
+            setUser(data.user as UserAccount);
+            saveAuthSession(data.user as UserAccount);
+            return;
+          }
+        }
+
+        setUser(null);
+        try {
+          localStorage.removeItem(AUTH_SESSION_KEY);
+          localStorage.removeItem(LOCAL_STORAGE_PREFIX + 'user');
+        } catch {}
+      } catch {
+        // Keep the cached UI state during a temporary network failure.
+      }
+    };
+
+    void syncServerSession();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Orders, Servers & Infrastructure
   const [orders, setOrders] = useState<HostingOrder[]>(() =>
     getStored('orders', INITIAL_ORDERS)
