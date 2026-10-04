@@ -30,89 +30,95 @@ export const AffiliatesPage: React.FC = () => {
   };
 
   return (
-    <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 animate-in fade-in duration-300">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-xs text-slate-400 mb-8 overflow-x-auto whitespace-nowrap pb-2">
-        <button onClick={() => navigateTo('home')} className="hover:text-white transition-colors">Home</button>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-600 shrink-0" />
-        <span className="text-cyan-400 font-semibold">Affiliate &amp; Referral Partner Program</span>
-      </nav>
+    <div className="gabrun-light-canvas min-h-screen text-slate-800 font-sans pb-24">
+      {/* Top Hero Banner matching HomePage Gabrun style */}
+      <section className="gabrun-hero-gradient relative isolate overflow-hidden pt-10 pb-16 mb-12 border-b border-slate-200/80">
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#cbd5e120_1px,transparent_1px),linear-gradient(to_bottom,#cbd5e120_1px,transparent_1px)] bg-[size:4rem_4rem]" />
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-2 text-xs text-slate-500 mb-8 overflow-x-auto whitespace-nowrap pb-1">
+            <button onClick={() => navigateTo('home')} className="hover:text-blue-600 transition-colors font-medium">Home</button>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <span className="text-blue-600 font-semibold">Affiliate &amp; Referral Partner Program</span>
+          </nav>
 
-      {/* Hero */}
-      <div className="relative rounded-3xl overflow-hidden border border-emerald-500/20 bg-gradient-to-br from-[#0c0e17] via-[#0f211d] to-[#0c0e17] p-8 sm:p-14 mb-16 shadow-2xl">
-        <div className="max-w-3xl relative z-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-5">
-            <Gift className="w-4 h-4" />
-            <span>15% Lifetime Recurring Monthly Commission</span>
-          </div>
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-700 text-xs font-semibold uppercase tracking-wider mb-5 shadow-sm">
+              <Gift className="w-4 h-4 text-emerald-600" />
+              <span>15% Lifetime Recurring Monthly Commission</span>
+            </div>
 
-          <h1 className="text-4xl sm:text-6xl font-black text-white font-display tracking-tight leading-tight mb-5">
-            Earn with the <br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400">
-              HelzerX Affiliate Program
-            </span>
-          </h1>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 font-display tracking-tight leading-tight mb-5">
+              Earn with the <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600">
+                HelzerX Affiliate Program
+              </span>
+            </h1>
 
-          <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-8 max-w-2xl">
-            Recommend our blazing-fast game servers, Discord bot containers, and cloud VPS instances to your friends, Discord servers, and YouTube audience. Earn lifetime recurring commissions on every active renewal.
-          </p>
+            <p className="text-slate-600 text-base sm:text-lg leading-relaxed mb-8 max-w-2xl font-normal">
+              Recommend our blazing-fast game servers, Discord bot containers, and cloud VPS instances to your friends, Discord servers, and YouTube audience. Earn lifetime recurring commissions on every active renewal.
+            </p>
 
-          <div className="flex flex-wrap items-center gap-4">
-            <button
-              onClick={() => {
-                const el = document.getElementById('affiliate-link-card');
-                el?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="px-8 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 cursor-pointer"
-            >
-              <span>Get Your Referral Link</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-            <div className="flex items-center gap-3 text-xs text-slate-300 bg-white/5 border border-white/10 px-4 py-3.5 rounded-xl">
-              <DollarSign className="w-4 h-4 text-emerald-400" />
-              <span>Instant Payouts via PayPal / Crypto / Bank</span>
+            <div className="flex flex-wrap items-center gap-4">
+              <button
+                onClick={() => {
+                  const el = document.getElementById('affiliate-link-card');
+                  el?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="px-7 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm tracking-wide transition-all shadow-lg shadow-blue-500/25 flex items-center gap-2 cursor-pointer"
+              >
+                <span>Get Your Referral Link</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+              <div className="flex items-center gap-3 text-xs font-medium text-slate-700 bg-white border border-slate-200/80 px-4 py-3.5 rounded-xl shadow-xs">
+                <DollarSign className="w-4 h-4 text-emerald-600" />
+                <span>Instant Payouts via PayPal / Crypto / Bank</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Referral Link Box */}
-      <div id="affiliate-link-card" className="max-w-3xl mx-auto bg-[#11131e] border border-emerald-500/30 rounded-3xl p-8 mb-16 shadow-2xl">
-        <h2 className="text-xl font-bold text-white font-display mb-2">
-          Your Unique Referral Link
-        </h2>
-        <p className="text-xs text-slate-400 mb-6">
-          Share this link on your YouTube video descriptions, Discord announcements, or website banners.
-        </p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Referral Link Box */}
+        <div id="affiliate-link-card" className="max-w-3xl mx-auto bg-white border border-slate-200 rounded-3xl p-8 mb-16 shadow-sm">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 font-display mb-2">
+            Your Unique Referral Link
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 mb-6">
+            Share this link on your YouTube video descriptions, Discord announcements, or website banners.
+          </p>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-[#161926] p-2.5 rounded-2xl border border-white/10 mb-6">
-          <input
-            type="text"
-            readOnly
-            value={affiliateUrl}
-            className="w-full bg-transparent border-none text-white font-mono text-xs px-3 py-2 focus:outline-none"
-          />
-          <button
-            onClick={handleCopy}
-            className="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer"
-          >
-            <Copy className="w-3.5 h-3.5" />
-            <span>{copied ? 'Copied Link!' : 'Copy Link'}</span>
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-white/5 text-center text-xs">
-          <div className="p-4 rounded-xl bg-white/5">
-            <p className="text-slate-400 mb-1">Commission Rate</p>
-            <p className="text-xl font-black text-emerald-400 font-display">15% Recurring</p>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-slate-50 p-2.5 rounded-2xl border border-slate-200 mb-6">
+            <input
+              type="text"
+              readOnly
+              value={affiliateUrl}
+              className="w-full bg-transparent border-none text-slate-900 font-mono text-xs sm:text-sm px-3 py-2 focus:outline-none"
+            />
+            <button
+              onClick={handleCopy}
+              className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer shadow-sm"
+            >
+              <Copy className="w-3.5 h-3.5" />
+              <span>{copied ? 'Copied Link!' : 'Copy Link'}</span>
+            </button>
           </div>
-          <div className="p-4 rounded-xl bg-white/5">
-            <p className="text-slate-400 mb-1">Cookie Window</p>
-            <p className="text-xl font-black text-white font-display">90 Days</p>
-          </div>
-          <div className="p-4 rounded-xl bg-white/5">
-            <p className="text-slate-400 mb-1">Payout Threshold</p>
-            <p className="text-xl font-black text-white font-display">$20.00 Minimum</p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-100 text-center text-xs">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+              <p className="text-slate-500 mb-1 font-medium">Commission Rate</p>
+              <p className="text-xl font-black text-emerald-600 font-display">15% Recurring</p>
+            </div>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+              <p className="text-slate-500 mb-1 font-medium">Cookie Window</p>
+              <p className="text-xl font-black text-slate-900 font-display">90 Days</p>
+            </div>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+              <p className="text-slate-500 mb-1 font-medium">Payout Threshold</p>
+              <p className="text-xl font-black text-slate-900 font-display">$20.00 Minimum</p>
+            </div>
           </div>
         </div>
       </div>

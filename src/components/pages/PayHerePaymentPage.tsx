@@ -76,10 +76,234 @@ export const PayHerePaymentPage: React.FC = () => {
     } catch (err) { setStatus('failed'); setError(err instanceof Error ? err.message : 'Unable to start PayHere checkout.'); }
   };
 
-  if (!currentUser) return <div className="min-h-[70vh] flex items-center justify-center px-6"><div className="max-w-md rounded-3xl border border-white/10 bg-white/[0.035] p-8 text-center"><LockKeyhole className="mx-auto mb-4 h-12 w-12 text-cyan-400" /><h1 className="text-2xl font-black text-white">Sign in required</h1><p className="mt-2 text-sm text-slate-400">Sign in to your HelzerX account before starting a secure payment.</p><button onClick={() => navigateTo('home')} className="mt-6 rounded-xl bg-cyan-500 px-5 py-3 text-sm font-bold text-black">Return to HelzerX</button></div></div>;
-  if (status === 'paid') return <div className="min-h-[75vh] flex items-center justify-center px-6 py-16"><div className="w-full max-w-2xl rounded-[2rem] border border-emerald-400/20 bg-[#0d1215] p-8 text-center shadow-2xl sm:p-12"><CheckCircle2 className="mx-auto h-16 w-16 text-emerald-400" /><div className="mt-5 text-xs font-black uppercase tracking-[0.25em] text-emerald-400">Payment verified</div><h1 className="mt-3 text-3xl font-black text-white">Payment confirmed</h1><p className="mx-auto mt-4 max-w-lg text-sm leading-7 text-slate-400">PayHere has verified the transaction on the HelzerX server. A staff member can now press Payment Done in the Discord order ticket to provision the service.</p><div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-left text-sm"><div className="flex justify-between gap-4"><span className="text-slate-500">Payment order</span><span className="font-mono font-bold text-white">{paymentOrderId}</span></div><div className="mt-3 flex justify-between gap-4"><span className="text-slate-500">Plan</span><span className="font-bold text-cyan-300">{plan?.name}</span></div><div className="mt-3 flex justify-between gap-4"><span className="text-slate-500">Amount</span><span className="font-bold text-white">LKR {amountLkr.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div></div><button onClick={() => navigateTo('dashboard')} className="mt-8 rounded-xl bg-cyan-500 px-6 py-3.5 text-sm font-black text-black">Open Dashboard</button></div></div>;
-  if (status === 'waiting') return <div className="min-h-[70vh] flex items-center justify-center px-6"><div className="max-w-lg rounded-3xl border border-cyan-400/20 bg-white/[0.035] p-8 text-center shadow-2xl"><Loader2 className="mx-auto h-12 w-12 animate-spin text-cyan-400" /><h1 className="mt-5 text-2xl font-black text-white">Verifying your payment</h1><p className="mt-2 text-sm leading-6 text-slate-400">PayHere is sending the final signed status to our server. Do not treat the browser return alone as proof of payment.</p><div className="mt-5 rounded-xl bg-black/20 p-3 font-mono text-xs text-slate-500">{paymentOrderId}</div></div></div>;
-  if (status === 'cancelled') return <div className="min-h-[70vh] flex items-center justify-center px-6"><div className="max-w-lg rounded-3xl border border-white/10 bg-white/[0.035] p-8 text-center"><Clock3 className="mx-auto mb-4 h-12 w-12 text-amber-400" /><h1 className="text-2xl font-black text-white">Payment cancelled</h1><p className="mt-2 text-sm text-slate-400">No successful payment was recorded.</p><button onClick={() => setStatus('ready')} className="mt-6 rounded-xl bg-white/10 px-5 py-3 text-sm font-bold text-white">Try Again</button></div></div>;
+  if (!currentUser) {
+    return (
+      <div className="gabrun-light-canvas min-h-screen text-slate-800 font-sans flex items-center justify-center px-6 py-20">
+        <div className="max-w-md w-full rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xl">
+          <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center mx-auto mb-4 text-blue-600">
+            <LockKeyhole className="h-7 w-7" />
+          </div>
+          <h1 className="text-2xl font-black text-slate-900 font-display">Sign In Required</h1>
+          <p className="mt-2 text-sm text-slate-500">
+            Sign in to your HelzerX customer account before starting a secure PayHere transaction.
+          </p>
+          <button
+            onClick={() => navigateTo('home')}
+            className="mt-6 w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 py-3 text-sm font-bold text-white shadow-md cursor-pointer"
+          >
+            Return to HelzerX
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  return <div className="min-h-[75vh] px-4 py-12 sm:px-6 lg:px-8"><div className="mx-auto max-w-3xl"><div className="mb-8 text-center"><div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-400/20 bg-cyan-400/10"><CreditCard className="h-7 w-7 text-cyan-300" /></div><h1 className="mt-5 text-3xl font-black text-white sm:text-4xl">Secure PayHere Checkout</h1><p className="mt-2 text-sm text-slate-400">{plan?.name} · LKR {amountLkr.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</p></div><div className="grid gap-6 lg:grid-cols-[1fr_300px]"><div className="rounded-3xl border border-white/10 bg-[#0e1119] p-6 shadow-2xl sm:p-8"><div className="mb-6 flex items-center gap-3 rounded-2xl border border-emerald-400/10 bg-emerald-400/[0.04] p-4"><ShieldCheck className="h-5 w-5 shrink-0 text-emerald-400" /><p className="text-xs leading-5 text-slate-400">Card details are entered directly on PayHere. HelzerX does not collect card numbers, CVV or banking credentials.</p></div><div className="grid gap-4 sm:grid-cols-2"><label className="text-xs font-semibold text-slate-400">Phone<input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0771234567" className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none focus:border-cyan-400" /></label><label className="text-xs font-semibold text-slate-400">City<input value={city} onChange={(e) => setCity(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none focus:border-cyan-400" /></label></div><label className="mt-4 block text-xs font-semibold text-slate-400">Billing address<input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="No. 1, Galle Road" className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none focus:border-cyan-400" /></label>{error && <div className="mt-5 flex items-start gap-2 rounded-xl border border-red-400/20 bg-red-400/[0.06] p-3 text-xs text-red-300"><AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />{error}</div>}<button onClick={startPayment} disabled={status === 'creating' || amountLkr <= 0} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-500 py-4 text-sm font-black text-black transition hover:bg-cyan-400 disabled:opacity-60">{status === 'creating' ? <Loader2 className="h-4 w-4 animate-spin" /> : <LockKeyhole className="h-4 w-4" />}{status === 'creating' ? 'Preparing secure checkout…' : `Continue to PayHere · LKR ${amountLkr.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`}</button></div><aside className="h-fit rounded-3xl border border-white/10 bg-white/[0.035] p-6"><div className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Order summary</div><h2 className="mt-4 text-lg font-black text-white">{plan?.name}</h2><div className="mt-5 space-y-3 text-xs"><div className="flex justify-between gap-3"><span className="text-slate-500">Account</span><span className="text-right text-slate-200">{customerEmail}</span></div><div className="flex justify-between gap-3"><span className="text-slate-500">Cycle</span><span className="font-bold text-white capitalize">{cycle}</span></div><div className="flex justify-between gap-3 border-t border-white/10 pt-4"><span className="font-bold text-slate-300">Total</span><span className="text-base font-black text-cyan-300">LKR {amountLkr.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</span></div></div><p className="mt-6 text-[11px] leading-5 text-slate-500">Payment is activated only after the signed PayHere server notification is verified.</p></aside></div></div></div>;
+  if (status === 'paid') {
+    return (
+      <div className="gabrun-light-canvas min-h-screen text-slate-800 font-sans flex items-center justify-center px-6 py-20">
+        <div className="w-full max-w-xl rounded-3xl border border-emerald-200 bg-white p-8 sm:p-12 text-center shadow-xl">
+          <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto mb-4">
+            <CheckCircle2 className="h-8 w-8" />
+          </div>
+          <div className="text-xs font-black uppercase tracking-[0.2em] text-emerald-600 mb-1">
+            Payment Verified
+          </div>
+          <h1 className="text-3xl font-black text-slate-900 font-display">
+            Payment Confirmed
+          </h1>
+          <p className="mx-auto mt-3 max-w-md text-sm text-slate-500 leading-relaxed">
+            PayHere has verified the transaction on the HelzerX server. Your service provisioning is initiated.
+          </p>
+          <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-left text-xs text-slate-600 space-y-2.5">
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-400">Payment Order ID:</span>
+              <span className="font-mono font-bold text-slate-900">{paymentOrderId}</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-400">Hosting Plan:</span>
+              <span className="font-bold text-blue-700">{plan?.name}</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-400">Total Settled:</span>
+              <span className="font-bold text-slate-900">
+                LKR {amountLkr.toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={() => navigateTo('dashboard')}
+            className="mt-8 w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-500/25 cursor-pointer"
+          >
+            Open Client Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === 'waiting') {
+    return (
+      <div className="gabrun-light-canvas min-h-screen text-slate-800 font-sans flex items-center justify-center px-6 py-20">
+        <div className="max-w-md w-full rounded-3xl border border-blue-200 bg-white p-8 text-center shadow-xl">
+          <Loader2 className="mx-auto h-12 w-12 animate-spin text-blue-600" />
+          <h1 className="mt-5 text-2xl font-black text-slate-900 font-display">
+            Verifying Your Payment
+          </h1>
+          <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+            PayHere is sending the signed payment confirmation status to our secure server webhook.
+          </p>
+          <div className="mt-5 rounded-xl bg-slate-50 border border-slate-200 p-3 font-mono text-xs text-slate-500">
+            {paymentOrderId}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === 'cancelled') {
+    return (
+      <div className="gabrun-light-canvas min-h-screen text-slate-800 font-sans flex items-center justify-center px-6 py-20">
+        <div className="max-w-md w-full rounded-3xl border border-amber-200 bg-white p-8 text-center shadow-xl">
+          <div className="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center mx-auto mb-4 text-amber-600">
+            <Clock3 className="h-7 w-7" />
+          </div>
+          <h1 className="text-2xl font-black text-slate-900 font-display">
+            Payment Cancelled
+          </h1>
+          <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+            No transaction charges were completed. You can restart checkout at any time.
+          </p>
+          <button
+            onClick={() => setStatus('ready')}
+            className="mt-6 w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 py-3 text-sm font-bold text-white shadow-md cursor-pointer"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="gabrun-light-canvas min-h-screen text-slate-800 font-sans pb-24">
+      {/* Top Hero Banner */}
+      <section className="gabrun-hero-gradient relative isolate overflow-hidden pt-10 pb-16 sm:pt-14 sm:pb-20 text-white shadow-sm mb-12">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+          <div className="gabrun-grid-lines absolute inset-0 opacity-30" />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-blue-400/25 blur-[120px] animate-pulse-glow" />
+        </div>
+
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/15 px-4 py-1.5 text-xs font-semibold text-white shadow-sm backdrop-blur-md mb-3">
+            <CreditCard className="w-3.5 h-3.5 text-cyan-300" />
+            <span>Sri Lanka Central Bank Approved Gateway</span>
+          </div>
+          <h1 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-2 leading-tight">
+            Secure PayHere Checkout
+          </h1>
+          <p className="text-blue-100 text-sm sm:text-base leading-relaxed">
+            {plan?.name} · LKR {amountLkr.toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+          </p>
+        </div>
+      </section>
+
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 -mt-16 relative z-20">
+        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+          {/* Main Payment Form Card */}
+          <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_30px_-5px_rgba(15,23,42,0.06)] sm:p-8">
+            <div className="mb-6 flex items-center gap-3 rounded-2xl border border-blue-200 bg-blue-50/70 p-4">
+              <ShieldCheck className="h-5 w-5 shrink-0 text-blue-600" />
+              <p className="text-xs leading-5 text-slate-700">
+                Card credentials are entered directly inside PayHere&apos;s PCI-DSS compliant iframe. HelzerX never stores card numbers.
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="text-xs font-bold text-slate-700">
+                Mobile Phone <span className="text-rose-500">*</span>
+                <input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="0771234567"
+                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:bg-white transition-colors"
+                />
+              </label>
+
+              <label className="text-xs font-bold text-slate-700">
+                City <span className="text-rose-500">*</span>
+                <input
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:bg-white transition-colors"
+                />
+              </label>
+            </div>
+
+            <label className="mt-4 block text-xs font-bold text-slate-700">
+              Billing Address <span className="text-rose-500">*</span>
+              <input
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="No. 1, Galle Road"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:bg-white transition-colors"
+              />
+            </label>
+
+            {error && (
+              <div className="mt-5 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
+                {error}
+              </div>
+            )}
+
+            <button
+              onClick={startPayment}
+              disabled={status === 'creating' || amountLkr <= 0}
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 py-4 text-sm font-black text-white shadow-lg shadow-blue-500/25 transition-all cursor-pointer disabled:opacity-60"
+            >
+              {status === 'creating' ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <LockKeyhole className="h-4 w-4" />
+              )}
+              {status === 'creating'
+                ? 'Preparing secure checkout…'
+                : `Continue to PayHere · LKR ${amountLkr.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`}
+            </button>
+          </div>
+
+          {/* Order Summary Aside */}
+          <aside className="h-fit rounded-3xl border border-slate-200/80 bg-white p-6 shadow-[0_10px_30px_-5px_rgba(15,23,42,0.06)]">
+            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+              Order Summary
+            </div>
+            <h2 className="mt-3 text-lg font-black text-slate-900 font-display">
+              {plan?.name}
+            </h2>
+            <div className="mt-5 space-y-3 text-xs text-slate-600">
+              <div className="flex justify-between gap-3">
+                <span className="text-slate-400">Account</span>
+                <span className="text-right text-slate-800 font-semibold truncate max-w-[150px]">
+                  {customerEmail}
+                </span>
+              </div>
+              <div className="flex justify-between gap-3">
+                <span className="text-slate-400">Cycle</span>
+                <span className="font-bold text-slate-800 capitalize">{cycle}</span>
+              </div>
+              <div className="flex justify-between gap-3 border-t border-slate-100 pt-3">
+                <span className="font-bold text-slate-800">Total</span>
+                <span className="text-base font-black text-blue-600">
+                  LKR {amountLkr.toLocaleString('en-LK', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+            </div>
+            <p className="mt-6 text-[11px] leading-5 text-slate-400">
+              Payment is activated instantly when PayHere confirms the signed transaction.
+            </p>
+          </aside>
+        </div>
+      </div>
+    </div>
+  );
 };

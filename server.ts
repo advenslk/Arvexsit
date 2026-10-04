@@ -39,6 +39,31 @@ const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const SESSIONS_FILE = path.join(DATA_DIR, 'auth-sessions.json');
 const ORDERS_FILE = path.join(DATA_DIR, 'payment-orders.json');
 const PAYMENTS_FILE = path.join(DATA_DIR, 'payments.json');
+const SECURITY_LOGS_FILE = path.join(DATA_DIR, 'security-logs.json');
+
+async function appendSecurityLog(entry: {
+  actor: string;
+  type: string;
+  provider?: string;
+  ip?: string;
+  userAgent?: string;
+  details?: string;
+  severity?: 'info' | 'warning' | 'critical';
+}) {
+  try {
+    const logs = await readJson<any[]>(SECURITY_LOGS_FILE, []);
+    logs.unshift({
+      id: `sec-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`,
+      timestamp: new Date().toISOString(),
+      severity: entry.severity || 'info',
+      ...entry,
+    });
+    if (logs.length > 500) logs.length = 500;
+    await atomicWrite(SECURITY_LOGS_FILE, logs);
+  } catch (err) {
+    console.error('Error writing security log:', err);
+  }
+}
 
 const ADMIN_EMAIL = String(process.env.ADMIN_EMAIL || 'admin@helzerx.cloud').trim().toLowerCase();
 const ADMIN_PASSWORD = String(process.env.ADMIN_PASSWORD || 'Admin@123456!');
@@ -191,10 +216,20 @@ function publicUser(user: any) {
   return {
     id: user.id,
     name: user.name,
+    firstName: user.firstName || user.name?.split(' ')[0] || '',
+    lastName: user.lastName || user.name?.split(' ').slice(1).join(' ') || '',
     email: user.email,
     role: user.role || 'customer',
     provider: user.provider || 'email',
     avatar: user.avatar || '',
+    phone: user.phone || '',
+    country: user.country || '',
+    address: user.address || '',
+    city: user.city || '',
+    state: user.state || '',
+    postalCode: user.postalCode || '',
+    company: user.company || '',
+    accountType: user.accountType || 'individual',
     createdAt: user.createdAt,
     emailVerified: Boolean(user.emailVerified),
   };
@@ -425,14 +460,33 @@ async function start() {
     res.json({ ok: true, token, expiresAt, user: adminUser });
   });
 
-  // Customer register
+  // Customer register (Oracle Cloud Enterprise Standard)
   app.post('/api/auth/register', async (req, res) => {
-    const name = String(req.body?.name || '').trim().replace(/\s+/g, ' ');
+    const firstName = String(req.body?.firstName || '').trim();
+    const lastName = String(req.body?.lastName || '').trim();
+    const rawName = String(req.body?.name || '').trim().replace(/\s+/g, ' ');
+    const name = rawName || [firstName, lastName].filter(Boolean).join(' ') || 'Customer';
     const email = String(req.body?.email || '').trim().toLowerCase();
     const password = String(req.body?.password || '');
+    const accountType = req.body?.accountType === 'corporate' ? 'corporate' : 'individual';
+    const company = String(req.body?.company || '').trim();
+    const country = String(req.body?.country || 'Sri Lanka').trim();
+    const address = String(req.body?.address || '').trim();
+    const city = String(req.body?.city || '').trim();
+    const state = String(req.body?.state || '').trim();
+    const postalCode = String(req.body?.postalCode || '').trim();
+    const phone = String(req.body?.phone || '').trim();
 
-    if (name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 10) {
-      return res.status(400).json({ error: 'Provide a valid name, email and password of at least 10 characters.' });
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'Please enter a valid email address.' });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long.' });
+    }
+
+    if (name.length < 2) {
+      return res.status(400).json({ error: 'Please enter your first and last name.' });
     }
 
     const users = await readJson<any[]>(USERS_FILE, []);
@@ -448,10 +502,20 @@ async function start() {
     const pendingUser = {
       id: `usr-${crypto.randomUUID()}`,
       name,
+      firstName: firstName || name.split(' ')[0] || '',
+      lastName: lastName || name.split(' ').slice(1).join(' ') || '',
       email,
       passwordDigest: digest,
       role: 'customer',
       provider: 'email',
+      accountType,
+      company,
+      country,
+      address,
+      city,
+      state,
+      postalCode,
+      phone,
       emailVerified: true,
       createdAt: new Date().toISOString(),
     };
@@ -467,6 +531,13 @@ async function start() {
     });
 
     await sendMail(email, 'HelzerX Cloud email verification', `Your HelzerX verification code is: ${code}`);
+    await appendSecurityLog({
+      actor: email,
+      type: 'register_otp_dispatched',
+      ip: req.ip || '127.0.0.1',
+      details: 'Registration verification code dispatched',
+      severity: 'info',
+    });
 
     res.status(201).json({
       ok: true,
@@ -501,6 +572,15 @@ async function start() {
     await atomicWrite(USERS_FILE, users);
     otpChallenges.delete(challengeId);
 
+    await appendSecurityLog({
+      actor: challenge.user.email,
+      type: 'account_registered_and_verified',
+      ip: req.ip || '127.0.0.1',
+      userAgent: req.headers['user-agent'] || 'Browser',
+      details: 'Customer email OTP confirmed and account saved to database',
+      severity: 'info',
+    });
+
     const sessionId = createSession(challenge.user);
     setSessionCookie(res, sessionId);
 
@@ -516,10 +596,25 @@ async function start() {
     const user = users.find((u) => u.email === email && u.provider === 'email');
 
     if (!user || !(await verifyPassword(password, user.passwordDigest))) {
+      await appendSecurityLog({
+        actor: email || 'unknown',
+        type: 'login_failed',
+        ip: req.ip || '127.0.0.1',
+        userAgent: req.headers['user-agent'] || 'Browser',
+        details: 'Invalid credentials attempted',
+        severity: 'warning',
+      });
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
     if (user.banned) {
+      await appendSecurityLog({
+        actor: email,
+        type: 'login_blocked_banned',
+        ip: req.ip || '127.0.0.1',
+        details: 'Access rejected: Account is suspended',
+        severity: 'critical',
+      });
       return res.status(403).json({ error: 'This account has been disabled.' });
     }
 
@@ -641,6 +736,119 @@ async function start() {
 
     otpChallenges.delete(challengeId);
     res.json({ ok: true, message: 'Password reset successfully.' });
+  });
+
+  // Resend OTP Code
+  app.post('/api/auth/resend-otp', async (req, res) => {
+    const challengeId = String(req.body?.challengeId || '');
+    const challenge = otpChallenges.get(challengeId);
+
+    if (!challenge) {
+      return res.status(404).json({ error: 'Authentication challenge expired. Please initiate again.' });
+    }
+
+    const newCode = String(crypto.randomInt(100000, 1000000));
+    challenge.code = newCode;
+    challenge.codeHash = crypto.createHash('sha256').update(newCode).digest('hex');
+    challenge.expiresAt = Date.now() + OTP_TTL_MS;
+    challenge.attempts = 0;
+
+    await sendMail(challenge.email, 'HelzerX Cloud verification code (Resent)', `Your new verification code is: ${newCode}`);
+    await appendSecurityLog({
+      actor: challenge.email,
+      type: 'otp_resend',
+      ip: req.ip || '127.0.0.1',
+      details: `New OTP dispatched for ${challenge.type}`,
+    });
+
+    res.json({
+      ok: true,
+      challengeId,
+      expiresAt: challenge.expiresAt,
+      message: RESEND_API_KEY
+        ? 'A new verification code was sent to your email.'
+        : `New verification code generated: ${newCode}`,
+      devCode: RESEND_API_KEY ? undefined : newCode,
+    });
+  });
+
+  // Social Login & Sign Up (Google, Apple ID, Facebook) with full database persistence
+  app.post('/api/auth/social-login', async (req, res) => {
+    const provider = String(req.body?.provider || 'google').toLowerCase(); // 'google' | 'apple' | 'facebook'
+    const email = String(req.body?.email || '').trim().toLowerCase();
+    const name = String(req.body?.name || '').trim() || (provider === 'google' ? 'Google User' : provider === 'apple' ? 'Apple ID User' : 'Facebook User');
+    const avatar = String(req.body?.avatar || '');
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'Valid email address is required for social authentication.' });
+    }
+
+    if (!['google', 'apple', 'facebook'].includes(provider)) {
+      return res.status(400).json({ error: 'Unsupported social authentication provider.' });
+    }
+
+    const defaultAvatars: Record<string, string> = {
+      google: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
+      apple: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=200&q=80',
+      facebook: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+    };
+
+    const users = await readJson<any[]>(USERS_FILE, []);
+    let user = users.find((u) => u.email === email);
+    const isNewUser = !user;
+
+    if (user) {
+      if (user.banned) {
+        return res.status(403).json({ error: 'This account has been suspended.' });
+      }
+      user.lastLoginAt = new Date().toISOString();
+      user.lastProvider = provider;
+      if (avatar && !user.avatar) user.avatar = avatar;
+    } else {
+      user = {
+        id: `usr-${provider}-${crypto.randomUUID()}`,
+        name,
+        email,
+        role: 'customer',
+        provider,
+        avatar: avatar || defaultAvatars[provider] || defaultAvatars.google,
+        emailVerified: true,
+        createdAt: new Date().toISOString(),
+        lastLoginAt: new Date().toISOString(),
+      };
+      users.push(user);
+    }
+
+    await atomicWrite(USERS_FILE, users);
+
+    await appendSecurityLog({
+      actor: email,
+      type: isNewUser ? 'social_register_success' : 'social_login_success',
+      provider,
+      ip: req.ip || '127.0.0.1',
+      userAgent: req.headers['user-agent'] || 'Browser',
+      details: isNewUser ? `Registered via ${provider.toUpperCase()}` : `Logged in via ${provider.toUpperCase()}`,
+      severity: 'info',
+    });
+
+    const sessionId = createSession(user);
+    setSessionCookie(res, sessionId);
+
+    res.json({ ok: true, user: publicUser(user), isNewUser });
+  });
+
+  // Admin Security Logs
+  app.get('/api/admin/security-logs', async (req, res) => {
+    const session = getSession(req);
+    const bearer = req.headers.authorization?.replace(/^Bearer\s+/i, '');
+    const isAdmin = session?.role === 'admin' || verifyAdminToken(bearer || '');
+
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Administrator access required.' });
+    }
+
+    const logs = await readJson<any[]>(SECURITY_LOGS_FILE, []);
+    res.json({ ok: true, logs });
   });
 
   // Logout

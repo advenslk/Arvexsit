@@ -40,6 +40,8 @@ import {
   Ban,
   Check,
   Zap,
+  Smartphone,
+  Download,
 } from 'lucide-react';
 import { HostingPlan, ServiceItem, BlogPost, Partner, CustomerReview } from '../../types';
 

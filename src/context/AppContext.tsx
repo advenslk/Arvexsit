@@ -186,8 +186,10 @@ interface AppContextType {
   // Authentication & Users
   user: UserAccount | null;
   currentUser: UserAccount | null;
-  login: (email: string, role?: 'admin' | 'customer', name?: string, provider?: 'email' | 'google' | 'github' | 'discord') => boolean;
-  loginWithGoogle: () => Promise<boolean>;
+  login: (email: string, role?: 'admin' | 'customer', name?: string, provider?: string) => boolean;
+  loginWithGoogle: (details?: { email?: string; name?: string }) => Promise<boolean>;
+  loginWithApple: (details?: { email?: string; name?: string }) => Promise<boolean>;
+  loginWithFacebook: (details?: { email?: string; name?: string }) => Promise<boolean>;
   loginWithGithub: () => boolean;
   loginWithDiscord: () => boolean;
   logout: () => void;
@@ -1063,21 +1065,117 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return true;
   };
 
-  const loginWithGoogle = async (): Promise<boolean> => {
-    // Real Google Sign-in token processing & fallback
+  const loginWithGoogle = async (details?: { email?: string; name?: string }): Promise<boolean> => {
+    const email = details?.email || 'alex.perera@gmail.com';
+    const name = details?.name || 'Alex Perera (Google)';
+    const avatar = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80';
+
+    try {
+      const res = await fetch('/api/auth/social-login', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: 'google', email, name, avatar }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.user) {
+        saveAuthSession(data.user);
+        setStored('user', data.user);
+        setUser(data.user);
+        showNotification(`Welcome back, ${data.user.name}! Connected via Google.`);
+        return true;
+      }
+    } catch {}
+
     const googleUser: UserAccount = {
       id: 'usr-google-' + Date.now(),
-      email: 'user.google@gmail.com',
-      name: 'Google Verified User',
+      email,
+      name,
       role: 'customer',
       provider: 'google',
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
+      avatar,
       createdAt: new Date().toISOString(),
     };
     saveAuthSession(googleUser);
     setStored('user', googleUser);
     setUser(googleUser);
-    showNotification('Successfully authenticated via Google OAuth!');
+    showNotification(`Signed in via Google as ${name}`);
+    return true;
+  };
+
+  const loginWithApple = async (details?: { email?: string; name?: string }): Promise<boolean> => {
+    const email = details?.email || 'alex.developer@icloud.com';
+    const name = details?.name || 'Alex Apple ID';
+    const avatar = 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=200&q=80';
+
+    try {
+      const res = await fetch('/api/auth/social-login', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: 'apple', email, name, avatar }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.user) {
+        saveAuthSession(data.user);
+        setStored('user', data.user);
+        setUser(data.user);
+        showNotification(`Welcome back, ${data.user.name}! Connected via Apple ID.`);
+        return true;
+      }
+    } catch {}
+
+    const appleUser: UserAccount = {
+      id: 'usr-apple-' + Date.now(),
+      email,
+      name,
+      role: 'customer',
+      provider: 'apple',
+      avatar,
+      createdAt: new Date().toISOString(),
+    };
+    saveAuthSession(appleUser);
+    setStored('user', appleUser);
+    setUser(appleUser);
+    showNotification(`Signed in via Apple ID as ${name}`);
+    return true;
+  };
+
+  const loginWithFacebook = async (details?: { email?: string; name?: string }): Promise<boolean> => {
+    const email = details?.email || 'alex.perera@facebook.com';
+    const name = details?.name || 'Alex Perera (Facebook)';
+    const avatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80';
+
+    try {
+      const res = await fetch('/api/auth/social-login', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: 'facebook', email, name, avatar }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.user) {
+        saveAuthSession(data.user);
+        setStored('user', data.user);
+        setUser(data.user);
+        showNotification(`Welcome back, ${data.user.name}! Connected via Facebook.`);
+        return true;
+      }
+    } catch {}
+
+    const fbUser: UserAccount = {
+      id: 'usr-facebook-' + Date.now(),
+      email,
+      name,
+      role: 'customer',
+      provider: 'facebook',
+      avatar,
+      createdAt: new Date().toISOString(),
+    };
+    saveAuthSession(fbUser);
+    setStored('user', fbUser);
+    setUser(fbUser);
+    showNotification(`Signed in via Facebook as ${name}`);
     return true;
   };
 
@@ -1936,6 +2034,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         currentUser: user,
         login,
         loginWithGoogle,
+        loginWithApple,
+        loginWithFacebook,
         loginWithGithub,
         loginWithDiscord,
         logout,

@@ -297,41 +297,37 @@ export const CheckoutPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#070811] text-slate-200 py-10 px-4 sm:px-6 lg:px-8">
-      {/* Top Header & Breadcrumb matching Screenshot 1 & 3 */}
-      <div className="max-w-4xl mx-auto mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-purple-900/30">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-black text-white font-display tracking-tight">
-              Checkout
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-              Complete your order for {plan.name} ({plan.ramGb}GB RAM)
-            </p>
-          </div>
+    <div className="gabrun-light-canvas min-h-screen text-slate-800 font-sans pb-24">
+      {/* Top Hero Banner matching HomePage Gabrun style */}
+      <section className="gabrun-hero-gradient relative isolate overflow-hidden pt-10 pb-16 sm:pt-14 sm:pb-20 text-white shadow-sm mb-12">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+          <div className="gabrun-grid-lines absolute inset-0 opacity-30" />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-blue-400/25 blur-[120px] animate-pulse-glow" />
+        </div>
 
-          <div className="flex items-center gap-3">
-            {/* Breadcrumb matching Screenshot 1 */}
-            <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-400">
-              <button onClick={() => navigateTo('home')} className="hover:text-purple-300">Market</button>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-              <button onClick={() => navigateTo('services-minecraft')} className="hover:text-purple-300">Minecraft Hosting</button>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-              <span className="text-purple-400 font-semibold">Checkout</span>
-            </div>
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          {/* Breadcrumb & Currency Selector */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/20 mb-6">
+            <nav className="flex items-center gap-2 text-xs text-blue-200/90 overflow-x-auto whitespace-nowrap">
+              <button onClick={() => navigateTo('home')} className="hover:text-white transition-colors cursor-pointer">Home</button>
+              <ChevronRight className="w-3.5 h-3.5 text-blue-300/60 shrink-0" />
+              <button onClick={() => navigateTo('pricing')} className="hover:text-white transition-colors cursor-pointer">Pricing</button>
+              <ChevronRight className="w-3.5 h-3.5 text-blue-300/60 shrink-0" />
+              <span className="text-white font-bold">Checkout</span>
+            </nav>
 
             {/* Currency Selector Pill */}
             <div className="relative">
               <button
                 onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
-                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-[#121422] border border-purple-500/30 text-purple-300 hover:bg-[#181c30] transition-colors"
+                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-white/15 border border-white/30 text-white hover:bg-white/25 transition-colors backdrop-blur-md cursor-pointer"
               >
                 <span>{currency.label}</span>
                 <ChevronDown className="w-3.5 h-3.5" />
               </button>
 
               {isCurrencyOpen && (
-                <div className="absolute right-0 mt-2 w-36 bg-[#111320] border border-purple-500/30 rounded-xl shadow-2xl py-1 z-50">
+                <div className="absolute right-0 mt-2 w-36 bg-white border border-slate-200 rounded-xl shadow-2xl py-1 z-50 text-slate-800">
                   {CURRENCIES.map((c) => (
                     <button
                       key={c.code}
@@ -339,116 +335,127 @@ export const CheckoutPage: React.FC = () => {
                         setCurrency(c);
                         setIsCurrencyOpen(false);
                       }}
-                      className="w-full text-left px-3 py-1.5 text-xs flex items-center justify-between hover:bg-white/5 text-slate-200"
+                      className="w-full text-left px-3 py-1.5 text-xs flex items-center justify-between hover:bg-slate-50 text-slate-700 cursor-pointer"
                     >
-                      <span>{c.label}</span>
-                      <span className="font-mono text-[10px] text-slate-500">{c.code}</span>
+                      <span className="font-semibold">{c.label}</span>
+                      <span className="font-mono text-[10px] text-slate-400">{c.code}</span>
                     </button>
                   ))}
                 </div>
               )}
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="max-w-4xl mx-auto space-y-8">
-        {/* 1. Selected Plan Specs Card matching Screenshot 1 & 3 */}
-        <div className="bg-[#0f111e] border border-purple-900/30 rounded-3xl p-6 sm:p-7 shadow-2xl relative overflow-hidden">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/15 px-4 py-1.5 text-xs font-semibold text-white shadow-sm backdrop-blur-md mb-3">
+              <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
+              <span>Instant Automated Provisioning</span>
+            </div>
+            <h1 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-2 leading-tight">
+              Complete Your Order
+            </h1>
+            <p className="text-blue-100 text-sm sm:text-base leading-relaxed">
+              Configuring <strong className="text-white">{plan.name}</strong> ({plan.ramGb}GB RAM, {plan.cpuCores} vCPU) with 100% NVMe storage &amp; DDoS protection.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 -mt-16 relative z-20">
+        {/* 1. Selected Plan Specs Card */}
+        <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-7 shadow-[0_10px_30px_-5px_rgba(15,23,42,0.08)] relative overflow-hidden card-interactive-3d">
           <div className="flex flex-col sm:flex-row sm:items-center gap-6 justify-between">
             <div className="flex items-center gap-4">
-              {/* Thumbnail matching screenshot 1 */}
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-purple-900 via-indigo-950 to-purple-800 border border-purple-500/30 flex items-center justify-center text-2xl shrink-0 overflow-hidden shadow-lg">
-                <img
-                  src="https://images.unsplash.com/photo-1627856013091-fed6e4e30025?w=200&auto=format&fit=crop&q=80"
-                  alt="Plan Thumbnail"
-                  className="w-full h-full object-cover opacity-80"
-                  referrerPolicy="no-referrer"
-                />
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 border border-blue-400/30 flex items-center justify-center text-2xl shrink-0 overflow-hidden shadow-md text-white">
+                <Server className="w-8 h-8" />
               </div>
 
               <div>
-                <h2 className="text-xl sm:text-2xl font-black text-white font-display">
+                <span className="px-2.5 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-bold uppercase tracking-wider mb-1 inline-block">
+                  Tier: {plan.tier || 'Enterprise'}
+                </span>
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 font-display">
                   {plan.name}
                 </h2>
 
-                <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 text-xs text-slate-300">
-                  <span className="flex items-center gap-1 text-purple-300 font-medium">
+                <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 text-xs text-slate-600">
+                  <span className="flex items-center gap-1 font-semibold text-slate-700">
                     ⚙ {plan.cpuCores} Core CPU
                   </span>
-                  <span className="flex items-center gap-1 text-purple-300 font-medium">
+                  <span className="flex items-center gap-1 font-semibold text-slate-700">
                     💾 {plan.ramGb} GB RAM
                   </span>
-                  <span className="flex items-center gap-1 text-purple-300 font-medium">
+                  <span className="flex items-center gap-1 font-semibold text-slate-700">
                     💽 {plan.diskGb} GB NVMe SSD
                   </span>
-                  <span className="flex items-center gap-1 text-emerald-400 font-medium">
-                    🛡 DDoS Protection
+                  <span className="flex items-center gap-1 text-emerald-600 font-semibold">
+                    🛡 DDoS Scrubbing
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="text-left sm:text-right pt-4 sm:pt-0 border-t sm:border-t-0 border-white/5">
+            <div className="text-left sm:text-right pt-4 sm:pt-0 border-t sm:border-t-0 border-slate-100">
               <span className="text-[11px] text-slate-400 block">
-                Don&apos;t know what to choose?
+                Need a custom enterprise quote?
               </span>
               <button
                 onClick={() => navigateTo('support')}
-                className="text-xs text-purple-400 hover:text-purple-300 underline font-semibold"
+                className="text-xs text-blue-600 hover:text-blue-800 underline font-bold cursor-pointer"
               >
-                Talk to us.
+                Talk to support 24/7.
               </button>
             </div>
           </div>
         </div>
 
-        {/* 2. Service Configuration matching Screenshot 3 */}
-        <div className="bg-[#0f111e] border border-purple-900/30 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
-          <div className="pb-3 border-b border-white/5">
-            <h3 className="text-lg font-bold text-white font-display">
-              Service Configuration
+        {/* 2. Service Configuration */}
+        <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-[0_10px_30px_-5px_rgba(15,23,42,0.06)] space-y-6">
+          <div className="pb-3 border-b border-slate-100">
+            <h3 className="text-lg font-bold text-slate-900 font-display flex items-center gap-2">
+              <Sliders className="w-5 h-5 text-blue-600" />
+              <span>Service Configuration</span>
             </h3>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                Server Name
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Server Display Name
               </label>
               <input
                 type="text"
                 value={serverName}
                 onChange={(e) => setServerName(e.target.value)}
                 placeholder="Enter server name"
-                className="w-full bg-[#161829] border border-white/10 focus:border-purple-500 rounded-2xl px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none transition-colors"
+                className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl px-4 py-3 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none transition-colors"
               />
-              <span className="text-[10px] text-slate-500 mt-1 block">
+              <span className="text-[10px] text-slate-400 mt-1 block">
                 Custom display name for your Pterodactyl server instance
               </span>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                Notes
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Special Requirements / Migration Notes (Optional)
               </label>
               <textarea
                 value={serverNotes}
                 onChange={(e) => setServerNotes(e.target.value)}
                 placeholder="Add any notes or special requirements..."
                 rows={2}
-                className="w-full bg-[#161829] border border-white/10 focus:border-purple-500 rounded-2xl p-4 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none transition-colors"
+                className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl p-4 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none transition-colors"
               />
-              <span className="text-[10px] text-slate-500 mt-1 block">
+              <span className="text-[10px] text-slate-400 mt-1 block">
                 Additional notes for your server configuration or migration request
               </span>
             </div>
           </div>
 
-          {/* 1. Server Type Radio Tiles matching Screenshot 3 */}
-          <div className="pt-4 border-t border-white/5">
-            <label className="block text-xs font-bold text-slate-200 uppercase tracking-wider mb-3">
-              1. Server Type <span className="text-rose-400">*</span>
+          {/* 1. Server Type Radio Tiles */}
+          <div className="pt-4 border-t border-slate-100">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
+              1. Server Software Runtime <span className="text-rose-500">*</span>
             </label>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -458,25 +465,25 @@ export const CheckoutPage: React.FC = () => {
                   onClick={() => setSelectedServerType(st.id)}
                   className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
                     selectedServerType === st.id
-                      ? 'bg-purple-950/40 border-purple-500 text-white shadow-lg shadow-purple-950/50'
-                      : 'bg-[#141626] border-white/5 hover:border-white/15 text-slate-300'
+                      ? 'bg-blue-50/70 border-blue-600 text-slate-900 ring-2 ring-blue-600/20 shadow-sm'
+                      : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-xl">{st.icon}</span>
                     <div>
-                      <h4 className="text-xs sm:text-sm font-bold text-white">
+                      <h4 className="text-xs sm:text-sm font-bold text-slate-900">
                         {st.name}
                       </h4>
-                      <p className="text-[10px] text-slate-400">{st.desc}</p>
+                      <p className="text-[10px] text-slate-500">{st.desc}</p>
                     </div>
                   </div>
 
                   <div
                     className={`w-5 h-5 rounded-full flex items-center justify-center border ${
                       selectedServerType === st.id
-                        ? 'bg-purple-600 border-purple-400 text-white'
-                        : 'border-white/20 bg-transparent'
+                        ? 'bg-blue-600 border-blue-600 text-white'
+                        : 'border-slate-300 bg-white'
                     }`}
                   >
                     {selectedServerType === st.id && <Check className="w-3 h-3" />}
@@ -486,10 +493,10 @@ export const CheckoutPage: React.FC = () => {
             </div>
           </div>
 
-          {/* 2. Server Location Radio Tiles matching Screenshot 3 */}
-          <div className="pt-4 border-t border-white/5">
-            <label className="block text-xs font-bold text-slate-200 uppercase tracking-wider mb-3">
-              2. Server Location <span className="text-rose-400">*</span>
+          {/* 2. Server Location Radio Tiles */}
+          <div className="pt-4 border-t border-slate-100">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
+              2. Datacenter Location <span className="text-rose-500">*</span>
             </label>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -499,30 +506,30 @@ export const CheckoutPage: React.FC = () => {
                   onClick={() => setSelectedLocation(loc.id)}
                   className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
                     selectedLocation === loc.id
-                      ? 'bg-purple-950/40 border-purple-500 text-white shadow-lg shadow-purple-950/50'
-                      : 'bg-[#141626] border-white/5 hover:border-white/15 text-slate-300'
+                      ? 'bg-blue-50/70 border-blue-600 text-slate-900 ring-2 ring-blue-600/20 shadow-sm'
+                      : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">{loc.flag}</span>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h4 className="text-xs sm:text-sm font-bold text-white">
+                        <h4 className="text-xs sm:text-sm font-bold text-slate-900">
                           {loc.name}
                         </h4>
-                        <span className="text-[9px] font-bold text-purple-300 bg-purple-900/50 px-1.5 py-0.5 rounded border border-purple-500/30">
+                        <span className="text-[9px] font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded border border-blue-200">
                           {loc.ping}
                         </span>
                       </div>
-                      <p className="text-[10px] text-slate-400">{loc.badge}</p>
+                      <p className="text-[10px] text-slate-500">{loc.badge}</p>
                     </div>
                   </div>
 
                   <div
                     className={`w-5 h-5 rounded-full flex items-center justify-center border ${
                       selectedLocation === loc.id
-                        ? 'bg-purple-600 border-purple-400 text-white'
-                        : 'border-white/20 bg-transparent'
+                        ? 'bg-blue-600 border-blue-600 text-white'
+                        : 'border-slate-300 bg-white'
                     }`}
                   >
                     {selectedLocation === loc.id && <Check className="w-3 h-3" />}
@@ -533,11 +540,12 @@ export const CheckoutPage: React.FC = () => {
           </div>
         </div>
 
-        {/* 3. Login or Register Section matching Screenshot 1 */}
-        <div className="bg-[#0f111e] border border-purple-900/30 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
-          <div className="pb-3 border-b border-white/5">
-            <h3 className="text-lg font-bold text-white font-display">
-              Login or Register
+        {/* 3. Customer Identification & Account */}
+        <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-[0_10px_30px_-5px_rgba(15,23,42,0.06)] space-y-6">
+          <div className="pb-3 border-b border-slate-100">
+            <h3 className="text-lg font-bold text-slate-900 font-display flex items-center gap-2">
+              <User className="w-5 h-5 text-blue-600" />
+              <span>Customer Identification &amp; Account</span>
             </h3>
           </div>
 
@@ -547,54 +555,58 @@ export const CheckoutPage: React.FC = () => {
               onClick={() => setAuthMode('existing')}
               className={`p-4 rounded-2xl border cursor-pointer transition-all ${
                 authMode === 'existing'
-                  ? 'bg-purple-950/30 border-purple-500 text-white'
-                  : 'bg-[#141626] border-white/5 hover:border-white/10 text-slate-300'
+                  ? 'bg-blue-50/70 border-blue-600 text-slate-900 ring-2 ring-blue-600/20 shadow-sm'
+                  : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700'
               }`}
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-xs sm:text-sm font-bold text-white">
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900">
                     I&apos;m an existing customer
                   </h4>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-slate-500">
                     Sign in to continue with checkout
                   </p>
                 </div>
                 <div
-                  className={`w-4 h-4 rounded-full border ${
+                  className={`w-4 h-4 rounded-full border flex items-center justify-center ${
                     authMode === 'existing'
-                      ? 'border-purple-400 bg-purple-600'
-                      : 'border-white/20'
+                      ? 'border-blue-600 bg-blue-600 text-white'
+                      : 'border-slate-300 bg-white'
                   }`}
-                />
+                >
+                  {authMode === 'existing' && <Check className="w-2.5 h-2.5" />}
+                </div>
               </div>
             </div>
 
-            {/* New Customer Option matching Screenshot 1 */}
+            {/* New Customer Option */}
             <div
               onClick={() => setAuthMode('new')}
               className={`p-5 rounded-3xl border transition-all ${
                 authMode === 'new'
-                  ? 'bg-[#121424] border-purple-500 shadow-xl'
-                  : 'bg-[#141626] border-white/5 text-slate-300'
+                  ? 'bg-white border-blue-600 shadow-md ring-2 ring-blue-600/20'
+                  : 'bg-slate-50 border-slate-200 text-slate-700'
               }`}
             >
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h4 className="text-xs sm:text-sm font-bold text-white">
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900">
                     I&apos;m a new customer
                   </h4>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-slate-500">
                     Create an account to checkout
                   </p>
                 </div>
                 <div
-                  className={`w-4 h-4 rounded-full border ${
+                  className={`w-4 h-4 rounded-full border flex items-center justify-center ${
                     authMode === 'new'
-                      ? 'border-purple-400 bg-purple-600'
-                      : 'border-white/20'
+                      ? 'border-blue-600 bg-blue-600 text-white'
+                      : 'border-slate-300 bg-white'
                   }`}
-                />
+                >
+                  {authMode === 'new' && <Check className="w-2.5 h-2.5" />}
+                </div>
               </div>
 
               {/* Social Login Buttons matching Screenshot 1 */}
@@ -645,43 +657,43 @@ export const CheckoutPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Registration Form fields matching Screenshot 1 */}
+              {/* Registration Form fields */}
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Full Name
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Full Name <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Enter your full name"
-                    className="w-full bg-[#181a2c] border border-white/10 focus:border-purple-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none"
+                    className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl px-4 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Email Address
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Email Address <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="email"
                     value={emailAddress}
                     onChange={(e) => setEmailAddress(e.target.value)}
                     placeholder="Enter your email"
-                    className="w-full bg-[#181a2c] border border-white/10 focus:border-purple-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none"
+                    className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl px-4 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none transition-colors"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <label className="block text-xs font-semibold text-slate-300">
-                      Password
+                    <label className="block text-xs font-bold text-slate-700">
+                      Password <span className="text-rose-500">*</span>
                     </label>
                     <button
                       type="button"
                       onClick={generateRandomPassword}
-                      className="text-[11px] font-bold text-purple-300 bg-purple-900/60 hover:bg-purple-800/80 px-2 py-0.5 rounded-md flex items-center gap-1 border border-purple-500/30"
+                      className="text-[11px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded-md flex items-center gap-1 border border-blue-200 cursor-pointer"
                     >
                       <RefreshCw className="w-3 h-3" />
                       <span>Generate</span>
@@ -695,12 +707,12 @@ export const CheckoutPage: React.FC = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Strong Password"
-                        className="w-full bg-[#181a2c] border border-white/10 focus:border-purple-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none pr-9"
+                        className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl px-4 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none pr-9 transition-colors"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
                       >
                         {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                       </button>
@@ -712,21 +724,21 @@ export const CheckoutPage: React.FC = () => {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Confirm Password"
-                        className="w-full bg-[#181a2c] border border-white/10 focus:border-purple-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none pr-9"
+                        className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl px-4 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none pr-9 transition-colors"
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Cloudflare Turnstile Verification Badge matching Screenshot 1 */}
-                <div className="bg-[#141624] border border-white/10 rounded-xl p-3 flex items-center justify-between text-xs text-slate-300">
+                {/* Cloudflare Turnstile Verification Badge */}
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between text-xs text-slate-700">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-4 h-4 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin" />
-                    <span className="text-emerald-400 font-medium">Verified human visitor</span>
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <span className="text-emerald-700 font-semibold">Verified human visitor</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
-                    <ShieldCheck className="w-3.5 h-3.5 text-orange-400" />
-                    <span>Cloudflare Turnstile</span>
+                  <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
+                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Cloudflare Turnstile Verified</span>
                   </div>
                 </div>
 
@@ -739,20 +751,21 @@ export const CheckoutPage: React.FC = () => {
                       showNotification('Please fill in your name and email.', 'info');
                     }
                   }}
-                  className="w-full py-3 rounded-xl bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-purple-700/20 transition-all cursor-pointer"
+                  className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider shadow-sm transition-all cursor-pointer"
                 >
-                  Create Account
+                  Confirm Account Details
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* 4. Select Duration matching Screenshot 1 */}
-        <div className="bg-[#0f111e] border border-purple-900/30 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4">
-          <div className="pb-2 border-b border-white/5">
-            <h3 className="text-lg font-bold text-white font-display">
-              Select Duration
+        {/* 4. Select Duration */}
+        <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-[0_10px_30px_-5px_rgba(15,23,42,0.06)] space-y-4">
+          <div className="pb-2 border-b border-slate-100">
+            <h3 className="text-lg font-bold text-slate-900 font-display flex items-center gap-2">
+              <Clock className="w-5 h-5 text-blue-600" />
+              <span>Billing Cycle</span>
             </h3>
           </div>
 
@@ -761,22 +774,24 @@ export const CheckoutPage: React.FC = () => {
               onClick={() => setSelectedCycle('monthly')}
               className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
                 selectedCycle === 'monthly'
-                  ? 'bg-purple-950/40 border-purple-500 text-white shadow-lg'
-                  : 'bg-[#141626] border-white/5 hover:border-white/10 text-slate-300'
+                  ? 'bg-blue-50/70 border-blue-600 text-slate-900 ring-2 ring-blue-600/20 shadow-sm'
+                  : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700'
               }`}
             >
               <div className="flex items-center gap-3">
                 <div
-                  className={`w-3.5 h-3.5 rounded-full border ${
+                  className={`w-4 h-4 rounded-full border flex items-center justify-center ${
                     selectedCycle === 'monthly'
-                      ? 'border-purple-400 bg-purple-600'
-                      : 'border-white/20'
+                      ? 'border-blue-600 bg-blue-600 text-white'
+                      : 'border-slate-300 bg-white'
                   }`}
-                />
+                >
+                  {selectedCycle === 'monthly' && <Check className="w-2.5 h-2.5" />}
+                </div>
                 <div>
-                  <h4 className="text-xs sm:text-sm font-bold text-white">Monthly</h4>
-                  <p className="text-[11px] text-purple-300 font-mono">
-                    Rs. 350.00
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900">Monthly Billing</h4>
+                  <p className="text-[11px] text-blue-700 font-mono font-bold">
+                    Standard Rate
                   </p>
                 </div>
               </div>
@@ -786,35 +801,37 @@ export const CheckoutPage: React.FC = () => {
               onClick={() => setSelectedCycle('quarterly')}
               className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
                 selectedCycle === 'quarterly'
-                  ? 'bg-purple-950/40 border-purple-500 text-white shadow-lg'
-                  : 'bg-[#141626] border-white/5 hover:border-white/10 text-slate-300'
+                  ? 'bg-blue-50/70 border-blue-600 text-slate-900 ring-2 ring-blue-600/20 shadow-sm'
+                  : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700'
               }`}
             >
               <div className="flex items-center gap-3">
                 <div
-                  className={`w-3.5 h-3.5 rounded-full border ${
+                  className={`w-4 h-4 rounded-full border flex items-center justify-center ${
                     selectedCycle === 'quarterly'
-                      ? 'border-purple-400 bg-purple-600'
-                      : 'border-white/20'
+                      ? 'border-blue-600 bg-blue-600 text-white'
+                      : 'border-slate-300 bg-white'
                   }`}
-                />
+                >
+                  {selectedCycle === 'quarterly' && <Check className="w-2.5 h-2.5" />}
+                </div>
                 <div>
-                  <h4 className="text-xs sm:text-sm font-bold text-white">Quarterly</h4>
-                  <p className="text-[11px] text-purple-300 font-mono">
-                    Rs. 1050.00
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900">Quarterly (3 Months)</h4>
+                  <p className="text-[11px] text-emerald-700 font-mono font-bold">
+                    5% Discount Included
                   </p>
                 </div>
               </div>
-              <span className="text-[10px] text-slate-400 font-mono">
-                Rs. 350.00/month
-              </span>
             </div>
           </div>
         </div>
 
-        {/* 5. Promotion matching Screenshot 1 */}
-        <div className="bg-[#0f111e] border border-purple-900/30 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-3">
-          <h3 className="text-lg font-bold text-white font-display">Promotion</h3>
+        {/* 5. Promotion / Coupon */}
+        <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-[0_10px_30px_-5px_rgba(15,23,42,0.06)] space-y-3">
+          <h3 className="text-lg font-bold text-slate-900 font-display flex items-center gap-2">
+            <Tag className="w-5 h-5 text-blue-600" />
+            <span>Discount Coupon</span>
+          </h3>
 
           <form onSubmit={handleValidateCoupon} className="flex gap-2">
             <input
@@ -822,11 +839,11 @@ export const CheckoutPage: React.FC = () => {
               value={couponInput}
               onChange={(e) => setCouponInput(e.target.value)}
               placeholder="Enter coupon code (e.g. AUREX10, VOLTUS10)"
-              className="flex-1 bg-[#161829] border border-white/10 focus:border-purple-500 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none"
+              className="flex-1 bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl px-4 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none"
             />
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-purple-700 hover:bg-purple-600 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+              className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
             >
               <Tag className="w-3.5 h-3.5" />
               <span>Validate</span>
@@ -834,172 +851,154 @@ export const CheckoutPage: React.FC = () => {
           </form>
 
           {appliedCoupon && (
-            <p className="text-xs text-emerald-400 flex items-center gap-1 mt-1">
+            <p className="text-xs text-emerald-600 font-bold flex items-center gap-1 mt-1">
               <CheckCircle2 className="w-3.5 h-3.5" /> Code &quot;{appliedCoupon.code}&quot; applied successfully!
             </p>
           )}
 
           {couponError && (
-            <p className="text-xs text-rose-400 flex items-center gap-1 mt-1">
+            <p className="text-xs text-rose-600 font-medium flex items-center gap-1 mt-1">
               <AlertCircle className="w-3.5 h-3.5" /> {couponError}
             </p>
           )}
         </div>
 
-        {/* 6. Order Summary & Real Payment Methods matching Screenshot 1 */}
-        <div className="bg-[#0f111e] border border-purple-900/30 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
-          <div className="pb-3 border-b border-white/5">
-            <h3 className="text-lg font-bold text-white font-display">
-              Order Summary
+        {/* 6. Order Summary & Payment Methods */}
+        <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-[0_10px_30px_-5px_rgba(15,23,42,0.06)] space-y-6">
+          <div className="pb-3 border-b border-slate-100">
+            <h3 className="text-lg font-bold text-slate-900 font-display flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-blue-600" />
+              <span>Order Summary &amp; Payment Gateway</span>
             </h3>
           </div>
 
-          <div className="space-y-2 text-xs text-slate-300">
+          <div className="space-y-2 text-xs text-slate-600 bg-slate-50 p-5 rounded-2xl border border-slate-200/70">
             <div className="flex justify-between">
-              <span>Subtotal:</span>
-              <span className="font-mono font-semibold text-white">
+              <span>Service Subtotal:</span>
+              <span className="font-mono font-bold text-slate-900">
                 Rs. {rawSubtotalLkr.toFixed(2)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span>setup fee:</span>
-              <span className="font-mono font-semibold text-white">Rs. 0.00</span>
+              <span>Setup &amp; Provisioning Fee:</span>
+              <span className="font-mono font-bold text-emerald-600">FREE</span>
             </div>
-            <div className="flex justify-between">
-              <span>Discount:</span>
-              <span className="font-mono font-semibold text-emerald-400">
-                -Rs. {discountLkr.toFixed(2)}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <div>
-                <span>Tax (excl.):</span>
-                <span className="text-[10px] text-slate-500 block">
-                  0% Rate (based on {selectedCycle} price)
+            {discountLkr > 0 && (
+              <div className="flex justify-between">
+                <span>Discount Applied:</span>
+                <span className="font-mono font-bold text-emerald-600">
+                  -Rs. {discountLkr.toFixed(2)}
                 </span>
               </div>
-              <span className="font-mono font-semibold text-white">Rs. 0.00</span>
-            </div>
-          </div>
-
-          {/* Total Due Today Display matching Screenshot 1 */}
-          <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <span className="text-[11px] text-slate-400 uppercase tracking-wider block">
-                Total Due Today
-              </span>
-              <span className="text-2xl sm:text-3xl font-black text-purple-300 font-display">
+            )}
+            <div className="flex justify-between pt-2 border-t border-slate-200">
+              <span className="font-bold text-slate-800">Total Due Today:</span>
+              <span className="font-mono font-extrabold text-base text-blue-600 font-display">
                 {getDisplayTotal()}
               </span>
             </div>
-
-            <div className="text-[11px] text-slate-400">
-              <span className="inline-flex items-center gap-1 text-emerald-400 font-medium">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Instant Automatic Deployment
-              </span>
-            </div>
           </div>
 
-          {/* Terms Agreement Checkbox matching Screenshot 1 */}
+          {/* Terms Agreement Checkbox */}
           <div className="flex items-center gap-2 pt-2">
             <input
               type="checkbox"
               id="terms-check"
               checked={agreedTerms}
               onChange={(e) => setAgreedTerms(e.target.checked)}
-              className="w-4 h-4 rounded text-purple-600 focus:ring-purple-500 bg-[#161829] border-white/20"
+              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300"
             />
-            <label htmlFor="terms-check" className="text-xs text-slate-300 cursor-pointer">
+            <label htmlFor="terms-check" className="text-xs text-slate-600 cursor-pointer">
               I agree to the{' '}
               <button
                 type="button"
                 onClick={() => navigateTo('terms')}
-                className="text-purple-400 hover:underline"
+                className="text-blue-600 font-bold hover:underline"
               >
                 Terms of Service
               </button>{' '}
-              and SLA Guarantee.
+              and 99.99% SLA Guarantee.
             </label>
           </div>
 
           {/* Real Payment Gateway Selector Options */}
-          <div className="pt-4 border-t border-white/5 space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
-              Choose Real Payment Method
+          <div className="pt-4 border-t border-slate-100 space-y-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-600 block">
+              Select Payment Method:
             </span>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {/* Option 1: PayHere Sri Lanka (Visa, MC, Genie, FriMi, eZ Cash) */}
+              {/* Option 1: PayHere */}
               <button
                 type="button"
                 onClick={() => setPaymentGateway('payhere')}
-                className={`p-3 rounded-2xl border text-left transition-all ${
+                className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                   paymentGateway === 'payhere'
-                    ? 'bg-purple-950/60 border-purple-400 text-white shadow-lg'
-                    : 'bg-[#141626] border-white/5 hover:border-white/20 text-slate-300'
+                    ? 'bg-blue-50/80 border-blue-600 text-slate-900 ring-2 ring-blue-600/20 shadow-sm'
+                    : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700'
                 }`}
               >
-                <span className="text-xs font-bold block text-purple-300">PayHere LKR</span>
-                <span className="text-[10px] text-slate-400 mt-0.5 block">
+                <span className="text-xs font-bold block text-blue-700">PayHere LKR</span>
+                <span className="text-[10px] text-slate-500 mt-0.5 block">
                   Visa, MC, Genie, FriMi, eZ Cash
                 </span>
               </button>
 
-              {/* Option 2: Credit / Debit Card (Stripe) */}
+              {/* Option 2: Stripe Card */}
               <button
                 type="button"
                 onClick={() => setPaymentGateway('card')}
-                className={`p-3 rounded-2xl border text-left transition-all ${
+                className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                   paymentGateway === 'card'
-                    ? 'bg-purple-950/60 border-purple-400 text-white shadow-lg'
-                    : 'bg-[#141626] border-white/5 hover:border-white/20 text-slate-300'
+                    ? 'bg-blue-50/80 border-blue-600 text-slate-900 ring-2 ring-blue-600/20 shadow-sm'
+                    : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700'
                 }`}
               >
-                <span className="text-xs font-bold block text-white">Card (Stripe)</span>
-                <span className="text-[10px] text-slate-400 mt-0.5 block">
+                <span className="text-xs font-bold block text-slate-900">Card (Stripe)</span>
+                <span className="text-[10px] text-slate-500 mt-0.5 block">
                   International &amp; Local Cards
                 </span>
               </button>
 
-              {/* Option 3: Sri Lankan Bank Transfer */}
+              {/* Option 3: Bank Transfer */}
               <button
                 type="button"
                 onClick={() => setPaymentGateway('bank_transfer')}
-                className={`p-3 rounded-2xl border text-left transition-all ${
+                className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                   paymentGateway === 'bank_transfer'
-                    ? 'bg-purple-950/60 border-purple-400 text-white shadow-lg'
-                    : 'bg-[#141626] border-white/5 hover:border-white/20 text-slate-300'
+                    ? 'bg-blue-50/80 border-blue-600 text-slate-900 ring-2 ring-blue-600/20 shadow-sm'
+                    : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700'
                 }`}
               >
-                <span className="text-xs font-bold block text-emerald-400">Bank Transfer</span>
-                <span className="text-[10px] text-slate-400 mt-0.5 block">
+                <span className="text-xs font-bold block text-emerald-700">Bank Transfer</span>
+                <span className="text-[10px] text-slate-500 mt-0.5 block">
                   ComBank, BOC, HNB, Sampath
                 </span>
               </button>
 
-              {/* Option 4: Cryptocurrency (USDT / BTC / LTC) */}
+              {/* Option 4: Crypto */}
               <button
                 type="button"
                 onClick={() => setPaymentGateway('crypto')}
-                className={`p-3 rounded-2xl border text-left transition-all ${
+                className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                   paymentGateway === 'crypto'
-                    ? 'bg-purple-950/60 border-purple-400 text-white shadow-lg'
-                    : 'bg-[#141626] border-white/5 hover:border-white/20 text-slate-300'
+                    ? 'bg-blue-50/80 border-blue-600 text-slate-900 ring-2 ring-blue-600/20 shadow-sm'
+                    : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700'
                 }`}
               >
-                <span className="text-xs font-bold block text-amber-400">Crypto</span>
-                <span className="text-[10px] text-slate-400 mt-0.5 block">
+                <span className="text-xs font-bold block text-amber-700">Crypto</span>
+                <span className="text-[10px] text-slate-500 mt-0.5 block">
                   USDT TRC20, TON, BTC
                 </span>
               </button>
             </div>
 
-            {/* Primary Action Button matching Screenshot 1 & 3 */}
+            {/* Primary Action Button */}
             <button
               type="button"
               disabled={isProcessingPayment}
               onClick={() => handleExecutePayment(paymentGateway)}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white font-extrabold text-sm uppercase tracking-wider shadow-2xl shadow-purple-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98 disabled:opacity-50"
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold text-sm uppercase tracking-wider shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] disabled:opacity-50 mt-4"
             >
               {isProcessingPayment ? (
                 <>
@@ -1020,12 +1019,12 @@ export const CheckoutPage: React.FC = () => {
       {/* Real Interactive Payment Modals */}
       {/* 1. PayHere Sri Lanka Gateway Window */}
       {activePaymentModal === 'payhere' && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-[#101222] border border-purple-500/40 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 text-slate-800">
             {/* PayHere Header */}
-            <div className="bg-gradient-to-r from-[#002f6c] via-[#004b93] to-[#002f6c] p-4 text-white flex items-center justify-between">
+            <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 p-4 text-white flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-black tracking-wider bg-white text-[#002f6c] px-2 py-0.5 rounded font-display">
+                <span className="text-xs font-black tracking-wider bg-white text-blue-800 px-2 py-0.5 rounded font-display">
                   PayHere
                 </span>
                 <span className="text-xs font-semibold">Secure Payment Portal</span>
@@ -1034,31 +1033,31 @@ export const CheckoutPage: React.FC = () => {
             </div>
 
             <div className="p-6 space-y-4 text-xs">
-              <div className="p-3 rounded-xl bg-[#181b30] border border-white/5 space-y-1">
-                <p className="text-slate-400">Merchant: <strong className="text-white">HelzerX Cloud Lanka (Pvt) Ltd</strong></p>
-                <p className="text-slate-400">Order Reference: <strong className="text-purple-300 font-mono">{bankReference}</strong></p>
-                <p className="text-slate-400">Item: <strong className="text-white">{plan.name} ({selectedCycle})</strong></p>
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                <p className="text-slate-500">Merchant: <strong className="text-slate-800">HelzerX Cloud Lanka (Pvt) Ltd</strong></p>
+                <p className="text-slate-500">Order Reference: <strong className="text-blue-700 font-mono">{bankReference}</strong></p>
+                <p className="text-slate-500">Item: <strong className="text-slate-800">{plan.name} ({selectedCycle})</strong></p>
               </div>
 
               {/* Supported Payment Channels */}
               <div>
-                <span className="text-[11px] font-bold text-slate-400 block mb-2">
+                <span className="text-[11px] font-bold text-slate-600 block mb-2">
                   Select Sri Lanka Payment Method:
                 </span>
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="p-2.5 rounded-xl bg-[#181b30] border border-purple-500/50 flex items-center gap-2 text-white">
+                  <div className="p-2.5 rounded-xl bg-blue-50/80 border border-blue-200 flex items-center gap-2 text-blue-900">
                     <span>💳</span>
                     <span className="font-semibold text-[11px]">Visa / MasterCard</span>
                   </div>
-                  <div className="p-2.5 rounded-xl bg-[#181b30] border border-white/10 flex items-center gap-2 text-slate-300">
+                  <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2 text-slate-700">
                     <span>📱</span>
                     <span className="font-semibold text-[11px]">FriMi / Genie</span>
                   </div>
-                  <div className="p-2.5 rounded-xl bg-[#181b30] border border-white/10 flex items-center gap-2 text-slate-300">
+                  <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2 text-slate-700">
                     <span>💵</span>
                     <span className="font-semibold text-[11px]">eZ Cash / mCash</span>
                   </div>
-                  <div className="p-2.5 rounded-xl bg-[#181b30] border border-white/10 flex items-center gap-2 text-slate-300">
+                  <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2 text-slate-700">
                     <span>🏦</span>
                     <span className="font-semibold text-[11px]">Sampath Vishwa</span>
                   </div>
@@ -1066,25 +1065,25 @@ export const CheckoutPage: React.FC = () => {
               </div>
 
               {/* Card input mockup */}
-              <div className="space-y-2 pt-2 border-t border-white/10">
+              <div className="space-y-2 pt-2 border-t border-slate-200">
                 <input
                   type="text"
                   placeholder="Card Number (4111 2222 3333 4444)"
                   defaultValue="4111 2222 3333 4444"
-                  className="w-full bg-[#181a2c] border border-white/10 rounded-xl px-3 py-2 text-white placeholder-slate-500 font-mono text-xs focus:outline-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 placeholder-slate-400 font-mono text-xs focus:outline-none focus:border-blue-600"
                 />
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     type="text"
                     placeholder="MM/YY"
                     defaultValue="12/28"
-                    className="bg-[#181a2c] border border-white/10 rounded-xl px-3 py-2 text-white font-mono text-xs focus:outline-none"
+                    className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-mono text-xs focus:outline-none focus:border-blue-600"
                   />
                   <input
                     type="text"
                     placeholder="CVV"
                     defaultValue="888"
-                    className="bg-[#181a2c] border border-white/10 rounded-xl px-3 py-2 text-white font-mono text-xs focus:outline-none"
+                    className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-mono text-xs focus:outline-none focus:border-blue-600"
                   />
                 </div>
               </div>
@@ -1093,14 +1092,14 @@ export const CheckoutPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setActivePaymentModal(null)}
-                  className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 font-bold"
+                  className="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleCompleteOrderSuccess}
-                  className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center justify-center gap-1.5 shadow-lg"
+                  className="flex-1 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
                 >
                   <Lock className="w-3.5 h-3.5" />
                   <span>Authorize LKR Pay</span>
@@ -1113,26 +1112,26 @@ export const CheckoutPage: React.FC = () => {
 
       {/* 2. Sri Lankan Bank Transfer Modal */}
       {activePaymentModal === 'bank_transfer' && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-[#101222] border border-emerald-500/40 rounded-3xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200 text-slate-800">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-emerald-400" />
-                <h3 className="text-sm font-bold text-white">Direct Sri Lankan Bank Transfer</h3>
+                <Building2 className="w-5 h-5 text-blue-600" />
+                <h3 className="text-sm font-bold text-slate-900">Direct Sri Lankan Bank Transfer</h3>
               </div>
-              <span className="text-xs font-mono font-bold text-emerald-400">{getDisplayTotal()}</span>
+              <span className="text-xs font-mono font-bold text-emerald-600">{getDisplayTotal()}</span>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-[#16182c] border border-white/10 space-y-2 text-xs">
-              <p className="text-slate-400">Bank: <strong className="text-white">Commercial Bank of Ceylon</strong></p>
-              <p className="text-slate-400">Account Name: <strong className="text-white">HelzerX Cloud LK Pvt Ltd</strong></p>
-              <p className="text-slate-400">Account Number: <strong className="text-purple-300 font-mono text-sm">8009284711</strong></p>
-              <p className="text-slate-400">Branch: <strong className="text-white">Colombo Main Branch (001)</strong></p>
-              <p className="text-slate-400">Reference: <strong className="text-yellow-400 font-mono text-sm">{bankReference}</strong></p>
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
+              <p className="text-slate-500">Bank: <strong className="text-slate-900">Commercial Bank of Ceylon</strong></p>
+              <p className="text-slate-500">Account Name: <strong className="text-slate-900">HelzerX Cloud LK Pvt Ltd</strong></p>
+              <p className="text-slate-500">Account Number: <strong className="text-blue-700 font-mono text-sm">8009284711</strong></p>
+              <p className="text-slate-500">Branch: <strong className="text-slate-900">Colombo Main Branch (001)</strong></p>
+              <p className="text-slate-500">Reference: <strong className="text-amber-600 font-mono text-sm">{bankReference}</strong></p>
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-slate-300">
+              <label className="block text-xs font-bold text-slate-700">
                 Upload Payment Slip or Transaction Receipt:
               </label>
               <div
@@ -1142,15 +1141,15 @@ export const CheckoutPage: React.FC = () => {
                 }}
                 className={`p-4 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center text-center cursor-pointer transition-colors ${
                   bankSlipUploaded
-                    ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
-                    : 'border-white/20 hover:border-purple-500 bg-[#16182c] text-slate-400'
+                    ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                    : 'border-slate-300 hover:border-blue-500 bg-slate-50 text-slate-600'
                 }`}
               >
-                <UploadCloud className="w-6 h-6 mb-1" />
+                <UploadCloud className="w-6 h-6 mb-1 text-slate-500" />
                 <span className="text-xs font-semibold">
                   {bankSlipUploaded ? 'Slip Attached (receipt_screenshot.png)' : 'Click to Upload Bank Slip Screenshot / PDF'}
                 </span>
-                <span className="text-[10px] text-slate-500">Max size: 10MB</span>
+                <span className="text-[10px] text-slate-400">Max size: 10MB</span>
               </div>
             </div>
 
@@ -1158,14 +1157,14 @@ export const CheckoutPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActivePaymentModal(null)}
-                className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 font-bold text-xs"
+                className="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer"
               >
                 Close
               </button>
               <button
                 type="button"
                 onClick={handleCompleteOrderSuccess}
-                className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg"
+                className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
               >
                 <Check className="w-4 h-4" />
                 <span>Confirm &amp; Deploy Node</span>
@@ -1177,25 +1176,25 @@ export const CheckoutPage: React.FC = () => {
 
       {/* 3. Crypto Payment Modal */}
       {activePaymentModal === 'crypto' && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-[#101222] border border-amber-500/40 rounded-3xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200 text-slate-800">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <Wallet className="w-5 h-5 text-amber-400" />
-                <h3 className="text-sm font-bold text-white">Cryptocurrency Payment</h3>
+                <Wallet className="w-5 h-5 text-amber-500" />
+                <h3 className="text-sm font-bold text-slate-900">Cryptocurrency Payment</h3>
               </div>
-              <span className="text-xs font-mono font-bold text-amber-400">1.25 USDT (TRC20)</span>
+              <span className="text-xs font-mono font-bold text-amber-600">1.25 USDT (TRC20)</span>
             </div>
 
-            <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-[#16182c] border border-white/10 space-y-3">
-              <div className="w-36 h-36 bg-white p-2 rounded-2xl flex items-center justify-center">
+            <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+              <div className="w-36 h-36 bg-white p-2 rounded-2xl border border-slate-200 flex items-center justify-center shadow-sm">
                 <QrCode className="w-32 h-32 text-slate-900" />
               </div>
 
               <div className="w-full text-center">
-                <span className="text-[10px] text-slate-400 block mb-1">Send USDT to TRC20 Address:</span>
-                <div className="flex items-center justify-between bg-[#101222] p-2 rounded-xl border border-white/10">
-                  <span className="font-mono text-[11px] text-purple-300 truncate">
+                <span className="text-[10px] text-slate-500 block mb-1">Send USDT to TRC20 Address:</span>
+                <div className="flex items-center justify-between bg-white p-2 rounded-xl border border-slate-200">
+                  <span className="font-mono text-[11px] text-slate-800 truncate">
                     TXk79gM1d8VqHelzerXCloudPterodactylNode
                   </span>
                   <button
@@ -1205,9 +1204,9 @@ export const CheckoutPage: React.FC = () => {
                       setTimeout(() => setCopiedCrypto(false), 2000);
                       showNotification('TRC20 Address copied!', 'info');
                     }}
-                    className="p-1 text-slate-400 hover:text-white"
+                    className="p-1 text-slate-500 hover:text-slate-800 cursor-pointer"
                   >
-                    {copiedCrypto ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedCrypto ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                   </button>
                 </div>
               </div>
@@ -1217,14 +1216,14 @@ export const CheckoutPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActivePaymentModal(null)}
-                className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 font-bold text-xs"
+                className="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleCompleteOrderSuccess}
-                className="flex-1 py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg"
+                className="flex-1 py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
               >
                 <Zap className="w-4 h-4" />
                 <span>I Have Sent Crypto</span>
@@ -1236,37 +1235,37 @@ export const CheckoutPage: React.FC = () => {
 
       {/* Order Complete Success Dialog */}
       {isOrderCompleted && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-lg flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-lg bg-[#0e101d] border border-purple-500/50 rounded-3xl shadow-2xl p-6 sm:p-8 space-y-6 text-center">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-lg flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-lg bg-white border border-slate-200 rounded-3xl shadow-2xl p-6 sm:p-8 space-y-6 text-center text-slate-800">
+            <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto shadow-sm">
               <CheckCircle2 className="w-8 h-8" />
             </div>
 
             <div>
-              <h2 className="text-2xl font-black text-white font-display">
+              <h2 className="text-2xl font-black text-slate-900 font-display">
                 Server Deployed Successfully!
               </h2>
-              <p className="text-xs sm:text-sm text-slate-400 mt-1">
+              <p className="text-xs sm:text-sm text-slate-500 mt-1">
                 Your Minecraft node has been provisioned on our high-speed cluster.
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#141626] border border-white/10 text-left space-y-2 text-xs">
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-left space-y-2 text-xs">
               <div className="flex justify-between">
-                <span className="text-slate-400">Order ID:</span>
-                <span className="font-mono font-bold text-purple-300">{isOrderCompleted.orderId}</span>
+                <span className="text-slate-500">Order ID:</span>
+                <span className="font-mono font-bold text-blue-700">{isOrderCompleted.orderId}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Server Instance:</span>
-                <span className="font-bold text-white">{isOrderCompleted.serverName}</span>
+                <span className="text-slate-500">Server Instance:</span>
+                <span className="font-bold text-slate-900">{isOrderCompleted.serverName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Connection IP:</span>
-                <span className="font-mono font-bold text-emerald-400">{isOrderCompleted.ipAddress}</span>
+                <span className="text-slate-500">Connection IP:</span>
+                <span className="font-mono font-bold text-emerald-600">{isOrderCompleted.ipAddress}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Pterodactyl Status:</span>
-                <span className="font-bold text-emerald-400">Online &amp; Running</span>
+                <span className="text-slate-500">Pterodactyl Status:</span>
+                <span className="font-bold text-emerald-600">Online &amp; Running</span>
               </div>
             </div>
 
@@ -1277,7 +1276,7 @@ export const CheckoutPage: React.FC = () => {
                   setIsOrderCompleted(null);
                   navigateTo('dashboard');
                 }}
-                className="flex-1 py-3.5 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-purple-600/30 flex items-center justify-center gap-2 cursor-pointer"
+                className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Server className="w-4 h-4" />
                 <span>Open Server Dashboard</span>

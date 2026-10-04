@@ -16,6 +16,8 @@ import {
   Clock,
   Headphones,
   Sliders,
+  ChevronRight,
+  Search,
 } from 'lucide-react';
 
 export const ServicesPage: React.FC = () => {
@@ -28,19 +30,19 @@ export const ServicesPage: React.FC = () => {
   const getIcon = (iconName: string) => {
     switch (iconName) {
       case 'Gamepad2':
-        return <Gamepad2 className="w-6 h-6 text-cyan-400" />;
+        return <Gamepad2 className="w-6 h-6 text-purple-600" />;
       case 'Server':
-        return <Server className="w-6 h-6 text-blue-400" />;
+        return <Server className="w-6 h-6 text-blue-600" />;
       case 'Cpu':
-        return <Cpu className="w-6 h-6 text-emerald-400" />;
+        return <Cpu className="w-6 h-6 text-indigo-600" />;
       case 'Globe':
-        return <Globe className="w-6 h-6 text-amber-400" />;
+        return <Globe className="w-6 h-6 text-amber-600" />;
       case 'Bot':
-        return <Bot className="w-6 h-6 text-purple-400" />;
+        return <Bot className="w-6 h-6 text-cyan-600" />;
       case 'HardDrive':
-        return <HardDrive className="w-6 h-6 text-rose-400" />;
+        return <HardDrive className="w-6 h-6 text-rose-600" />;
       default:
-        return <Zap className="w-6 h-6 text-cyan-400" />;
+        return <Zap className="w-6 h-6 text-blue-600" />;
     }
   };
 
@@ -61,166 +63,148 @@ export const ServicesPage: React.FC = () => {
   };
 
   return (
-    <div className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 animate-in fade-in duration-300">
-      {/* Page Header */}
-      <div className="text-center max-w-3xl mx-auto mb-12">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold uppercase tracking-wider mb-4">
-          <Layers className="w-3.5 h-3.5" />
-          <span>Full SaaS Infrastructure Catalog</span>
+    <div className="gabrun-light-canvas min-h-screen text-slate-800 font-sans pb-24">
+      {/* Top Hero Banner matching HomePage Gabrun style */}
+      <section className="gabrun-hero-gradient relative isolate overflow-hidden pt-10 pb-16 sm:pt-14 sm:pb-24 text-white shadow-sm mb-12">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+          <div className="gabrun-grid-lines absolute inset-0 opacity-30" />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-blue-400/25 blur-[120px] animate-pulse-glow" />
         </div>
-        <h1 className="text-4xl sm:text-5xl font-black text-white font-display tracking-tight mb-4">
-          Next-Gen Hosting Services
-        </h1>
-        <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-          Explore our complete portfolio of high-frequency game instances, dedicated bare-metal clusters, KVM cloud VPS, and ultra-reliable web storage.
-        </p>
-      </div>
 
-      {/* SLA Metrics Bar */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-        {[
-          { label: 'Instant Provisioning', val: '< 15 Seconds', icon: <Zap className="w-4 h-4 text-cyan-400" /> },
-          { label: 'Network Uptime SLA', val: '99.99%', icon: <Clock className="w-4 h-4 text-emerald-400" /> },
-          { label: 'DDoS Scrubbing Capacity', val: '3.2+ Tbps', icon: <ShieldCheck className="w-4 h-4 text-blue-400" /> },
-          { label: 'Live Expert Support', val: '24/7/365', icon: <Headphones className="w-4 h-4 text-amber-400" /> },
-        ].map((metric, i) => (
-          <div key={i} className="bg-[#11131e] border border-white/5 p-4 rounded-2xl flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center shrink-0">
-              {metric.icon}
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-2 text-xs text-blue-200/90 mb-6 overflow-x-auto whitespace-nowrap">
+            <button onClick={() => navigateTo('home')} className="hover:text-white transition-colors cursor-pointer">Home</button>
+            <ChevronRight className="w-3.5 h-3.5 text-blue-300/60 shrink-0" />
+            <span className="text-white font-bold">Services Catalog</span>
+          </nav>
+
+          <div className="text-center max-w-3xl mx-auto">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/15 px-4 py-1.5 text-xs font-semibold text-white shadow-sm backdrop-blur-md mb-4">
+              <Layers className="w-3.5 h-3.5 text-cyan-300" />
+              <span>Full Cloud Infrastructure Catalog</span>
             </div>
-            <div>
-              <p className="text-[11px] text-slate-400">{metric.label}</p>
-              <p className="text-sm font-bold text-white font-display">{metric.val}</p>
-            </div>
+            <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-4 leading-tight">
+              Next-Gen Hosting Services
+            </h1>
+            <p className="text-blue-100 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
+              Explore our complete portfolio of high-frequency game instances, dedicated bare-metal clusters, KVM cloud VPS, and ultra-reliable web storage.
+            </p>
           </div>
-        ))}
-      </div>
+        </div>
+      </section>
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-10 pb-6 border-b border-white/10">
-        <div className="flex flex-wrap gap-2 w-full md:w-auto">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-                selectedCategory === cat
-                  ? 'bg-cyan-500 text-black font-bold shadow-lg shadow-cyan-500/20'
-                  : 'bg-[#121422] text-slate-400 hover:text-white border border-white/5 hover:border-white/10'
-              }`}
-            >
-              {cat}
-            </button>
+      {/* Main Content Area */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        
+        {/* SLA Metrics Bar in White 3D Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 -mt-20 relative z-20">
+          {[
+            { label: 'Instant Provisioning', val: '< 15 Seconds', icon: <Zap className="w-5 h-5 text-blue-600" /> },
+            { label: 'Network Uptime SLA', val: '99.99%', icon: <Clock className="w-5 h-5 text-emerald-600" /> },
+            { label: 'DDoS Scrubbing Capacity', val: '3.2+ Tbps', icon: <ShieldCheck className="w-5 h-5 text-indigo-600" /> },
+            { label: 'Live Expert Support', val: '24/7/365', icon: <Headphones className="w-5 h-5 text-amber-600" /> },
+          ].map((metric, i) => (
+            <div key={i} className="bg-white border border-slate-200/80 p-5 rounded-3xl shadow-[0_10px_30px_-5px_rgba(15,23,42,0.06)] flex items-center gap-3 card-interactive-3d">
+              <div className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
+                {metric.icon}
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold text-slate-500">{metric.label}</p>
+                <p className="text-base font-extrabold text-slate-900 font-display">{metric.val}</p>
+              </div>
+            </div>
           ))}
         </div>
 
-        <div className="w-full md:w-64">
-          <input
-            type="text"
-            placeholder="Search all services..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#121422] border border-white/10 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
-          />
-        </div>
-      </div>
-
-      {/* Services Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-        {filteredServices.map((srv) => (
-          <div
-            key={srv.id}
-            className="group relative rounded-3xl bg-[#0f111c] border border-white/10 hover:border-cyan-500/40 p-7 flex flex-col justify-between transition-all duration-300 shadow-xl hover:shadow-cyan-500/10 hover:-translate-y-1 overflow-hidden"
-          >
-            {srv.image && (
-              <div className="absolute top-0 right-0 w-32 h-32 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
-                <img src={srv.image} alt={srv.title} className="w-full h-full object-cover" />
-              </div>
-            )}
-
-            <div>
-              {/* Top Row: Icon & Badge */}
-              <div className="flex items-center justify-between mb-5">
-                <div className="w-12 h-12 rounded-2xl bg-[#161a29] border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  {getIcon(srv.icon)}
-                </div>
-                {srv.badge && (
-                  <span className="bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                    {srv.badge}
-                  </span>
-                )}
-              </div>
-
-              {/* Title & Category */}
-              <div className="mb-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                  {srv.category || 'Infrastructure'}
-                </span>
-                <h3 className="text-xl font-bold text-white group-hover:text-cyan-300 transition-colors">
-                  {srv.title}
-                </h3>
-              </div>
-
-              <p className="text-xs text-slate-400 leading-relaxed mb-6">
-                {srv.description}
-              </p>
-
-              {/* Features List */}
-              <div className="space-y-2.5 mb-8 text-xs text-slate-300">
-                {(srv.features || []).map((feat, i) => (
-                  <div key={i} className="flex items-center gap-2.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                    <span>{feat}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Bottom Row: Price & Button */}
-            <div className="pt-5 border-t border-white/5 flex items-center justify-between">
-              <div>
-                <span className="text-[10px] text-slate-500 block uppercase">Starting from</span>
-                <div className="flex items-baseline">
-                  <span className="text-xl font-bold text-white font-display">
-                    {formatPrice(srv.startingPrice || 9.99)}
-                  </span>
-                  <span className="text-xs text-slate-400 ml-1">/month</span>
-                </div>
-              </div>
-
+        {/* Filter and Search Bar */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white border border-slate-200/80 p-3 sm:p-4 rounded-3xl shadow-sm">
+          <div className="flex flex-wrap gap-1.5 w-full md:w-auto">
+            {categories.map((cat) => (
               <button
-                onClick={() => handleConfigure(srv)}
-                className="bg-white hover:bg-slate-100 text-black text-xs font-bold px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 active:scale-95 shadow-md"
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                  selectedCategory === cat
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                }`}
               >
-                <span>Deploy Now</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                {cat}
               </button>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      {/* Enterprise Custom Solutions Banner */}
-      <div className="relative rounded-3xl bg-gradient-to-r from-[#121626] to-[#0c0e18] border border-cyan-500/20 p-8 sm:p-12 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
-        <div className="max-w-xl">
-          <span className="text-xs font-bold uppercase tracking-wider text-cyan-400 block mb-2">
-            Custom Enterprise Infrastructure
-          </span>
-          <h3 className="text-2xl sm:text-3xl font-black text-white font-display tracking-tight mb-3">
-            Need a custom BGP Anycast network or Multi-TB Dedicated cluster?
-          </h3>
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-            We engineer bespoke hardware setups, multi-gigabit uplinks, and dedicated Layer 7 mitigation rules for massive esports tournaments and game studios.
-          </p>
+          <div className="w-full md:w-72 relative">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <Search className="w-4 h-4" />
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search all services..."
+              className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-blue-600 focus:outline-none transition"
+            />
+          </div>
         </div>
 
-        <button
-          onClick={() => navigateTo('tickets')}
-          className="bg-cyan-500 hover:bg-cyan-400 text-black text-sm font-bold px-6 py-3.5 rounded-2xl transition-all shadow-xl shadow-cyan-500/20 shrink-0 flex items-center gap-2 active:scale-95"
-        >
-          <Headphones className="w-4 h-4" />
-          <span>Contact Enterprise Architects</span>
-        </button>
+        {/* Services Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredServices.map((service) => (
+            <div
+              key={service.id}
+              className="bg-white border border-slate-200/80 rounded-3xl p-7 shadow-sm hover:shadow-xl hover:border-blue-400 transition-all card-interactive-3d flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-5">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center">
+                    {getIcon(service.icon)}
+                  </div>
+                  {service.badge && (
+                    <span className="px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-bold uppercase tracking-wider">
+                      {service.badge}
+                    </span>
+                  )}
+                </div>
+
+                <h3 className="text-xl font-extrabold text-slate-900 font-display mb-2">{service.title}</h3>
+                <p className="text-xs text-slate-600 leading-relaxed mb-6">{service.description}</p>
+
+                {/* Features */}
+                <div className="space-y-2 mb-8">
+                  {(service.features || []).map((feat, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-xs text-slate-600">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                      <span>{feat}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Starting from</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-2xl font-black text-slate-900 font-display">
+                      {formatPrice(service.startingPrice || 4.99)}
+                    </span>
+                    <span className="text-xs text-slate-500 font-semibold">/mo</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => handleConfigure(service)}
+                  className="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider shadow-md shadow-blue-500/25 transition active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>Configure</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
       </div>
     </div>
   );

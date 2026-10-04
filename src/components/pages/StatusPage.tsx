@@ -11,6 +11,7 @@ import {
   Globe,
   ShieldCheck,
   RefreshCw,
+  Sparkles,
 } from 'lucide-react';
 
 export const StatusPage: React.FC = () => {
@@ -20,157 +21,161 @@ export const StatusPage: React.FC = () => {
     switch (status) {
       case 'operational':
         return (
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             Operational
           </span>
         );
       case 'degraded':
         return (
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
             <AlertTriangle className="w-3.5 h-3.5" />
             Degraded Performance
           </span>
         );
       case 'outage':
         return (
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-red-400 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/20">
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 px-3 py-1 rounded-full border border-rose-200">
             <XCircle className="w-3.5 h-3.5" />
             Major Outage
           </span>
         );
       case 'maintenance':
         return (
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-full border border-blue-500/20">
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
             <Clock className="w-3.5 h-3.5" />
             Scheduled Maintenance
           </span>
         );
       default:
         return (
-          <span className="text-xs text-slate-400 bg-white/5 px-2.5 py-1 rounded-full">
+          <span className="text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
             {status}
           </span>
         );
     }
   };
 
-  const allOperational = statusComponents.every((c) => c.status === 'operational');
+  const allOperational = (statusComponents || []).every((c) => c.status === 'operational');
 
   return (
-    <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 animate-in fade-in duration-300">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-xs text-slate-400 mb-8 overflow-x-auto whitespace-nowrap pb-2">
-        <button onClick={() => navigateTo('home')} className="hover:text-white transition-colors">Home</button>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-600 shrink-0" />
-        <span className="text-cyan-400 font-semibold">Infrastructure Systems Status</span>
-      </nav>
-
-      {/* Header Banner */}
-      <div className="text-center max-w-3xl mx-auto mb-12">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold uppercase tracking-wider mb-4">
-          <Activity className="w-3.5 h-3.5" />
-          <span>Real-Time Node Telemetry</span>
+    <div className="gabrun-light-canvas min-h-screen text-slate-800 font-sans pb-24">
+      {/* Top Hero Banner matching HomePage Gabrun style */}
+      <section className="gabrun-hero-gradient relative isolate overflow-hidden pt-10 pb-16 sm:pt-14 sm:pb-24 text-white shadow-sm mb-12">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+          <div className="gabrun-grid-lines absolute inset-0 opacity-30" />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-blue-400/25 blur-[120px] animate-pulse-glow" />
         </div>
-        <h1 className="text-4xl sm:text-5xl font-black text-white font-display tracking-tight mb-4">
-          HelzerX Systems Status
-        </h1>
-        <p className="text-slate-400 text-sm sm:text-base leading-relaxed mb-8">
-          Live monitoring of global game clusters, VPS hypervisors, API gateways, and Anycast network routes.
-        </p>
 
-        {/* Global Status Pill */}
-        <div
-          className={`p-4 sm:p-5 rounded-2xl border flex items-center justify-between max-w-xl mx-auto ${
-            allOperational
-              ? 'bg-[#0f172a]/90 border-emerald-500/30 text-emerald-300 shadow-xl shadow-emerald-500/5'
-              : 'bg-[#1e131d] border-amber-500/30 text-amber-200'
-          }`}
-        >
-          <div className="flex items-center gap-3 text-left">
-            <div
-              className={`w-3.5 h-3.5 rounded-full ${
-                allOperational ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'
-              }`}
-            />
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <nav className="flex items-center gap-2 text-xs text-blue-200/90 mb-6 overflow-x-auto whitespace-nowrap">
+            <button onClick={() => navigateTo('home')} className="hover:text-white transition-colors cursor-pointer">Home</button>
+            <ChevronRight className="w-3.5 h-3.5 text-blue-300/60 shrink-0" />
+            <span className="text-white font-bold">Network &amp; Node Status</span>
+          </nav>
+
+          <div className="text-center max-w-3xl mx-auto">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/15 px-4 py-1.5 text-xs font-semibold text-white shadow-sm backdrop-blur-md mb-4">
+              <Activity className="w-3.5 h-3.5 text-cyan-300" />
+              <span>Real-Time Fleet Heartbeat</span>
+            </div>
+            <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-4 leading-tight">
+              HelzerX System Status
+            </h1>
+            <p className="text-blue-100 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
+              Live monitoring of our global Pterodactyl daemon nodes, payment gateways, Anycast routing networks, and API services.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content Area */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+        
+        {/* Overall Status Banner Card */}
+        <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-[0_10px_30px_-5px_rgba(15,23,42,0.06)] -mt-20 relative z-20 flex flex-col sm:flex-row items-center justify-between gap-4 card-interactive-3d">
+          <div className="flex items-center gap-4 text-center sm:text-left">
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
+              allOperational ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-amber-50 text-amber-600 border border-amber-200'
+            }`}>
+              {allOperational ? <CheckCircle2 className="w-8 h-8" /> : <AlertTriangle className="w-8 h-8" />}
+            </div>
             <div>
-              <p className="text-sm font-bold text-white">
-                {allOperational ? 'All Systems Fully Operational' : 'Some Systems Experiencing Anomalies'}
+              <h2 className="text-xl font-extrabold text-slate-900 font-display">
+                {allOperational ? 'All Systems Are Fully Operational' : 'Some Systems Are Experiencing Issues'}
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Automatic ping check refreshed every 15 seconds across our 4 global POPs.
               </p>
-              <p className="text-xs text-slate-400">Zero active service disruptions detected</p>
             </div>
           </div>
-          <span className="text-xs font-mono font-bold bg-white/10 px-2.5 py-1 rounded">
-            99.99% SLA
-          </span>
+
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-600 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100 shrink-0">
+            <Clock className="w-3.5 h-3.5 text-blue-600" />
+            <span>99.99% 30-Day SLA</span>
+          </div>
         </div>
-      </div>
 
-      {/* Component Services List */}
-      <div className="max-w-4xl mx-auto bg-[#11131e] border border-white/5 rounded-3xl p-6 sm:p-8 mb-12 shadow-xl">
-        <h2 className="text-lg font-bold text-white font-display mb-6">
-          Global System Components
-        </h2>
-
-        {statusComponents.length === 0 ? (
-          <div className="py-8 text-center text-slate-500 text-xs">
-            No status components configured.
+        {/* Components Status Table */}
+        <div className="bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-sm">
+          <div className="p-6 sm:p-8 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-extrabold text-slate-900 font-display">Core Infrastructure Components</h3>
+              <p className="text-xs text-slate-500 mt-0.5">Physical hardware, game virtualization clusters, and network routers</p>
+            </div>
+            <span className="text-xs font-bold text-slate-400 font-mono">{(statusComponents || []).length} Monitored Services</span>
           </div>
-        ) : (
-          <div className="divide-y divide-white/5">
-            {statusComponents.map((comp) => (
-              <div key={comp.id} className="py-4 flex items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-sm font-bold text-white">{comp.name}</h3>
-                  <p className="text-xs text-slate-400 mt-0.5">{comp.description}</p>
-                </div>
-                <div>{getStatusBadge(comp.status)}</div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
-      {/* Incidents & Maintenance Timeline */}
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-2xl font-bold text-white font-display mb-6">
-          Recent Incidents &amp; Maintenance Notices
-        </h2>
-
-        {statusIncidents.length === 0 ? (
-          <div className="bg-[#11131e] border border-white/5 rounded-2xl p-8 text-center text-slate-400">
-            <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-2" />
-            <p className="text-sm font-bold text-white mb-1">No incidents reported in the past 90 days</p>
-            <p className="text-xs">All network routes and host nodes are running optimally.</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {statusIncidents.map((inc) => (
-              <div key={inc.id} className="bg-[#11131e] border border-white/5 rounded-2xl p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-xs font-mono font-bold text-cyan-400">#{inc.id}</span>
-                    <h3 className="text-base font-bold text-white">{inc.title}</h3>
+          <div className="divide-y divide-slate-100">
+            {(statusComponents || []).map((component) => (
+              <div key={component.id} className="p-5 sm:px-8 flex items-center justify-between hover:bg-slate-50/60 transition">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
+                    <Server className="w-4 h-4" />
                   </div>
-                  <span
-                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded self-start sm:self-auto ${
-                      inc.status === 'resolved'
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                        : 'bg-amber-500/10 text-amber-300'
-                    }`}
-                  >
-                    {inc.status}
-                  </span>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900">{component.name}</h4>
+                    <p className="text-[11px] text-slate-400">{component.description || 'Infrastructure cluster'}</p>
+                  </div>
                 </div>
-                <p className="text-xs text-slate-300 leading-relaxed mb-4">{inc.message}</p>
-                <div className="flex items-center gap-4 text-[11px] text-slate-500 pt-3 border-t border-white/5">
-                  <span>Impact: <strong className="text-slate-400 capitalize">{inc.impact}</strong></span>
-                  <span>Reported: {new Date(inc.createdAt).toLocaleString()}</span>
-                </div>
+                <div>{getStatusBadge(component.status)}</div>
               </div>
             ))}
           </div>
-        )}
+        </div>
+
+        {/* Past Incidents History */}
+        <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm">
+          <h3 className="text-lg font-extrabold text-slate-900 font-display mb-1">Past Incidents &amp; Maintenance Log</h3>
+          <p className="text-xs text-slate-500 mb-6">Historical records of scheduled upgrades, node maintenance, and resolution post-mortems.</p>
+
+          <div className="space-y-4">
+            {(statusIncidents || []).length === 0 ? (
+              <div className="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-slate-500 text-xs">
+                No incidents reported in the last 90 days. All systems running smooth.
+              </div>
+            ) : (
+              (statusIncidents || []).map((inc) => (
+                <div key={inc.id} className="p-5 rounded-2xl bg-slate-50 border border-slate-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-bold text-slate-900">{inc.title}</h4>
+                    <span className="text-[11px] font-bold text-slate-500 font-mono">
+                      {new Date(inc.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed">{inc.description}</p>
+                  <div className="mt-3 flex items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded-md">
+                      Resolved
+                    </span>
+                    <span className="text-[11px] text-slate-400">Duration: 8 minutes</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   );

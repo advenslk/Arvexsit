@@ -285,14 +285,14 @@ export const Navbar: React.FC = () => {
             </div>
           ) : (
             <>
-              {/* Gabrun Signature Dark Pill Menu / Portal Button */}
+              {/* Login Button */}
               <button
                 type="button"
                 onClick={() => {
                   setAuthModalTab('login');
                   setIsAuthModalOpen(true);
                 }}
-                className="flex items-center gap-2 rounded-full bg-[#0b0f19] px-4 py-2 text-xs font-bold text-white hover:bg-slate-900 shadow-md transition"
+                className="flex items-center gap-2 rounded-full bg-[#0b0f19] px-4 py-2 text-xs font-bold text-white hover:bg-slate-900 shadow-md transition cursor-pointer"
               >
                 <span className="grid grid-cols-2 gap-0.5">
                   <span className="h-1 w-1 rounded-sm bg-white" />
@@ -300,16 +300,19 @@ export const Navbar: React.FC = () => {
                   <span className="h-1 w-1 rounded-sm bg-white" />
                   <span className="h-1 w-1 rounded-sm bg-white" />
                 </span>
-                <span>Menu</span>
+                <span>Login</span>
               </button>
 
-              {/* Get Started Button */}
+              {/* Sign Up Button matching the new auth design */}
               <button
                 type="button"
-                onClick={() => navigateTo('plans')}
-                className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-white px-5 py-2 text-xs font-extrabold text-blue-700 hover:bg-blue-50 shadow-md transition"
+                onClick={() => {
+                  setAuthModalTab('register');
+                  setIsAuthModalOpen(true);
+                }}
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#7934f5] to-[#591bc9] hover:from-[#6a25e6] hover:to-[#4a12b8] px-5 py-2 text-xs font-extrabold text-white shadow-md shadow-purple-500/25 transition cursor-pointer"
               >
-                <span>Get Started</span>
+                <span>Sign Up</span>
               </button>
             </>
           )}
@@ -403,9 +406,20 @@ export const Navbar: React.FC = () => {
                     setIsAuthModalOpen(true);
                     setIsMobileMenuOpen(false);
                   }}
-                  className="flex-1 rounded-full bg-[#0b0f19] py-3 text-center text-xs font-bold text-white shadow-md"
+                  className="flex-1 rounded-full bg-[#0b0f19] py-3 text-center text-xs font-bold text-white shadow-md cursor-pointer"
                 >
                   Sign In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthModalTab('register');
+                    setIsAuthModalOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex-1 rounded-full bg-gradient-to-r from-[#7934f5] to-[#591bc9] py-3 text-center text-xs font-bold text-white shadow-md cursor-pointer"
+                >
+                  Sign Up
                 </button>
                 <button
                   type="button"
@@ -414,7 +428,7 @@ export const Navbar: React.FC = () => {
                     setIsAuthModalOpen(true);
                     setIsMobileMenuOpen(false);
                   }}
-                  className="px-4 rounded-full bg-white/10 text-white py-3 text-center text-xs font-bold shadow-md flex items-center justify-center gap-1.5"
+                  className="px-3 rounded-full bg-white/10 text-white py-3 text-center text-xs font-bold shadow-md flex items-center justify-center gap-1 cursor-pointer"
                 >
                   <Shield className="w-3.5 h-3.5 text-cyan-400" />
                   <span>Admin</span>

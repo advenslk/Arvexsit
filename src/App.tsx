@@ -76,6 +76,22 @@ function MainWebsite() {
   },[]);
 
   useEffect(()=>{
+    const checkAuthRoute=()=>{
+      const hash = window.location.hash.toLowerCase();
+      if(hash.includes('login') || hash.includes('signin')){
+        setAuthModalTab('login');
+        setIsAuthModalOpen(true);
+      } else if(hash.includes('signup') || hash.includes('register')){
+        setAuthModalTab('register');
+        setIsAuthModalOpen(true);
+      }
+    };
+    checkAuthRoute();
+    window.addEventListener('hashchange', checkAuthRoute);
+    return () => window.removeEventListener('hashchange', checkAuthRoute);
+  },[setAuthModalTab,setIsAuthModalOpen]);
+
+  useEffect(()=>{
     const params=new URLSearchParams(window.location.search);
     if(params.get('admin-login')!=='1')return;
     setAuthModalTab('admin');

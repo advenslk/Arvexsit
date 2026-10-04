@@ -260,12 +260,20 @@ export interface UserAccount {
   id: string;
   email: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   role: 'admin' | 'customer';
   createdAt: string;
   avatar?: string;
-  provider?: 'email' | 'google' | 'github' | 'discord';
+  provider?: 'email' | 'google' | 'github' | 'discord' | 'apple' | 'facebook';
   phone?: string;
   country?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  company?: string;
+  accountType?: 'individual' | 'corporate';
 }
 
 export interface DeployedServer {
