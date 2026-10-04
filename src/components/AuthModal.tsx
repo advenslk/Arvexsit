@@ -1486,6 +1486,12 @@ class AuthModalErrorBoundary extends React.Component<
   { hasError: boolean }
 > {
   state = { hasError: false };
+  private readonly childContent: React.ReactNode;
+
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.childContent = props.children;
+  }
 
   static getDerivedStateFromError() {
     return { hasError: true };
@@ -1516,7 +1522,7 @@ class AuthModalErrorBoundary extends React.Component<
         </div>
       );
     }
-    return this.props.children;
+    return this.childContent;
   }
 }
 
