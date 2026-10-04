@@ -691,44 +691,138 @@ async function start() {
   app.get('/api/client/portal', async (req, res) => {
     const session = getSession(req);
     if (!session || session.role !== 'customer') return res.status(401).json({ error: 'Authentication required.' });
+
     const users = await readJson<any[]>(USERS_FILE, []);
     const user = users.find((candidate) => candidate.id === session.userId && !candidate.banned);
     if (!user) return res.status(401).json({ error: 'Session is no longer valid.' });
 
     res.set('Cache-Control', 'no-store');
+    if (!PTERODACTYL_URL) {
+      return res.json({ connected: false, user: publicUser(user), panelUrl: null, servers: [] });
+    }
+
     const token = await getPterodactylClientToken(user.id);
-    if (!PTERODACTYL_URL || !token) {
-      return res.json({ connected: false, user: publicUser(user), panelUrl: PTERODACTYL_URL || null, servers: [] });
+
+    // A connected Client API key unlocks the full Pterodactyl control plane.
+    if (token) {
+      try {
+        const accountResult = await pterodactylClientRequest(token, '/api/client/account');
+        if (!accountResult.response.ok) {
+          await removePterodactylClientToken(user.id);
+          return res.json({ connected: false, user: publicUser(user), panelUrl: PTERODACTYL_URL, servers: [] });
+        }
+
+        const remoteEmail = String(accountResult.payload?.attributes?.email || '').trim().toLowerCase();
+        if (remoteEmail !== String(user.email || '').trim().toLowerCase()) {
+          await removePterodactylClientToken(user.id);
+          return res.status(403).json({ error: 'Pterodactyl account no longer matches this customer account.' });
+        }
+
+        const all: any[] = [];
+        let page = 1;
+        let totalPages = 1;
+        while (page <= totalPages && page <= 20) {
+          const result = await pterodactylClientRequest(token, `/api/client?type=owner&per_page=100&page=${page}`);
+          if (!result.response.ok) throw new Error('server-list-failed');
+          all.push(...(Array.isArray(result.payload?.data) ? result.payload.data : []));
+          totalPages = Number(result.payload?.meta?.pagination?.total_pages || 1);
+          page += 1;
+        }
+
+        return res.json({
+          connected: true,
+          user: publicUser(user),
+          panelUrl: PTERODACTYL_URL,
+          servers: all.map((entry) => pterodactylPublicServer(entry?.attributes || {})),
+        });
+      } catch {
+        return res.status(502).json({ error: 'Hosting control plane is temporarily unavailable.' });
+      }
+    }
+
+    // No Client API key yet: still show only the real services belonging to
+    // the authenticated HelzerX account. Controls remain locked until a
+    // matching Client API key is connected.
+    if (!PTERODACTYL_APPLICATION_TOKEN) {
+      return res.json({ connected: false, user: publicUser(user), panelUrl: PTERODACTYL_URL, servers: [] });
     }
 
     try {
-      const accountResult = await pterodactylClientRequest(token, '/api/client/account');
-      if (!accountResult.response.ok) {
-        await removePterodactylClientToken(user.id);
-        return res.json({ connected: false, user: publicUser(user), panelUrl: PTERODACTYL_URL, servers: [] });
-      }
-      const remoteEmail = String(accountResult.payload?.attributes?.email || '').trim().toLowerCase();
-      if (remoteEmail !== String(user.email || '').trim().toLowerCase()) {
-        await removePterodactylClientToken(user.id);
-        return res.status(403).json({ error: 'Pterodactyl account no longer matches this customer account.' });
-      }
-
-      const all: any[] = [];
+      const headers = {
+        Authorization: `Bearer ${PTERODACTYL_APPLICATION_TOKEN}`,
+        Accept: 'Application/vnd.pterodactyl.v1+json',
+        'Content-Type': 'application/json',
+      };
+      const email = String(user.email || '').trim().toLowerCase();
+      const allServers: any[] = [];
       let page = 1;
       let totalPages = 1;
+
       while (page <= totalPages && page <= 20) {
-        const result = await pterodactylClientRequest(token, `/api/client?type=owner&per_page=100&page=${page}`);
-        if (!result.response.ok) throw new Error('server-list-failed');
-        all.push(...(Array.isArray(result.payload?.data) ? result.payload.data : []));
-        totalPages = Number(result.payload?.meta?.pagination?.total_pages || 1);
+        const url = new URL('/api/application/servers', PTERODACTYL_URL);
+        url.searchParams.set('page', String(page));
+        url.searchParams.set('per_page', '100');
+        url.searchParams.set('include', 'user,node,allocations');
+        const response = await fetch(url, { headers, signal: AbortSignal.timeout(10000) });
+        if (!response.ok) throw new Error('application-server-list-failed');
+        const payload = await response.json();
+        allServers.push(...(Array.isArray(payload?.data) ? payload.data : []));
+        totalPages = Number(payload?.meta?.pagination?.total_pages || 1);
         page += 1;
       }
 
+      const servers = allServers.filter((entry) => {
+        const attrs = entry?.attributes || {};
+        const owner = entry?.relationships?.user?.attributes || {};
+        return String(owner.email || '').trim().toLowerCase() === email
+          || String(attrs.user || '') === String(user.pterodactylUserId || '');
+      }).map((entry) => {
+        const attrs = entry?.attributes || {};
+        const allocations = entry?.relationships?.allocations?.data || [];
+        const primary = allocations.find((a: any) => a?.attributes?.is_default)
+          || allocations.find((a: any) => String(a?.attributes?.id) === String(attrs.allocation))
+          || allocations[0];
+        const allocation = primary?.attributes || null;
+        const node = entry?.relationships?.node?.attributes || null;
+        return {
+          identifier: String(attrs.identifier || attrs.uuid || ''),
+          uuid: String(attrs.uuid || ''),
+          name: String(attrs.name || 'Unnamed server'),
+          description: String(attrs.description || ''),
+          node: node ? String(node.name || node.fqdn || '') : '',
+          status: attrs.suspended ? 'suspended' : (attrs.container?.installed === false ? 'installing' : 'offline'),
+          suspended: Boolean(attrs.suspended),
+          installing: attrs.container?.installed === false,
+          transferring: false,
+          limits: {
+            memory: Number(attrs.limits?.memory || 0),
+            disk: Number(attrs.limits?.disk || 0),
+            cpu: Number(attrs.limits?.cpu || 0),
+            swap: Number(attrs.limits?.swap || 0),
+          },
+          featureLimits: {
+            databases: Number(attrs.feature_limits?.databases || 0),
+            allocations: Number(attrs.feature_limits?.allocations || 0),
+            backups: Number(attrs.feature_limits?.backups || 0),
+          },
+          permissions: [],
+          allocation: allocation?.ip ? {
+            ip: String(allocation.ip),
+            alias: allocation.ip_alias ? String(allocation.ip_alias) : null,
+            port: Number(allocation.port || 0),
+          } : null,
+          sftp: attrs.sftp_details ? {
+            ip: String(attrs.sftp_details.ip || ''),
+            port: Number(attrs.sftp_details.port || 0),
+          } : null,
+        };
+      });
+
       return res.json({
-        connected: true,
+        connected: false,
         user: publicUser(user),
         panelUrl: PTERODACTYL_URL,
-        servers: all.map((entry) => pterodactylPublicServer(entry?.attributes || {})),
+        servers,
       });
     } catch {
       return res.status(502).json({ error: 'Hosting control plane is temporarily unavailable.' });
