@@ -1117,7 +1117,11 @@ async function start() {
       attempts: 0,
     });
 
-    await sendMail(ADMIN_EMAIL, 'HelzerX administrator verification code', `Your HelzerX verification code is: ${code}`);
+    const sent = await sendMail(ADMIN_EMAIL, 'HelzerX administrator verification code', `Your HelzerX verification code is: ${code}`);
+    if (!sent) {
+      otpChallenges.delete(challengeId);
+      return res.status(502).json({ error: 'Unable to send the verification code. Check the email service configuration.' });
+    }
 
     res.json({
       ok: true,
@@ -1345,7 +1349,11 @@ async function start() {
       attempts: 0,
     });
 
-    await sendMail(email, 'HelzerX Cloud sign-in code', `Your ArveX sign-in code is: ${code}`);
+    const sent = await sendMail(email, 'HelzerX Cloud sign-in code', `Your ArveX sign-in code is: ${code}`);
+    if (!sent) {
+      otpChallenges.delete(challengeId);
+      return res.status(502).json({ error: 'Unable to send the sign-in code. Please try again later.' });
+    }
 
     res.json({
       ok: true,
@@ -1466,7 +1474,10 @@ async function start() {
     challenge.expiresAt = Date.now() + OTP_TTL_MS;
     challenge.attempts = 0;
 
-    await sendMail(challenge.email, 'HelzerX Cloud verification code (Resent)', `Your new verification code is: ${newCode}`);
+    const sent = await sendMail(challenge.email, 'HelzerX Cloud verification code (Resent)', `Your new verification code is: ${newCode}`);
+    if (!sent) {
+      return res.status(502).json({ error: 'Unable to resend the verification code. Please try again later.' });
+    }
     await appendSecurityLog({
       actor: challenge.email,
       type: 'otp_resend',
