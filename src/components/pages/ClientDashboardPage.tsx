@@ -107,7 +107,7 @@ const fmtBytes = (value: number) => {
   if (!Number.isFinite(value) || value <= 0) return '0 B';
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
   const index = Math.min(Math.floor(Math.log(value) / Math.log(1024)), units.length - 1);
-  return \`\${(value / 1024 ** index).toFixed(index ? 1 : 0)} \${units[index]}\`;
+  return `${(value / 1024 ** index).toFixed(index ? 1 : 0)} ${units[index]}`;
 };
 
 const fmtUptime = (ms: number) => {
@@ -116,7 +116,7 @@ const fmtUptime = (ms: number) => {
   const days = Math.floor(total / 86400);
   const hours = Math.floor((total % 86400) / 3600);
   const minutes = Math.floor((total % 3600) / 60);
-  return [days ? \`\${days}d\` : '', hours ? \`\${hours}h\` : '', \`\${minutes}m\`].filter(Boolean).join(' ');
+  return [days ? `${days}d` : '', hours ? `${hours}h` : '', `${minutes}m`].filter(Boolean).join(' ');
 };
 
 const api = async (url: string, init: RequestInit = {}) => {
@@ -129,12 +129,12 @@ const api = async (url: string, init: RequestInit = {}) => {
   const text = await response.text();
   let body: any = null;
   try { body = text ? JSON.parse(text) : null; } catch { body = text; }
-  if (!response.ok) throw new Error(String(body?.error || \`Request failed (\${response.status})\`));
+  if (!response.ok) throw new Error(String(body?.error || `Request failed (${response.status})`));
   return body;
 };
 
 const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-  <div className={\`rounded-3xl border border-slate-200 bg-white shadow-[0_12px_45px_rgba(15,23,42,0.06)] \${className}\`}>{children}</div>
+  <div className={`rounded-3xl border border-slate-200 bg-white shadow-[0_12px_45px_rgba(15,23,42,0.06)] ${className}`}>{children}</div>
 );
 
 export const ClientDashboardPage: React.FC = () => {
@@ -266,7 +266,7 @@ export const ClientDashboardPage: React.FC = () => {
                 <h2 className="mt-4 text-3xl font-black tracking-tight">Your Pterodactyl services are ready to connect.</h2>
                 <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500">Create a Client API key in your Pterodactyl account and connect it here. The key is encrypted on the HelzerX server and is never sent back to your browser after connection.</p>
                 <button onClick={() => setConnectOpen(true)} className="mt-7 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700"><KeyRound className="h-4 w-4" />Connect Pterodactyl</button>
-                {portal.panelUrl && <a href={\`\${portal.panelUrl}/account/api\`} target="_blank" rel="noreferrer" className="ml-3 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50">Open API Keys</a>}
+                {portal.panelUrl && <a href={`${portal.panelUrl}/account/api`} target="_blank" rel="noreferrer" className="ml-3 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50">Open API Keys</a>}
               </div>
               <div className="bg-slate-950 p-7 text-white sm:p-10">
                 <Lock className="h-6 w-6 text-blue-300" />
@@ -285,8 +285,8 @@ export const ClientDashboardPage: React.FC = () => {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 ['Services', String(portal.servers.length), Server],
-                ['Allocated RAM', \`\${(portal.servers.reduce((n, s) => n + s.limits.memory, 0) / 1024).toFixed(1)} GB\`, Activity],
-                ['Storage', \`\${(portal.servers.reduce((n, s) => n + s.limits.disk, 0) / 1024).toFixed(1)} GB\`, HardDrive],
+                ['Allocated RAM', `${(portal.servers.reduce((n, s) => n + s.limits.memory, 0) / 1024).toFixed(1)} GB`, Activity],
+                ['Storage', `${(portal.servers.reduce((n, s) => n + s.limits.disk, 0) / 1024).toFixed(1)} GB`, HardDrive],
                 ['Account', portal.user.emailVerified ? 'Verified' : 'Review', ShieldCheck],
               ].map(([label, value, Icon]: any) => (
                 <Card key={String(label)} className="p-5">
@@ -302,8 +302,8 @@ export const ClientDashboardPage: React.FC = () => {
                 {portal.servers.length === 0 ? (
                   <div className="rounded-2xl bg-slate-50 p-5 text-center"><Cloud className="mx-auto h-7 w-7 text-slate-300" /><p className="mt-2 text-xs font-bold text-slate-500">No active services</p></div>
                 ) : portal.servers.map((server) => (
-                  <button key={server.identifier} onClick={() => { setSelectedId(server.identifier); setTab('overview'); }} className={\`mb-2 w-full rounded-2xl border p-3 text-left transition \${selected?.identifier === server.identifier ? 'border-blue-300 bg-blue-50' : 'border-slate-100 hover:border-slate-200 hover:bg-slate-50'}\`}>
-                    <div className="flex items-center gap-2"><span className={\`h-2 w-2 rounded-full \${server.suspended ? 'bg-rose-500' : server.installing ? 'bg-amber-500' : 'bg-emerald-500'}\`} /><span className="truncate text-xs font-black">{server.name}</span></div>
+                  <button key={server.identifier} onClick={() => { setSelectedId(server.identifier); setTab('overview'); }} className={`mb-2 w-full rounded-2xl border p-3 text-left transition ${selected?.identifier === server.identifier ? 'border-blue-300 bg-blue-50' : 'border-slate-100 hover:border-slate-200 hover:bg-slate-50'}`}>
+                    <div className="flex items-center gap-2"><span className={`h-2 w-2 rounded-full ${server.suspended ? 'bg-rose-500' : server.installing ? 'bg-amber-500' : 'bg-emerald-500'}`} /><span className="truncate text-xs font-black">{server.name}</span></div>
                     <p className="mt-1 font-mono text-[10px] text-slate-400">{server.identifier}</p>
                   </button>
                 ))}
@@ -340,7 +340,7 @@ const ConnectModal: React.FC<{
       <p className="mt-3 text-sm leading-6 text-slate-500">Use a Client API key from your own Pterodactyl account. It must belong to the same email as this HelzerX account.</p>
       <label className="mt-6 block text-xs font-black uppercase tracking-wider text-slate-500">Client API key</label>
       <div className="mt-2 flex gap-2"><input value={value} onChange={(e) => setValue(e.target.value)} type={show ? 'text' : 'password'} autoComplete="off" placeholder="ptlc_…" className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10" /><button onClick={() => setShow(!show)} className="rounded-xl border border-slate-200 px-4 text-xs font-bold">{show ? 'Hide' : 'Show'}</button></div>
-      <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-xs leading-6 text-slate-500"><b className="text-slate-700">Where:</b> {panelUrl ? <><a href={\`\${panelUrl}/account/api\`} target="_blank" rel="noreferrer" className="font-bold text-blue-600 hover:underline">Pterodactyl → Account → API Keys</a> and create a Client key.</> : 'Open your Pterodactyl panel → Account → API Keys.'}</div>
+      <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-xs leading-6 text-slate-500"><b className="text-slate-700">Where:</b> {panelUrl ? <><a href={`${panelUrl}/account/api`} target="_blank" rel="noreferrer" className="font-bold text-blue-600 hover:underline">Pterodactyl → Account → API Keys</a> and create a Client key.</> : 'Open your Pterodactyl panel → Account → API Keys.'}</div>
       <button onClick={onConnect} disabled={busy || !value.trim()} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-black text-white hover:bg-blue-700 disabled:opacity-50">{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}Connect securely</button>
     </div>
   </div>
@@ -376,7 +376,7 @@ const ServerWorkspace: React.FC<{
   };
 
   const refreshStats = useCallback(async () => {
-    try { const body = await api(\`/api/client/server/\${server.identifier}/resources\`) as Stats; setStats(body); } catch {}
+    try { const body = await api(`/api/client/server/${server.identifier}/resources`) as Stats; setStats(body); } catch {}
   }, [server.identifier]);
 
   useEffect(() => {
@@ -395,7 +395,7 @@ const ServerWorkspace: React.FC<{
     let cancelled = false;
     const connectWs = async () => {
       try {
-        const data = await api(\`/api/client/server/\${server.identifier}/websocket\`);
+        const data = await api(`/api/client/server/${server.identifier}/websocket`);
         if (cancelled) return;
         const socket = new WebSocket(data.data.socket);
         wsRef.current = socket;
@@ -413,7 +413,7 @@ const ServerWorkspace: React.FC<{
             if (message.event === 'status') setStats((prev) => ({ ...(prev || {}), current_state: String(message.args?.[0] || '') }));
             if (message.event === 'stats') setStats(message.args?.[0] || message.args?.[1] || message);
             if (message.event === 'token expiring') {
-              void api(\`/api/client/server/\${server.identifier}/websocket\`).then(() => {}).catch(() => {});
+              void api(`/api/client/server/${server.identifier}/websocket`).then(() => {}).catch(() => {});
             }
           } catch {}
         };
@@ -428,7 +428,7 @@ const ServerWorkspace: React.FC<{
   const power = async (signal: 'start' | 'stop' | 'restart' | 'kill') => {
     setPowerBusy(signal);
     try {
-      await api(\`/api/client/server/\${server.identifier}/power\`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ signal }) });
+      await api(`/api/client/server/${server.identifier}/power`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ signal }) });
       await refreshStats();
       await onRefresh();
     } catch (err) { setError(err instanceof Error ? err.message : 'Power action failed.'); }
@@ -444,7 +444,7 @@ const ServerWorkspace: React.FC<{
       if (wsRef.current?.readyState === WebSocket.OPEN && wsState === 'online') {
         wsRef.current.send(JSON.stringify({ event: 'send command', args: [value] }));
       } else {
-        await api(\`/api/client/server/\${server.identifier}/command\`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ command: value }) });
+        await api(`/api/client/server/${server.identifier}/command`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ command: value }) });
       }
     } catch (err) { setError(err instanceof Error ? err.message : 'Command failed.'); }
   };
@@ -452,7 +452,7 @@ const ServerWorkspace: React.FC<{
   const loadFiles = useCallback(async (dir = directory) => {
     setFileLoading(true);
     try {
-      const data = await api(\`/api/client/server/\${server.identifier}/files?directory=\${encodeURIComponent(dir)}\`);
+      const data = await api(`/api/client/server/${server.identifier}/files?directory=${encodeURIComponent(dir)}`);
       setFiles(Array.isArray(data?.data) ? data.data.map((x: any) => x.attributes || x) : []);
       setDirectory(dir);
     } catch (err) { setError(err instanceof Error ? err.message : 'Unable to load files.'); }
@@ -462,11 +462,11 @@ const ServerWorkspace: React.FC<{
   useEffect(() => { if (tab === 'files') void loadFiles('/'); }, [tab, server.identifier]);
 
   const openFile = async (entry: FileEntry) => {
-    const path = directory === '/' ? \`/\${entry.name}\` : \`\${directory.replace(/\\/$/, '')}/\${entry.name}\`;
+    const path = directory === '/' ? `/${entry.name}` : `${directory.replace(/\/$/, '')}/${entry.name}`;
     if (!entry.is_file) return void loadFiles(path);
     setEditingFile(path);
     setFileLoading(true);
-    try { const text = await fetch(\`/api/client/server/\${server.identifier}/file?file=\${encodeURIComponent(path)}\`, { credentials: 'include', cache: 'no-store' }).then(async (r) => { if (!r.ok) throw new Error('Unable to read file.'); return r.text(); }); setFileContent(text); }
+    try { const text = await fetch(`/api/client/server/${server.identifier}/file?file=${encodeURIComponent(path)}`, { credentials: 'include', cache: 'no-store' }).then(async (r) => { if (!r.ok) throw new Error('Unable to read file.'); return r.text(); }); setFileContent(text); }
     catch (err) { setError(err instanceof Error ? err.message : 'Unable to read file.'); }
     finally { setFileLoading(false); }
   };
@@ -474,15 +474,15 @@ const ServerWorkspace: React.FC<{
   const saveFile = async () => {
     if (!editingFile) return;
     await run('save-file', async () => {
-      await api(\`/api/client/server/\${server.identifier}/file/write\`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ file: editingFile, content: fileContent }) });
+      await api(`/api/client/server/${server.identifier}/file/write`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ file: editingFile, content: fileContent }) });
       setNotice('File saved.');
     });
   };
 
   const deleteEntry = async (entry: FileEntry) => {
-    if (!window.confirm(\`Delete \${entry.name}? This cannot be undone.\`)) return;
+    if (!window.confirm(`Delete ${entry.name}? This cannot be undone.`)) return;
     await run('delete-file', async () => {
-      await api(\`/api/client/server/\${server.identifier}/file/delete\`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ root: directory, files: [entry.name] }) });
+      await api(`/api/client/server/${server.identifier}/file/delete`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ root: directory, files: [entry.name] }) });
       await loadFiles(directory);
     });
   };
@@ -490,33 +490,33 @@ const ServerWorkspace: React.FC<{
   const createFolder = async () => {
     if (!newFolder.trim()) return;
     await run('folder', async () => {
-      await api(\`/api/client/server/\${server.identifier}/file/folder\`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ root: directory, name: newFolder.trim() }) });
+      await api(`/api/client/server/${server.identifier}/file/folder`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ root: directory, name: newFolder.trim() }) });
       setNewFolder('');
       await loadFiles(directory);
     });
   };
 
   const loadBackups = async () => {
-    const data = await api(\`/api/client/server/\${server.identifier}/backups\`);
+    const data = await api(`/api/client/server/${server.identifier}/backups`);
     setBackups(Array.isArray(data?.data) ? data.data.map((x: any) => x.attributes || x) : []);
   };
   useEffect(() => { if (tab === 'backups') void loadBackups().catch((e) => setError(e.message)); }, [tab, server.identifier]);
 
   const loadDatabases = async () => {
-    const data = await api(\`/api/client/server/\${server.identifier}/databases\`);
+    const data = await api(`/api/client/server/${server.identifier}/databases`);
     setDatabases(Array.isArray(data?.data) ? data.data.map((x: any) => x.attributes || x) : []);
   };
   useEffect(() => { if (tab === 'databases') void loadDatabases().catch((e) => setError(e.message)); }, [tab, server.identifier]);
 
   const loadActivity = async () => {
-    const data = await api(\`/api/client/server/\${server.identifier}/activity\`);
+    const data = await api(`/api/client/server/${server.identifier}/activity`);
     setActivity(Array.isArray(data?.data) ? data.data.map((x: any) => x.attributes || x) : []);
   };
   useEffect(() => { if (tab === 'activity') void loadActivity().catch((e) => setError(e.message)); }, [tab, server.identifier]);
 
   const filteredFiles = useMemo(() => files.filter((entry) => entry.name.toLowerCase().includes(fileSearch.toLowerCase())), [files, fileSearch]);
 
-  const address = server.allocation ? \`\${server.allocation.alias || server.allocation.ip}:\${server.allocation.port}\` : 'No allocation';
+  const address = server.allocation ? `${server.allocation.alias || server.allocation.ip}:${server.allocation.port}` : 'No allocation';
   const currentState = stats?.current_state || server.status || 'unknown';
   const memory = Number(stats?.resources?.memory_bytes || 0);
   const disk = Number(stats?.resources?.disk_bytes || 0);
@@ -536,10 +536,10 @@ const ServerWorkspace: React.FC<{
     <Card className="overflow-hidden">
       <div className="border-b border-slate-100 bg-white p-5 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="min-w-0"><div className="flex items-center gap-2"><span className={\`h-3 w-3 rounded-full \${currentState === 'running' ? 'bg-emerald-500' : currentState === 'offline' || currentState === 'stopped' ? 'bg-slate-300' : 'bg-amber-500'}\`} /><h2 className="truncate text-2xl font-black">{server.name}</h2></div><p className="mt-1 font-mono text-[11px] text-slate-400">{server.identifier} · {server.node || 'Node unavailable'}</p></div>
+          <div className="min-w-0"><div className="flex items-center gap-2"><span className={`h-3 w-3 rounded-full ${currentState === 'running' ? 'bg-emerald-500' : currentState === 'offline' || currentState === 'stopped' ? 'bg-slate-300' : 'bg-amber-500'}`} /><h2 className="truncate text-2xl font-black">{server.name}</h2></div><p className="mt-1 font-mono text-[11px] text-slate-400">{server.identifier} · {server.node || 'Node unavailable'}</p></div>
           <div className="flex flex-wrap gap-2">
             <button disabled={Boolean(powerBusy) || server.suspended} onClick={() => void power('start')} className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"><Play className="h-3.5 w-3.5 fill-current" />Start</button>
-            <button disabled={Boolean(powerBusy) || server.suspended} onClick={() => void power('restart')} className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 px-3 py-2 text-xs font-black text-amber-700 hover:bg-amber-100 disabled:opacity-50"><RotateCw className={\`h-3.5 w-3.5 \${powerBusy === 'restart' ? 'animate-spin' : ''}\`} />Restart</button>
+            <button disabled={Boolean(powerBusy) || server.suspended} onClick={() => void power('restart')} className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 px-3 py-2 text-xs font-black text-amber-700 hover:bg-amber-100 disabled:opacity-50"><RotateCw className={`h-3.5 w-3.5 ${powerBusy === 'restart' ? 'animate-spin' : ''}`} />Restart</button>
             <button disabled={Boolean(powerBusy) || server.suspended} onClick={() => void power('stop')} className="inline-flex items-center gap-1.5 rounded-xl bg-rose-50 px-3 py-2 text-xs font-black text-rose-700 hover:bg-rose-100 disabled:opacity-50"><Square className="h-3.5 w-3.5 fill-current" />Stop</button>
           </div>
         </div>
@@ -552,7 +552,7 @@ const ServerWorkspace: React.FC<{
       </div>
 
       <div className="overflow-x-auto border-b border-slate-100 bg-slate-50/70 px-3 py-2">
-        <div className="flex min-w-max gap-1">{tabs.map(([key, Icon, label]) => <button key={key} onClick={() => setTab(key)} className={\`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-black transition \${tab === key ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:bg-white/70'}\`}><Icon className="h-3.5 w-3.5" />{label}</button>)}</div>
+        <div className="flex min-w-max gap-1">{tabs.map(([key, Icon, label]) => <button key={key} onClick={() => setTab(key)} className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-black transition ${tab === key ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:bg-white/70'}`}><Icon className="h-3.5 w-3.5" />{label}</button>)}</div>
       </div>
 
       <div className="min-h-[480px] p-5 sm:p-6">
@@ -572,13 +572,13 @@ const OverviewPanel: React.FC<{ server: ServerInfo; stats: Stats | null; state: 
   const r = stats?.resources;
   return <div className="space-y-5">
     <div className="grid gap-4 md:grid-cols-3">
-      <Metric title="CPU" value={\`\${Number(r?.cpu_absolute || 0).toFixed(1)}%\`} note={\`Limit \${server.limits.cpu || 'unlimited'}%\`} />
-      <Metric title="Memory" value={fmtBytes(Number(r?.memory_bytes || 0))} note={\`Limit \${fmtBytes(server.limits.memory * 1024 * 1024)}\`} />
-      <Metric title="Disk" value={fmtBytes(Number(r?.disk_bytes || 0))} note={\`Limit \${fmtBytes(server.limits.disk * 1024 * 1024)}\`} />
+      <Metric title="CPU" value={`${Number(r?.cpu_absolute || 0).toFixed(1)}%`} note={`Limit ${server.limits.cpu || 'unlimited'}%`} />
+      <Metric title="Memory" value={fmtBytes(Number(r?.memory_bytes || 0))} note={`Limit ${fmtBytes(server.limits.memory * 1024 * 1024)}`} />
+      <Metric title="Disk" value={fmtBytes(Number(r?.disk_bytes || 0))} note={`Limit ${fmtBytes(server.limits.disk * 1024 * 1024)}`} />
     </div>
     <div className="grid gap-4 md:grid-cols-2">
       <Card className="p-5 shadow-none"><div className="flex items-center justify-between"><h3 className="font-black">Live state</h3><button onClick={() => void onRefresh()} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100"><RefreshCw className="h-4 w-4" /></button></div><p className="mt-3 text-2xl font-black capitalize">{state}</p><p className="mt-1 text-xs text-slate-500">Uptime: {fmtUptime(Number(r?.uptime || 0))}</p></Card>
-      <Card className="p-5 shadow-none"><h3 className="font-black">Allocation</h3><p className="mt-3 font-mono text-sm">{server.allocation ? \`\${server.allocation.alias || server.allocation.ip}:\${server.allocation.port}\` : 'Not allocated'}</p><p className="mt-2 text-xs text-slate-500">SFTP: {server.sftp ? \`\${server.sftp.ip}:\${server.sftp.port}\` : 'Unavailable'}</p></Card>
+      <Card className="p-5 shadow-none"><h3 className="font-black">Allocation</h3><p className="mt-3 font-mono text-sm">{server.allocation ? `${server.allocation.alias || server.allocation.ip}:${server.allocation.port}` : 'Not allocated'}</p><p className="mt-2 text-xs text-slate-500">SFTP: {server.sftp ? `${server.sftp.ip}:${server.sftp.port}` : 'Unavailable'}</p></Card>
     </div>
     <div className="grid gap-4 md:grid-cols-3">{[['Databases', server.featureLimits.databases], ['Backups', server.featureLimits.backups], ['Allocations', server.featureLimits.allocations]].map(([label, value]) => <div key={String(label)} className="rounded-2xl bg-slate-50 p-4"><p className="text-[10px] font-black uppercase tracking-wider text-slate-400">{label}</p><p className="mt-2 text-xl font-black">{value}</p></div>)}</div>
   </div>;
@@ -588,8 +588,8 @@ const Metric: React.FC<{ title: string; value: string; note: string }> = ({ titl
 
 const ConsolePanel: React.FC<{ lines: string[]; command: string; setCommand: (v: string) => void; onSubmit: (e: React.FormEvent) => void; state: string }> = ({ lines, command, setCommand, onSubmit, state }) => (
   <div className="overflow-hidden rounded-2xl bg-[#070a12] text-slate-200">
-    <div className="flex items-center justify-between border-b border-white/10 px-4 py-3"><div className="flex items-center gap-2 text-xs font-black"><span className={\`h-2 w-2 rounded-full \${state === 'online' ? 'bg-emerald-400' : state === 'error' ? 'bg-rose-400' : 'bg-amber-400'}\`} />Live console · {state}</div><Terminal className="h-4 w-4 text-slate-500" /></div>
-    <pre className="h-[360px] overflow-auto p-4 font-mono text-[11px] leading-5 text-slate-300">{lines.length ? lines.join('\\n') : 'Waiting for real server console output…'}</pre>
+    <div className="flex items-center justify-between border-b border-white/10 px-4 py-3"><div className="flex items-center gap-2 text-xs font-black"><span className={`h-2 w-2 rounded-full ${state === 'online' ? 'bg-emerald-400' : state === 'error' ? 'bg-rose-400' : 'bg-amber-400'}`} />Live console · {state}</div><Terminal className="h-4 w-4 text-slate-500" /></div>
+    <pre className="h-[360px] overflow-auto p-4 font-mono text-[11px] leading-5 text-slate-300">{lines.length ? lines.join('\n') : 'Waiting for real server console output…'}</pre>
     <form onSubmit={onSubmit} className="flex gap-2 border-t border-white/10 p-3"><span className="rounded-xl bg-white/5 px-3 py-2.5 font-mono text-xs text-emerald-400">$</span><input value={command} onChange={(e) => setCommand(e.target.value)} placeholder="Send a real server command…" className="min-w-0 flex-1 rounded-xl bg-white/5 px-3 py-2.5 font-mono text-xs text-white outline-none placeholder:text-slate-600" /><button className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-black text-white">Send</button></form>
   </div>
 );
@@ -614,8 +614,8 @@ const FilesPanel: React.FC<{
 
 const BackupsPanel: React.FC<{ backups: Backup[]; busy: string; run: (l: string, fn: () => Promise<void>) => Promise<void>; reload: () => Promise<void>; serverId: string }> = ({ backups, busy, run, reload, serverId }) => (
   <div className="space-y-4">
-    <div className="flex items-center justify-between"><div><h3 className="text-lg font-black">Backups</h3><p className="text-xs text-slate-500">Real backups from Pterodactyl.</p></div><button onClick={() => void run('backup-create', async () => { await api(\`/api/client/server/\${serverId}/backups\`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: \`HelzerX backup \${new Date().toISOString()}\`, is_locked: false }) }); await reload(); })} disabled={Boolean(busy)} className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-black text-white disabled:opacity-50"><Save className="h-3.5 w-3.5" />Create backup</button></div>
-    <div className="divide-y divide-slate-100 rounded-2xl border border-slate-200">{backups.length ? backups.map((backup) => <div key={backup.uuid} className="flex flex-wrap items-center justify-between gap-3 p-4"><div><p className="text-sm font-black">{backup.name || backup.uuid}</p><p className="mt-1 text-[11px] text-slate-400">{fmtBytes(backup.bytes)} · {backup.completed_at ? new Date(backup.completed_at).toLocaleString() : 'Processing'} {backup.is_locked ? '· Locked' : ''}</p></div><div className="flex gap-2"><button onClick={() => void run('restore', async () => { if (!window.confirm('Restore this backup? This can replace current files.')) return; await api(\`/api/client/server/\${serverId}/backups/\${backup.uuid}/restore\`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ truncate: true }) }); })} className="rounded-xl bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700">Restore</button><button onClick={() => void run('delete-backup', async () => { if (!window.confirm('Delete this backup permanently?')) return; await api(\`/api/client/server/\${serverId}/backups/\${backup.uuid}\`, { method: 'DELETE' }); await reload(); })} className="rounded-xl bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">Delete</button></div></div>) : <div className="p-10 text-center text-sm text-slate-400">No backups returned by Pterodactyl.</div>}</div>
+    <div className="flex items-center justify-between"><div><h3 className="text-lg font-black">Backups</h3><p className="text-xs text-slate-500">Real backups from Pterodactyl.</p></div><button onClick={() => void run('backup-create', async () => { await api(`/api/client/server/${serverId}/backups`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: `HelzerX backup ${new Date().toISOString()}`, is_locked: false }) }); await reload(); })} disabled={Boolean(busy)} className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-black text-white disabled:opacity-50"><Save className="h-3.5 w-3.5" />Create backup</button></div>
+    <div className="divide-y divide-slate-100 rounded-2xl border border-slate-200">{backups.length ? backups.map((backup) => <div key={backup.uuid} className="flex flex-wrap items-center justify-between gap-3 p-4"><div><p className="text-sm font-black">{backup.name || backup.uuid}</p><p className="mt-1 text-[11px] text-slate-400">{fmtBytes(backup.bytes)} · {backup.completed_at ? new Date(backup.completed_at).toLocaleString() : 'Processing'} {backup.is_locked ? '· Locked' : ''}</p></div><div className="flex gap-2"><button onClick={() => void run('restore', async () => { if (!window.confirm('Restore this backup? This can replace current files.')) return; await api(`/api/client/server/${serverId}/backups/${backup.uuid}/restore`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ truncate: true }) }); })} className="rounded-xl bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700">Restore</button><button onClick={() => void run('delete-backup', async () => { if (!window.confirm('Delete this backup permanently?')) return; await api(`/api/client/server/${serverId}/backups/${backup.uuid}`, { method: 'DELETE' }); await reload(); })} className="rounded-xl bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">Delete</button></div></div>) : <div className="p-10 text-center text-sm text-slate-400">No backups returned by Pterodactyl.</div>}</div>
   </div>
 );
 
