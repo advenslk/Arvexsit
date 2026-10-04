@@ -65,13 +65,21 @@ async function appendSecurityLog(entry: {
   }
 }
 
+const NODE_ENV = String(process.env.NODE_ENV || 'development').trim().toLowerCase();
+function requiredProductionSecret(name: string, value: string): string {
+  if (NODE_ENV === 'production' && !value) {
+    throw new Error(`Missing required production secret: ${name}`);
+  }
+  return value;
+}
+
 const ADMIN_EMAIL = String(process.env.ADMIN_EMAIL || 'admin@helzerx.cloud').trim().toLowerCase();
-const ADMIN_PASSWORD = String(process.env.ADMIN_PASSWORD || 'Admin@123456!');
-const TOKEN_SECRET = String(process.env.ADMIN_TOKEN_SECRET || 'arvex-super-secret-production-admin-key-2026-v2-32chars');
+const ADMIN_PASSWORD = requiredProductionSecret('ADMIN_PASSWORD', String(process.env.ADMIN_PASSWORD || ''));
+const TOKEN_SECRET = requiredProductionSecret('ADMIN_TOKEN_SECRET', String(process.env.ADMIN_TOKEN_SECRET || ''));
 const RESEND_API_KEY = String(process.env.RESEND_API_KEY || '').trim();
-const RESEND_FROM = String(process.env.RESEND_FROM || 'HelzerX Cloud <noreply@arvex.host>').trim();
-const PAYHERE_MERCHANT_ID = String(process.env.PAYHERE_MERCHANT_ID || '1226999').trim();
-const PAYHERE_MERCHANT_SECRET = String(process.env.PAYHERE_MERCHANT_SECRET || 'arvex-payhere-secret-dev').trim();
+const RESEND_FROM = String(process.env.RESEND_FROM || '').trim();
+const PAYHERE_MERCHANT_ID = String(process.env.PAYHERE_MERCHANT_ID || '').trim();
+const PAYHERE_MERCHANT_SECRET = String(process.env.PAYHERE_MERCHANT_SECRET || '').trim();
 const PAYHERE_SANDBOX = String(process.env.PAYHERE_SANDBOX || 'true').toLowerCase() === 'true';
 const USD_TO_LKR = Number(process.env.PAYHERE_USD_TO_LKR || 300);
 const PTERODACTYL_URL = String(process.env.PTERODACTYL_URL || '').trim().replace(/\/+$/, '');
